@@ -162,33 +162,34 @@ final class PDataHandler {
         String user = ChatColor.stripColor(userName).toLowerCase();
         for (int i = 0; i < aliveList.size(); i++) {
             PData pD = aliveList.get(i);
-            String pUserName = pD.userName().toLowerCase();
-            String pNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
+            String checkUserName = pD.userName().toLowerCase();
+            String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
+            String pUserName = pD.userName();
             int add;
             if (pD.isOnline()) {
                 add = 0;
             } else {
                 add = 6;
             }
-            if (pUserName != null) {
-                if (pUserName.equalsIgnoreCase(user)) {
+            if (checkUserName != null) {
+                if (checkUserName.equalsIgnoreCase(user)) {
                     returnUserNames[0 + add] = pUserName;
                     break;
                 }
-                if (pUserName.startsWith(user)) {
+                if (checkUserName.startsWith(user)) {
                     returnUserNames[2 + add] = pUserName;
                 }
-                if (pUserName.contains(user)) {
+                if (checkUserName.contains(user)) {
                     returnUserNames[4 + add] = pUserName;
                 }
-                if (pNickName != null) {
-                    if (pNickName.equalsIgnoreCase(user)) {
+                if (checkNickName != null) {
+                    if (checkNickName.equalsIgnoreCase(user)) {
                         returnUserNames[1 + add] = pUserName;
                     }
-                    if (pNickName.startsWith(user)) {
+                    if (checkNickName.startsWith(user)) {
                         returnUserNames[3 + add] = pUserName;
                     }
-                    if (pNickName.contains(user)) {
+                    if (checkNickName.contains(user)) {
                         returnUserNames[5 + add] = pUserName;
                     }
                 }
@@ -199,37 +200,32 @@ final class PDataHandler {
                 return returnUserNames[i];
             }
         }
-        returnUserNames = new String[12];
+        returnUserNames = new String[6];
         for (int i = 0; i < deadList.size(); i++) {
             PData pD = deadList.get(i);
-            String pUserName = pD.userName().toLowerCase();
-            String pNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
-            int add;
-            if (pD.isOnline()) {
-                add = 0;
-            } else {
-                add = 6;
-            }
-            if (pUserName != null) {
-                if (pUserName.equalsIgnoreCase(user)) {
-                    returnUserNames[0 + add] = pUserName;
+            String checkUserName = pD.userName().toLowerCase();
+            String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
+            String pUserName = pD.userName();
+            if (checkUserName != null) {
+                if (checkUserName.equalsIgnoreCase(user)) {
+                    returnUserNames[0] = pUserName;
                     break;
                 }
-                if (pUserName.startsWith(user)) {
-                    returnUserNames[2 + add] = pUserName;
+                if (checkUserName.startsWith(user)) {
+                    returnUserNames[2] = pUserName;
                 }
-                if (pUserName.contains(user)) {
-                    returnUserNames[4 + add] = pUserName;
+                if (checkUserName.contains(user)) {
+                    returnUserNames[4] = pUserName;
                 }
-                if (pNickName != null) {
-                    if (pNickName.equalsIgnoreCase(user)) {
-                        returnUserNames[1 + add] = pUserName;
+                if (checkNickName != null) {
+                    if (checkNickName.equalsIgnoreCase(user)) {
+                        returnUserNames[1] = pUserName;
                     }
-                    if (pNickName.startsWith(user)) {
-                        returnUserNames[3 + add] = pUserName;
+                    if (checkNickName.startsWith(user)) {
+                        returnUserNames[3] = pUserName;
                     }
-                    if (pNickName.contains(user)) {
-                        returnUserNames[5 + add] = pUserName;
+                    if (checkNickName.contains(user)) {
+                        returnUserNames[5] = pUserName;
                     }
                 }
             }
