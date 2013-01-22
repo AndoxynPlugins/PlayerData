@@ -1,0 +1,40 @@
+name: PlayerData
+main: net.daboross.bukkitdev.playerdata.PlayerData
+version: 0.3
+description: This Plugin Keeps Track Of Various Data on all Players who have ever joined this server. It also offers an API that allows any other plugin to add custom data to any player, and have that data be saved on shutdown and loaded back on startup.
+author: Dabo Ross
+
+commands:
+   pd:
+     description: This is the base command for Player Data.
+     usage: /<command> [subcommand] (You can use /<command> ? for list of sub commands)
+     aliases: [playerdata, pdata, playerd]
+   gu:
+     description: This command gets the full username for a partial username
+     usage: /<command> [PartialUserNameOrNickName]
+     aliases: [getusername, getu, gusername]
+   pvp:
+     description: This command puts you into the PvP world
+     usage: /<command>
+     aliases: [pvpme, pvpwarp]
+permissions:
+  playerdata.*:
+    description: Gives access to all PlayerData commands
+    children:
+      playerdata.viewinfo: true
+      playerdata.set: true
+      playerdata.admin: true
+      playerdata.help: true
+    default: false
+  playerdata.help:
+    description: Allows you to use /pd ?
+    default: true
+  playerdata.viewinfo:
+    description: Allows you to view Player Data
+    default: true
+  playerdata.set:
+    description: Allows you to set Player Data
+    default: false
+  playerdata.admin:
+    description: Allows you to delete and create Player Data Manually
+    default: false
