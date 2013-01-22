@@ -1,7 +1,5 @@
 package net.daboross.bukkitdev.playerdata;
 
-import java.util.logging.Level;
-
 /**
  *
  * @author daboross
