@@ -59,6 +59,7 @@ public class PlayerDataHandler {
         }
     }
 
+    /**Returns a PData corresponding to the username given. Null if not found.*/
     public PData getPData(String playerToBanUserName) {
         return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(playerToBanUserName));
     }
