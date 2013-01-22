@@ -32,7 +32,5 @@ public class Data {
 
     protected void setOwner(PData pData) {
         this.owner = pData;
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Setting Owner To: "+pData);
-                
     }
 }
