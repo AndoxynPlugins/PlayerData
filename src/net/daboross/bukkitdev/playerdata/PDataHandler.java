@@ -74,12 +74,16 @@ final class PDataHandler {
             for (File fl : playerFiles) {
                 if (fl != null) {
                     if (fl.canRead()) {
-                        ArrayList<String> fileContents = FileHandler.ReadFile(fl);
-                        String name = fl.getName().substring(0, fl.getName().indexOf('.'));
-                        /*When File parser parses a file, it creates a pdata, ready to return. When a PData is created, it auto adds itself to this class's playerDataList IF THE PLAYER IS ONLINE*/
-                        PData pData = FileParser.parseList(fileContents, name);
-                        if (!playerDataList.contains(pData) && pData != null) {
-                            playerDataList.add(pData);
+                        String type = fl.getName().substring(fl.getName().indexOf('.'), fl.getName().length());
+                        if (type.equals("bpd")) {
+                            ArrayList<String> fileContents = FileHandler.ReadFile(fl);
+                            String name = fl.getName().substring(0, fl.getName().indexOf('.'));
+                            /*When File parser parses a file, it creates a pdata, ready to return. When a PData is created, it auto adds itself to this class's playerDataList IF THE PLAYER IS ONLINE*/
+                            PData pData = FileParser.parseList(fileContents, name);
+                            if (!playerDataList.contains(pData) && pData != null) {
+                                playerDataList.add(pData);
+                            }
+                        }else{
                         }
                     }
                 }
