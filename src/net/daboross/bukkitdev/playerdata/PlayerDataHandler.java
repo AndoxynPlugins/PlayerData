@@ -58,4 +58,8 @@ public class PlayerDataHandler {
             return null;
         }
     }
+
+    public PData getPData(String playerToBanUserName) {
+        return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(playerToBanUserName));
+    }
 }
