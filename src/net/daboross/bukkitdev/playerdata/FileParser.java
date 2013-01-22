@@ -45,7 +45,7 @@ final class FileParser {
                         return null;
                     }
                 }
-            } else if (currentString.length() <= 1) {
+            } else if (currentString.length() < 1) {
                 current = "finding";
             } else {
                 if (current.equalsIgnoreCase("nickname")) {
