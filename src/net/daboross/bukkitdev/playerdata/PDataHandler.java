@@ -74,7 +74,7 @@ final class PDataHandler {
             for (File fl : playerFiles) {
                 if (fl != null) {
                     if (fl.canRead()) {
-                        String type = fl.getName().substring(fl.getName().indexOf('.'), fl.getName().length());
+                        String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
                         if (type.equals("bpd")) {
                             ArrayList<String> fileContents = FileHandler.ReadFile(fl);
                             String name = fl.getName().substring(0, fl.getName().indexOf('.'));
@@ -83,7 +83,8 @@ final class PDataHandler {
                             if (!playerDataList.contains(pData) && pData != null) {
                                 playerDataList.add(pData);
                             }
-                        }else{
+                        } else {
+                            playerDataMain.getLogger().log(Level.INFO, "{0} file found in playerData!", type);
                         }
                     }
                 }
