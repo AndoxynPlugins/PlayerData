@@ -90,6 +90,9 @@ public final class PData {
         this.timePlayed = timePlayed;
         currentSession = System.currentTimeMillis();
         this.data.addAll(Arrays.asList(data));
+        for (Data d : data) {
+            d.setOwner(this);
+        }
         updateStatus(true, false);
         setAlive();
     }
