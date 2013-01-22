@@ -152,6 +152,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
         linesToSend.add(ColorL.MAIN + "First Time On " + ColorL.SERVERNAME + Bukkit.getServerName() + ColorL.MAIN + " was  " + ColorL.NUMBER + new Date(pData.getFirstLogIn()));
         PDataHandler pdh = playerDataMain.getPDataHandler();
         for (Data d : pData.getData()) {
+            playerDataMain.getLogger().log(Level.INFO, "Data {0}", d.getName());
             linesToSend.addAll(Arrays.asList(pdh.getDisplayData(d, false)));
         }
         sender.sendMessage(linesToSend.toArray(new String[0]));
