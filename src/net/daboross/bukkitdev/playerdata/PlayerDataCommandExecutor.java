@@ -63,7 +63,6 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
             String commandName;
             if (aliasMap.containsKey(args[0].toLowerCase())) {
                 commandName = aliasMap.get(args[0].toLowerCase());
-                Bukkit.getServer().getLogger().log(Level.INFO, (sender.getName() + " used " + commandName));
             } else {
                 sender.sendMessage(ColorList.MAIN + "The SubCommand: " + ColorList.CMD + args[0] + ColorList.MAIN + " Does not exist.");
                 sender.sendMessage(ColorList.MAIN + "To see all possible sub commands, type " + ColorList.CMD + "/" + cmd.getName() + ColorList.SUBCMD + " ?");
