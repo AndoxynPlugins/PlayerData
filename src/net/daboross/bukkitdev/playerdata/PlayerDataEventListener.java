@@ -59,31 +59,23 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
     public void onPlayerTeleport(PlayerTeleportEvent evt) {
         if (!pvpP.contains(evt.getPlayer())) {
             if (evt.getTo().getWorld().getName().equalsIgnoreCase("pvpworld")) {
-                makeExtraThread(evt.getPlayer());
-                pvpP.add(evt.getPlayer());
-                Random r = new Random();
-                int n = r.nextInt(4);
-                n += 1;
-                evt.getPlayer().performCommand("ewarp PvP" + n);
-                evt.getPlayer().sendMessage(ColorList.MAIN + "PVP!");
-                evt.setCancelled(true);
+                pvp(evt.getPlayer());
             }
         }
     }
 
     protected void pvp(Player p) {
-        makeExtraThread(p);
         pvpP.add(p);
         Random r = new Random();
         int n = r.nextInt(4);
         n += 1;
         p.performCommand("ewarp PvP" + n);
         p.sendMessage(ColorList.MAIN + "PVP!");
+        makeExtraThread(p);
     }
 
     private void makeExtraThread(Player p) {
-        PlayerDataEventListenerExtraThread pDEVLET = new PlayerDataEventListenerExtraThread(this, p);
-        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), pDEVLET, 20L);
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), new PlayerDataEventListenerExtraThread(this, p), 20L);
     }
 
     @Override
