@@ -21,4 +21,11 @@ public class ColorList {
     public static String ERROR_ARGS = ChatColor.RED.toString();
     public static String SERVERNAME = ChatColor.BLUE.toString();
     public static String DATA_HANDLE_SLASH = ChatColor.GRAY.toString();
+    public static String DIVIDER = ChatColor.GRAY.toString();
+    public static String MAIN_DARK = ChatColor.DARK_GREEN.toString();
+    public static String BROADCAST = ChatColor.RED.toString();
+
+    public static String getBroadcastName(String name) {
+        return ChatColor.DARK_BLUE + "[" + ChatColor.GRAY + name + ChatColor.DARK_BLUE + "]";
+    }
 }
