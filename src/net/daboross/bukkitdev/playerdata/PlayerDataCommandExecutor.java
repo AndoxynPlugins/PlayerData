@@ -29,23 +29,19 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
      */
     protected PlayerDataCommandExecutor(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
-        aliasMap.put("?", "?");
-        aliasMap.put("help", "?");
-        isConsoleMap.put("?", true);
-        permMap.put("?", "playerdata.help");
-        helpList.put("?", "This Command Views This Page");
-        aliasMap.put("viewinfo", "viewinfo");
-        aliasMap.put("getinfo", "viewinfo");
-        aliasMap.put("vi", "viewinfo");
-        aliasMap.put("gi", "viewinfo");
-        aliasMap.put("i", "viewinfo");
-        isConsoleMap.put("viewinfo", true);
-        permMap.put("viewinfo", "playerdata.viewinfo");
-        helpList.put("viewinfo", ColorL.ARGS + "<Player>" + ColorL.HELP + " Gets the Info That Player data has stored on a player");
-        aliasMap.put("recreateall", "recreateall");
-        isConsoleMap.put("recreateall", true);
-        permMap.put("recreateall", "playerdata.admin");
-        helpList.put("recreateall", "This command deletes all player data and recreates it from bukkit!");
+        initCommand("?", new String[]{"help"}, true, "playerdata.help", "This Command Views This Page");
+        initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorL.ARGS + "<Player>" + ColorL.HELP + " Gets the Info That Player data has stored on a player"));
+        initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("This command deletes all player data and recreates it from bukkit!"));
+    }
+
+    private void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
+        aliasMap.put(cmd, cmd);
+        for (String alias : aliases) {
+            aliasMap.put(alias, cmd);
+        }
+        isConsoleMap.put(cmd, isConsole);
+        permMap.put(cmd, permission);
+        helpList.put(cmd, helpString);
     }
 
     /**
@@ -110,7 +106,9 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
     private void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
         sender.sendMessage(ColorL.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
-            sender.sendMessage(getHelpMessage(str, cmd.getName()));
+            if (sender.hasPermission(permMap.get(aliasMap.get(str)))) {
+                sender.sendMessage(getHelpMessage(str, cmd.getLabel()));
+            }
         }
     }
 
