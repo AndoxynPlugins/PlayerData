@@ -356,11 +356,13 @@ public final class PData {
             if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
                 group = permG.getName();
                 return;
-            } else {
-                PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "IS NOT NORMAL: {0}", permG.getName());
             }
         }
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Changing Player {0} From Groups: {1} To Basic", new Object[]{userName, permUser.getGroupsNames()});
-        permUser.setGroups(new String[]{"Basic"});
+        String groupNames="";
+        for(String str : permUser.getGroupsNames()){
+            groupNames+=str+", ";
+        }
+        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Changing Player {0} From Groups: {1} To Basic", new Object[]{userName, groupNames});
+        //permUser.setGroups(new String[]{"Basic"});
     }
 }
