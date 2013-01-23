@@ -1,6 +1,6 @@
 name: PlayerData
 main: net.daboross.bukkitdev.playerdata.PlayerData
-version: 1.2
+version: 1.3
 description: This Plugin Keeps Track Of Various Data on all Players who have ever joined this server. It also offers an API that allows any other plugin to add custom data to any player, and have that data be saved on shutdown and loaded back on startup.
 author: Dabo Ross
 depend: [PermissionsEx]
@@ -21,20 +21,28 @@ permissions:
   playerdata.*:
     description: Gives access to all PlayerData commands
     children:
+      playerdata.help: true
       playerdata.viewinfo: true
       playerdata.set: true
       playerdata.admin: true
-      playerdata.help: true
     default: false
   playerdata.help:
     description: Allows you to use /pd ?
     default: true
+    children:
+      playerdata.help: true
   playerdata.viewinfo:
     description: Allows you to view Player Data
     default: true
+    children:
+      playerdata.help: true
   playerdata.set:
     description: Allows you to set Player Data
     default: false
+    children:
+      playerdata.help: true
   playerdata.admin:
     description: Allows you to delete and create Player Data Manually
     default: false
+    children:
+      playerdata.help: true
