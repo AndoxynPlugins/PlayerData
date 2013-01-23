@@ -63,4 +63,8 @@ public class PlayerDataHandler {
     public PData getPData(String playerToBanUserName) {
         return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(playerToBanUserName));
     }
+
+    public Data[] getAllDatas(String bandata) {
+        return pDataHandler.getAllData(bandata);
+    }
 }

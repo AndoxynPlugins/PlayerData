@@ -438,4 +438,14 @@ final class PDataHandler {
         }
         return new String[0];
     }
+
+    protected Data[] getAllData(String dataName) {
+        ArrayList<Data> returnArrayList = new ArrayList<>();
+        for (PData pData : playerDataList) {
+            if (pData.hasData(dataName)) {
+                returnArrayList.add(pData.getData(dataName));
+            }
+        }
+        return returnArrayList.toArray(new Data[0]);
+    }
 }
