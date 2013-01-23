@@ -2,6 +2,7 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,7 +35,7 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
     public void onPlayerJoin(PlayerJoinEvent evt) {
         PData pData = pDataMain.getPDataHandler().getPDataFromUsername(evt.getPlayer().getName());
         if (pData == null) {
-            evt.getPlayer().performCommand("espawn");
+            pDataMain.getLogger().log(Level.INFO, "Teleporting {0} to spawn: {1}", new Object[]{evt.getPlayer().getName(), evt.getPlayer().performCommand("spawn")});
         }
         pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedIn();
 
