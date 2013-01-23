@@ -355,7 +355,7 @@ final class PDataHandler {
             if (onlineNickNames.get(i) == null) {
                 returnList[i] = onlineUserNames.get(i);
             } else {
-                returnList[i] = onlineUserNames.get(i) + ColorL.DATA_HANDLE_SLASH + "/" + onlineNickNames.get(i);
+                returnList[i] = onlineUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + onlineNickNames.get(i);
             }
         }
         int k = onlineNumberFound;
@@ -363,7 +363,7 @@ final class PDataHandler {
             if (pNickNames.get(i) == null) {
                 returnList[k] = pUserNames.get(i);
             } else {
-                returnList[k] = pUserNames.get(i) + ColorL.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
+                returnList[k] = pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
             }
             k++;
         }

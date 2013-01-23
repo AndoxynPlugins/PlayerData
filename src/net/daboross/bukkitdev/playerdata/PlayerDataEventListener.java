@@ -64,7 +64,7 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
                 int n = r.nextInt(4);
                 n += 1;
                 evt.getPlayer().performCommand("ewarp PvP" + n);
-                evt.getPlayer().sendMessage(ColorL.MAIN + "PVP!");
+                evt.getPlayer().sendMessage(ColorList.MAIN + "PVP!");
                 evt.setCancelled(true);
             }
         }
@@ -77,7 +77,7 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
         int n = r.nextInt(4);
         n += 1;
         p.performCommand("ewarp PvP" + n);
-        p.sendMessage(ColorL.MAIN + "PVP!");
+        p.sendMessage(ColorList.MAIN + "PVP!");
     }
 
     private void makeExtraThread(Player p) {
@@ -91,7 +91,7 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
             if (sender instanceof Player) {
                 pvp((Player) sender);
             } else {
-                sender.sendMessage(ColorL.MAIN + "You have to be a player to run this command!");
+                sender.sendMessage(ColorList.MAIN + "You have to be a player to run this command!");
             }
             return true;
         }

@@ -6,7 +6,7 @@ import org.bukkit.ChatColor;
  *
  * @author daboross
  */
-public class ColorL {
+public class ColorList {
 
     public static String MAIN = ChatColor.AQUA.toString();
     public static String NAME = ChatColor.GRAY.toString();

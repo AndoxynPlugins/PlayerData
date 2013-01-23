@@ -22,17 +22,17 @@ public class PossibleUserNames implements CommandExecutor {
             if (args.length > 0) {
                 String[] users = instance.getPDataHandler().getPossibleUsernames(args[0]);
                 if (users.length > 10) {
-                    sender.sendMessage(ColorL.MAIN + "First Ten Possible Auto Completes for " + ColorL.NAME + args[0] + ColorL.MAIN + ":");
+                    sender.sendMessage(ColorList.MAIN + "First Ten Possible Auto Completes for " + ColorList.NAME + args[0] + ColorList.MAIN + ":");
                 } else {
-                    sender.sendMessage(ColorL.MAIN + "Possible Auto Completes for " + ColorL.NAME + args[0] + ColorL.MAIN + ":");
+                    sender.sendMessage(ColorList.MAIN + "Possible Auto Completes for " + ColorList.NAME + args[0] + ColorList.MAIN + ":");
                 }
                 for (int i = 0; i < users.length && i < 10; i++) {
                     sender.sendMessage(users[i]);
                 }
-                sender.sendMessage(ColorL.MAIN + "Total Auto Completes Found: " + ColorL.NUMBER + users.length);
+                sender.sendMessage(ColorList.MAIN + "Total Auto Completes Found: " + ColorList.NUMBER + users.length);
             } else {
-                sender.sendMessage(ColorL.MAIN + "Please Specify A Player!");
-                sender.sendMessage(ColorL.CMD + "/" + label + ColorL.ARGS + " <PartialUsername>");
+                sender.sendMessage(ColorList.MAIN + "Please Specify A Player!");
+                sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <PartialUsername>");
             }
             return true;
         }
