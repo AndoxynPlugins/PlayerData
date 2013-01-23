@@ -343,18 +343,24 @@ public final class PData {
         updateGroup();
         return group;
     }
-    public PermissionUser getPermUser(){
+
+    public PermissionUser getPermUser() {
         updateGroup();
         return permUser;
     }
 
     private void updateGroup() {
         permUser = PermissionsEx.getUser(userName);
+
         for (PermissionGroup permG : permUser.getGroups()) {
-            if (permG.isChildOf(PermissionsEx.getPermissionManager().getGroup("Basic")) || permG.getName().equalsIgnoreCase("basic")) {
+            if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
                 group = permG.getName();
-                break;
+                return;
+            } else {
+                PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "IS NOT NORMAL: {0}", permG.getName());
             }
         }
+        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Changing Player {0} From Groups: {1} To Basic", new Object[]{userName, permUser.getGroupsNames()});
+        permUser.setGroups(new String[]{"Basic"});
     }
 }
