@@ -7,13 +7,16 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import ru.tehkode.permissions.PermissionGroup;
+import ru.tehkode.permissions.PermissionUser;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
  *
  * @author daboross
  */
 public final class PData {
-    
+
     private String userName;
     private String nickName;
     private long timePlayed;
@@ -23,6 +26,8 @@ public final class PData {
     private final ArrayList<Data> data = new ArrayList<>();
     private boolean online;
     private boolean alive = false;
+    private String group;
+    private PermissionUser permUser;
 
     /**
      * Use This to create a NEW Player who has never joined before
@@ -128,6 +133,7 @@ public final class PData {
                 if (saveIfOnline) {
                     saveStatus();
                 }
+                updateGroup();
                 return returnV;
             }
         }
@@ -136,7 +142,7 @@ public final class PData {
         }
         return returnV;
     }
-    
+
     private void setAlive() {
         PlayerData pd = PlayerData.getCurrentInstance();
         alive = (isAlive() || online);
@@ -149,7 +155,7 @@ public final class PData {
             }
         }
     }
-    
+
     private void saveStatus() {
         PlayerData pd = PlayerData.getCurrentInstance();
         if (pd != null) {
@@ -161,13 +167,13 @@ public final class PData {
             }
         }
     }
-    
+
     protected void nextAction() {
         if (!updateStatus(true, false)) {
             makeExtraThread();
         }
     }
-    
+
     protected void makeExtraThread() {
         if (PlayerData.getCurrentInstance() != null) {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), new PDataExtraThread(this), 60L);
@@ -250,7 +256,7 @@ public final class PData {
         updateStatus(false, false);
         return online;
     }
-    
+
     public long getFirstLogIn() {
         OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(userName);
         long f = p.getFirstPlayed();
@@ -273,15 +279,15 @@ public final class PData {
     public long timePlayed() {
         return timePlayed;
     }
-    
+
     public Long[] logIns() {
         return logIns.toArray(new Long[0]);
     }
-    
+
     public Long[] logOuts() {
         return logOuts.toArray(new Long[0]);
     }
-    
+
     public boolean isAlive() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -2);
@@ -305,11 +311,11 @@ public final class PData {
         d.setOwner(this);
         updateStatus(true, true);
     }
-    
+
     public Data[] getData() {
         return data.toArray(new Data[0]);
     }
-    
+
     public Data getData(String name) {
         for (Data d : data) {
             if (d.getName().equalsIgnoreCase(name)) {
@@ -318,7 +324,7 @@ public final class PData {
         }
         return null;
     }
-    
+
     public boolean hasData(String name) {
         for (Data d : data) {
             if (d.getName().equalsIgnoreCase(name)) {
@@ -326,5 +332,29 @@ public final class PData {
             }
         }
         return false;
+    }
+
+    public OfflinePlayer getOfflinePlayer() {
+        OfflinePlayer ofp = Bukkit.getOfflinePlayer(userName);
+        return ofp;
+    }
+
+    public String getGroup() {
+        updateGroup();
+        return group;
+    }
+    public PermissionUser getPermUser(){
+        updateGroup();
+        return permUser;
+    }
+
+    private void updateGroup() {
+        permUser = PermissionsEx.getUser(userName);
+        for (PermissionGroup permG : permUser.getGroups()) {
+            if (permG.isChildOf(PermissionsEx.getPermissionManager().getGroup("Basic")) || permG.getName().equalsIgnoreCase("basic")) {
+                group = permG.getName();
+                break;
+            }
+        }
     }
 }
