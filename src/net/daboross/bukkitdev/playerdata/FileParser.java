@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
+ * This is a class to Parse lines into
  *
  * @author daboross
  */

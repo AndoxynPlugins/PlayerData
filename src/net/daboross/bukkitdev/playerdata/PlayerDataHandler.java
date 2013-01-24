@@ -1,6 +1,7 @@
 package net.daboross.bukkitdev.playerdata;
 
 /**
+ * This is the main API function for PlayerData.
  *
  * @author daboross
  */
@@ -8,20 +9,35 @@ public class PlayerDataHandler {
 
     private PDataHandler pDataHandler;
 
-    public PlayerDataHandler(PlayerData pd) {
+    /**
+     * Creates A Player Data Handler given a PlayerData
+     */
+    protected PlayerDataHandler(PlayerData pd) {
         this.pDataHandler = pd.getPDataHandler();
     }
 
-    public boolean doesPlayerExists(String str) {
-        return (pDataHandler.getPDataFromUsername(str) != null);
+    /**
+     * Checks if a Player Exists in the database. DataBase should include all
+     * players who have ever joined the server.
+     *
+     * @param name THe Name of the Player To Check
+     * @return true if the player exists in the database, false otherwise.
+     */
+    public boolean doesPlayerExists(String name) {
+        return (pDataHandler.getPDataFromUsername(name) != null);
     }
 
     /**
-     * @returns the full username of a partial username
-     * @returns null if not found
+     * Get the Full UserName from a partial username or displayname. This will
+     * search through a database of all players who have joined in the last 2
+     * months. If Any Player's DisplayName or UserName contains the String
+     * inputed, then the username of that player is returned. Not case sensitive
+     *
+     * @returns The Full Username of the Player Found, or Null if no player is
+     * found who's name contains the given string.
      */
-    public String getFullUsername(String str) {
-        return pDataHandler.getFullUsername(str);
+    public String getFullUsername(String name) {
+        return pDataHandler.getFullUsername(name);
     }
 
     /**
@@ -38,6 +54,20 @@ public class PlayerDataHandler {
         }
     }
 
+    /**
+     * Adds a DataDisplayParser that you supply as a parser for a custom data
+     * type you specify. PlayerData will call the shortInfo() function from your
+     * display parser and include the lines your parser returns whenever someone
+     * uses /playerdata viewinfo for a player with this data type. You will need
+     * to run this function every time your Plugin is loaded because PlayerData
+     * will not keep the DataDisplayParser after unload. This will overwrite any
+     * previous DataDisplayParsers loaded with this function for this Data Type.
+     *
+     * @param dataName The Name of the data this parser will parse. If you have
+     * multiple data types that this parser can parse, then you will need to run
+     * this function once for each data type.
+     * @param ddp The Data Display Parser that will parse the data given.
+     */
     public void addCustomDataParsing(String dataName, DataDisplayParser ddp) {
         if (dataName == null || ddp == null) {
             throw new IllegalArgumentException("Null Argument!");
@@ -46,9 +76,16 @@ public class PlayerDataHandler {
     }
 
     /**
+     *
      * Get Custom Data For Given Player Name and Given data Name. Will return
      * null if player is not found or if data with given name is not found on
-     * player.
+     * player. This internally calls the getFullUsername() on the playerName
+     * given function before getting player data for that username.
+     *
+     * @param playerName The Name of the player to get data for
+     * @param dataName The Data Type to get
+     * @return The Data That PlayerData is holding for that player if this
+     * dataType has been loaded onto this player. null otherwise
      */
     public Data getCustomData(String playerName, String dataName) {
         PData pData = pDataHandler.getPDataFromUsername(playerName);
@@ -59,12 +96,34 @@ public class PlayerDataHandler {
         }
     }
 
-    /**Returns a PData corresponding to the username given. Null if not found.*/
-    public PData getPData(String playerToBanUserName) {
-        return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(playerToBanUserName));
+    /**
+     * This function gets a PData corresponding to the username given.
+     *
+     * @param userName This should be the full or partial username of a player
+     * @return the PData corresponding to that userName.
+     */
+    public PData getPData(String userName) {
+        return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(userName));
     }
 
-    public Data[] getAllDatas(String bandata) {
-        return pDataHandler.getAllData(bandata);
+    /**
+     * This function searches through all loaded players and compiles a list of
+     * all the data's of the type given.
+     *
+     * @param dataType This is the data type to search for.
+     * @return A list of all data's of that type which are loaded.
+     */
+    public Data[] getAllDatas(String dataType) {
+        return pDataHandler.getAllData(dataType);
+    }
+
+    /**
+     * This function returns a list of all PData's loaded, or one PData for
+     * every single player who has ever joined this server.
+     *
+     * @return A list of PData's Loaded.
+     */
+    public PData[] getAllPDatas() {
+        return pDataHandler.getAllPDatas();
     }
 }

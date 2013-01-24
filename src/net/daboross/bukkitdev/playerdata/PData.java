@@ -12,6 +12,13 @@ import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
+ * This is an object that holds all the information PlayerData has stored on one
+ * player. This holds one player's data. This includes the player's full
+ * username, last display name, time played on this server, a list of times when
+ * they have logged in, and a list of times they have logged out. Other
+ * information which is loaded when needed, not from files, includes the user's
+ * group, and whether or not they are online. All this is accessible through one
+ * player's PData.
  *
  * @author daboross
  */
@@ -30,9 +37,10 @@ public final class PData {
     private PermissionUser permUser;
 
     /**
-     * Use This to create a NEW Player who has never joined before
+     * Use This to create a NEW Player who has never joined before This should
+     * never called be any class besides the PDataHandler.
      *
-     * @param p The Player.
+     * @param p The Player to create a PData from.
      */
     protected PData(Player p) {
         if (p == null) {
@@ -54,7 +62,12 @@ public final class PData {
     }
 
     /**
+     * Use This to create a NEW Player who has never joined before This should
+     * never called be any class besides the PDataHandler. This should only be
+     * used when PlayerData is creating empty player data files from another
+     * data storage, such as Bukkit's store.
      *
+     * @param p The Offline Player to create a PData from.
      */
     protected PData(OfflinePlayer p) {
         if (p == null) {
@@ -81,11 +94,17 @@ public final class PData {
     }
 
     /**
+     * This creates a PData from data loaded from a file. This should never be
+     * called except from within FileParser!
      *
-     * @param userName
-     * @param nickName
-     * @param logIns
-     * @param logOuts
+     * @param userName The Full UserName of this player
+     * @param nickName The Last DisplayName this player had that was not the
+     * same as this player's username. Or the player's username if the player's
+     * display name has never been recorded.
+     * @param logIns A list of times this player has logged in.
+     * @param logOuts A list of times this player has logged out.
+     * @param timePlayed The time this player has played on this server.
+     * @param data A List of custom data entries.
      */
     protected PData(String userName, String nickName, ArrayList<Long> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
         this.userName = userName;
@@ -103,6 +122,8 @@ public final class PData {
     }
 
     /**
+     * This loads data from the player given. Check if that player's username is
+     * the same as this PDat's username before running this function.
      *
      * @param p The Player.
      */
@@ -112,7 +133,12 @@ public final class PData {
     }
 
     /**
+     * This updates this player's status.
      *
+     * @param saveIfOnline Whether to save the info when the player is online.
+     * @param saveIfOffline Whether to save the info when the player is offline.
+     * @return Will return true if the player's username equals the players
+     * display name, or if the player is offline. false otherwise.
      */
     protected boolean updateStatus(boolean saveIfOnline, boolean saveIfOffline) {
         Player[] pList = Bukkit.getServer().getOnlinePlayers();
@@ -143,6 +169,11 @@ public final class PData {
         return returnV;
     }
 
+    /**
+     * This Function Updates whether this player is "alive" or not. In this
+     * context, "alive" means if the player has joined within since the last 2
+     * months. This also sets the alive status in PlayerDataHandler.
+     */
     private void setAlive() {
         PlayerData pd = PlayerData.getCurrentInstance();
         alive = (isAlive() || online);
@@ -156,6 +187,10 @@ public final class PData {
         }
     }
 
+    /**
+     * This saves this PData's Status to files. Does this by calling the
+     * PDataHandler's function to do this.
+     */
     private void saveStatus() {
         PlayerData pd = PlayerData.getCurrentInstance();
         if (pd != null) {
@@ -168,15 +203,23 @@ public final class PData {
         }
     }
 
-    protected void nextAction() {
-        if (!updateStatus(true, false)) {
-            makeExtraThread();
-        }
-    }
-
+    /**
+     * This creates a new Thread that updates next. This is here because when a
+     * player logs on, their username is the same as their nick name. This
+     * function makes a new thread that runs in 1 second, then checks if this
+     * player's username is the same as this player's nickname. If they are,
+     * then it will run this function again.
+     */
     protected void makeExtraThread() {
         if (PlayerData.getCurrentInstance() != null) {
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), new PDataExtraThread(this), 60L);
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    if (!updateStatus(true, false)) {
+                        makeExtraThread();
+                    }
+                }
+            }, 20L);
         }
     }
 
@@ -197,9 +240,7 @@ public final class PData {
     protected void loggedIn() {
         logIns.add(System.currentTimeMillis());
         currentSession = System.currentTimeMillis();
-        if (!updateStatus(true, true)) {
-            makeExtraThread();
-        }
+        makeExtraThread();
         if (!alive) {
             setAlive();
         }
@@ -207,8 +248,9 @@ public final class PData {
     }
 
     /**
+     * This function gets the username of the player represented by this PData.
      *
-     * @return The username of this player
+     * @return The username of the player represented by this PData.
      */
     public String userName() {
         return userName;
@@ -216,6 +258,14 @@ public final class PData {
 
     /**
      *
+     * This gets the last display name that this player had the last time they
+     * were online.
+     *
+     * @param updateStatus If this is true, then this PData will update status
+     * before returning. If false, then this will return the last nickname
+     * recorded. If the player is online, and had changed their display name
+     * since last update, and this is false, then their old nickname is
+     * returned.
      * @return
      */
     public String nickName(boolean updateStatus) {
@@ -226,6 +276,9 @@ public final class PData {
     }
 
     /**
+     * This function gets the last time this player has logged in. If the player
+     * is offline, then it WILL get the last time they logged in, not logged
+     * out.
      *
      * @return
      */
@@ -238,6 +291,9 @@ public final class PData {
     }
 
     /**
+     * This function gets the last time this player has logged out. If the
+     * player is online, then it WILL get the last time they logged out, not
+     * when they logged in or now.
      *
      * @return
      */
@@ -250,6 +306,8 @@ public final class PData {
     }
 
     /**
+     * This function gets whether or not this player is online.
+     *
      * @return Whether or not this player is online
      */
     public boolean isOnline() {
@@ -257,6 +315,13 @@ public final class PData {
         return online;
     }
 
+    /**
+     * This function gets the first time this player logged into this server. If
+     * Bukkit's the recorded first log in is earlier then this PData's recorded
+     * first log in, then this PData's information is updated with Bukkit's
+     *
+     * @return
+     */
     public long getFirstLogIn() {
         OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(userName);
         long f = p.getFirstPlayed();
@@ -273,25 +338,46 @@ public final class PData {
     }
 
     /**
+     * This function gets how long this player has played on this server.
      *
-     * @return The Time Played
+     * @return The Time Played on this server in milliseconds.
      */
     public long timePlayed() {
         return timePlayed;
     }
 
+    /**
+     * This function gets a list of times this player has logged in.
+     *
+     * @return A list of timestamps when this player has logged in. Each In
+     * milliseconds.
+     */
     public Long[] logIns() {
         return logIns.toArray(new Long[0]);
     }
 
+    /**
+     * This function gets a list of times this player has logged out.
+     *
+     * @return A list of timestamps when this player has logged out. Each In
+     * milliseconds.
+     */
     public Long[] logOuts() {
         return logOuts.toArray(new Long[0]);
     }
 
+    /**
+     * This returns whether or not this player is 'alive'. Alive in this case
+     * means if the player has logged in within the last 2 months. This does run
+     * updateStatus().
+     *
+     * @return Whether or not this player has logged in in the last 2 months or
+     * not.
+     */
     public boolean isAlive() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -2);
-        if (lastLogIn() > cal.getTimeInMillis()) {
+        if (lastLogIn() > cal.getTimeInMillis() || isOnline()) {
             return true;
         }
         return false;
@@ -299,7 +385,11 @@ public final class PData {
 
     /**
      * Adds Data To This Player. If Data Is Already On With the given data's
-     * Name, It will be Replaced!
+     * Name, It will be Replaced! This PData will keep track of this data, and
+     * will save it on server shutdown, and will load it when PlayerData is
+     * loaded.
+     *
+     * @param d The Data To Add.
      */
     public void addData(Data d) {
         for (int i = 0; i < data.size(); i++) {
@@ -312,10 +402,24 @@ public final class PData {
         updateStatus(true, true);
     }
 
+    /**
+     * This gets ALL Custom Data that has ever been given to a PData for this
+     * player.
+     *
+     * @return An array of custom datas that have been added to this Player's
+     * PData.
+     */
     public Data[] getData() {
         return data.toArray(new Data[0]);
     }
 
+    /**
+     * This gets a Data from this player with of a given type.
+     *
+     * @param name The data type, EG "bandata".
+     * @return The Data that has been given to this player with addData(), or
+     * null if data of this type has never been added to this player.
+     */
     public Data getData(String name) {
         for (Data d : data) {
             if (d.getName().equalsIgnoreCase(name)) {
@@ -325,6 +429,13 @@ public final class PData {
         return null;
     }
 
+    /**
+     * This function gets whether or not this PData is storing a custom data of
+     * a given type.
+     *
+     * @param name The type of PData to check.
+     * @return true if that type of data is being stored, false otherwise.
+     */
     public boolean hasData(String name) {
         for (Data d : data) {
             if (d.getName().equalsIgnoreCase(name)) {
@@ -334,35 +445,58 @@ public final class PData {
         return false;
     }
 
+    /**
+     * Gets the OfflinePlayer stored by Bukkit that represents the same player
+     * that this PData represents.
+     *
+     * @return The OfflinePlayer stored by Bukkit that represents the same
+     * player that this PData represents.
+     */
     public OfflinePlayer getOfflinePlayer() {
         OfflinePlayer ofp = Bukkit.getOfflinePlayer(userName);
         return ofp;
     }
 
+    /**
+     * This function gets the permissions group that this player is in. This
+     * will get the main group, EG the first group which has the "basic"
+     * permission. This will return "basic" if there are no groups which have
+     * the "basic" permission.
+     *
+     * @return
+     */
     public String getGroup() {
         updateGroup();
         return group;
     }
 
+    /**
+     * This function gets the Permissions User which represents the same player
+     * that this PData represents.
+     *
+     * @return The Permissions User which represents the same player that this
+     * PData represents.
+     */
     public PermissionUser getPermUser() {
         updateGroup();
         return permUser;
     }
 
+    /**
+     * This function updates this PData's Permission Group.
+     */
     private void updateGroup() {
         permUser = PermissionsEx.getUser(userName);
-
         for (PermissionGroup permG : permUser.getGroups()) {
             if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
                 group = permG.getName();
                 return;
             }
         }
-        String groupNames="";
-        for(String str : permUser.getGroupsNames()){
-            groupNames+=str+", ";
+        String groupNames = "";
+        for (String str : permUser.getGroupsNames()) {
+            groupNames += str + ", ";
         }
         PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Changing Player {0} From Groups: {1} To Basic", new Object[]{userName, groupNames});
-        //permUser.setGroups(new String[]{"Basic"});
     }
 }

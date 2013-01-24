@@ -12,8 +12,14 @@
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>Bukkit</word>
+            <word>Bukkit's</word>
             <word>data's</word>
+            <word>datas</word>
+            <word>displayname</word>
+            <word>playerdata</word>
             <word>Plugin</word>
+            <word>viewinfo</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

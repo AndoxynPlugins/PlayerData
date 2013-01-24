@@ -448,4 +448,8 @@ final class PDataHandler {
         }
         return returnArrayList.toArray(new Data[0]);
     }
+
+    protected PData[] getAllPDatas() {
+        return playerDataList.toArray(new PData[0]);
+    }
 }

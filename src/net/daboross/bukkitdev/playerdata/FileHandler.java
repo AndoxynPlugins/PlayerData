@@ -5,24 +5,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 
 /**
- * This class contains various helpful functions
+ * This class provides Functions to read and write to and from Files.
  */
 final class FileHandler {
 
     /**
-     * Writes a file with text lines to filePath/fileName
+     * Writes a file with text lines to a given File.
      *
-     * @param file this is the file to write to
-     * @param lines this is the text to put in the file
-     * @return True if successful, false otherwise
+     * @param file This is the File to write to.
+     * @param lines This is the text to put in a file.
+     * @return True if successful, False otherwise.
      */
     protected static boolean WriteFile(File file, ArrayList<String> lines) {
         Bukkit.getServer().getLogger().log(Level.FINEST, "Player Data File Handler: Writing New File: {0}", file.getAbsolutePath());
@@ -50,10 +47,10 @@ final class FileHandler {
     }
 
     /**
-     * Reads a file into an array list of strings
+     * Reads a given file into an array list of strings
      *
-     * @param file this is the file to read from
-     * @return The text in the file, or null if it doesn't exist
+     * @param file This is the file to read from
+     * @return The text in the file, or null if it doesn't exist.
      */
     protected static ArrayList<String> ReadFile(File file) {
         ArrayList<String> lines = new ArrayList</*String*/>();
@@ -79,39 +76,6 @@ final class FileHandler {
             try {
                 fr.close();
             } catch (Exception e) {
-            }
-        }
-        return lines;
-    }
-
-    /**
-     * This reads a file from within the .jar to an ArrayList of strings
-     *
-     * @param filePath this is the location of the file within the jar archive.
-     * starts with a /
-     * @return an ArrayList of strings that is the text of the file
-     */
-    protected static ArrayList<String> ReadInternalFile(String filePath) {
-        ArrayList<String> lines = new ArrayList<>();
-        InputStream is = FileHandler.class
-                .getResourceAsStream(filePath);
-        if (is != null) {
-            try {
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader bf = new BufferedReader(isr);
-                while (true) {
-                    String line = bf.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    lines.add(line);
-                }
-                bf.close();
-            } catch (Exception e) {
-            }
-            try {
-                is.close();
-            } catch (IOException e) {
             }
         }
         return lines;
