@@ -224,7 +224,9 @@ public final class PData {
     }
 
     /**
-     * Run This Function to tell the PData that this player just logged out
+     * This function tells this PData that the player who this PData is
+     * representing just logged out. Do not run this function from outside the
+     * PlayerDataEventListener.
      */
     protected void loggedOut() {
         timePlayed += (System.currentTimeMillis() - currentSession);
@@ -235,7 +237,9 @@ public final class PData {
     }
 
     /**
-     * Run This Function to tell the PData that this player just logged in
+     * This function tells this PData that the player who this PData is
+     * representing just logged in. Do not run this function from outside the
+     * PlayerDataEventListener.
      */
     protected void loggedIn() {
         logIns.add(System.currentTimeMillis());
@@ -483,7 +487,9 @@ public final class PData {
     }
 
     /**
-     * This function updates this PData's Permission Group.
+     * This function updates this PData's Permission Group. This function gets
+     * data from PermissionsEx on this user, and sets variables in this PData
+     * according to that.
      */
     private void updateGroup() {
         permUser = PermissionsEx.getUser(userName);
@@ -497,6 +503,7 @@ public final class PData {
         for (String str : permUser.getGroupsNames()) {
             groupNames += str + ", ";
         }
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Changing Player {0} From Groups: {1} To Basic", new Object[]{userName, groupNames});
+        groupNames = groupNames.substring(0, groupNames.length() - 2);
+        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
     }
 }
