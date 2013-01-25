@@ -5,6 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 /**
+ * This is the Command Executor for the command /gu.
  *
  * @author daboross
  */
@@ -12,10 +13,23 @@ public class PossibleUserNames implements CommandExecutor {
 
     private PlayerData instance;
 
+    /**
+     * This creates a new PossibleUserNames with the main PData pd.
+     *
+     * @param pd The current loaded PlayerData.
+     */
     protected PossibleUserNames(PlayerData pd) {
         instance = pd;
     }
 
+    /**
+     * This is the method to call to run the "gu" command on a sender.
+     *
+     * @param sender The CommandSender who ran the command.
+     * @param cmd The command.
+     * @param label The label of the command.
+     * @param args The arguments of the command.
+     */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("gu")) {

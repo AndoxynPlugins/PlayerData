@@ -226,7 +226,8 @@ public final class PData {
     /**
      * This function tells this PData that the player who this PData is
      * representing just logged out. Do not run this function from outside the
-     * PlayerDataEventListener.
+     * PlayerDataEventListener. This will save the current status of this PData
+     * to file.
      */
     protected void loggedOut() {
         timePlayed += (System.currentTimeMillis() - currentSession);
@@ -239,7 +240,8 @@ public final class PData {
     /**
      * This function tells this PData that the player who this PData is
      * representing just logged in. Do not run this function from outside the
-     * PlayerDataEventListener.
+     * PlayerDataEventListener. This will save the current status of this PData
+     * to file.
      */
     protected void loggedIn() {
         logIns.add(System.currentTimeMillis());
