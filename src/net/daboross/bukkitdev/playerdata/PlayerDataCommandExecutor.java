@@ -21,6 +21,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
     private final Map<String, String> aliasMap = new HashMap<String, String>();
     private final Map<String, Boolean> isConsoleMap = new HashMap<String, Boolean>();
     private final Map<String, String> helpList = new HashMap<String, String>();
+    private final Map<String, String[]> helpAliasMap = new HashMap<String, String[]>();
     private final Map<String, String> permMap = new HashMap<String, String>();
     private PlayerData playerDataMain;
 
@@ -42,6 +43,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
         isConsoleMap.put(cmd, isConsole);
         permMap.put(cmd, permission);
         helpList.put(cmd, helpString);
+        helpAliasMap.put(cmd, aliases);
     }
 
     /**
@@ -96,18 +98,29 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
         return false;
     }
 
-    private String getHelpMessage(String alias, String baseCommand) {
-        String str = aliasMap.get(alias);
-        return (ColorList.CMD + "/" + baseCommand + ColorList.SUBCMD + " " + alias + ColorList.HELP + " " + helpList.get(aliasMap.get(str)));
-    }
-
     private void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
-        sender.sendMessage(ColorList.MAIN + "List Of Possible Sub Commands:");
+        sender.sendMessage(net.daboross.bukkitdev.playerdata.ColorList.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
-            if (sender.hasPermission(permMap.get(aliasMap.get(str)))) {
-                sender.sendMessage(getHelpMessage(str, cmd.getLabel()));
+            if (str.equalsIgnoreCase(aliasMap.get(str))) {
+                if (sender.hasPermission(str)) {
+                    sender.sendMessage(getMultipleAliasHelpMessage(str, cmd.getLabel()));
+                }
             }
         }
+    }
+
+    private String getHelpMessage(String alias, String baseCommand) {
+        String str = aliasMap.get(alias);
+        return (net.daboross.bukkitdev.playerdata.ColorList.CMD + "/" + baseCommand + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + " " + alias + net.daboross.bukkitdev.playerdata.ColorList.HELP + " " + helpList.get(aliasMap.get(str)));
+    }
+
+    private String getMultipleAliasHelpMessage(String subcmd, String baseCommand) {
+        String[] aliasList = helpAliasMap.get(subcmd);
+        String commandList = subcmd;
+        for (String str : aliasList) {
+            commandList += net.daboross.bukkitdev.playerdata.ColorList.DIVIDER + "/" + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + str;
+        }
+        return (net.daboross.bukkitdev.playerdata.ColorList.CMD + "/" + baseCommand + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + " " + commandList + net.daboross.bukkitdev.playerdata.ColorList.HELP + " " + helpList.get(subcmd));
     }
 
     private void runReCreateAllCommand(CommandSender sender, Command cmd, String[] args) {
