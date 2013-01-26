@@ -29,22 +29,22 @@ final class PDataHandler {
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
      */
-    private final ArrayList<PData> playerDataList = new ArrayList<>();
+    private final ArrayList<PData> playerDataList = new ArrayList<PData>();
     /**
      * This is a list of all "alive" PDatas loaded. This list should contain one
      * PData for EVERY player who has joined the server in the past 2 months. A
      * PData will tell whether the PDataHandler should include it in the alive
      * list or the dead list when it is loaded.
      */
-    private final ArrayList<PData> aliveList = new ArrayList<>();
+    private final ArrayList<PData> aliveList = new ArrayList<PData>();
     /**
      * This is a list of all "dead" PDatas loaded. This list should contain
      * every PData that is not in the "alive" list.
      */
-    private final ArrayList<PData> deadList = new ArrayList<>();
+    private final ArrayList<PData> deadList = new ArrayList<PData>();
     private PlayerData playerDataMain;
     private File playerDataFolder;
-    private Map<String, DataDisplayParser> ddpMap = new HashMap<>();
+    private Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
 
     /**
      * Use this to create a new PDataHandler when PlayerData is loaded. There
@@ -368,10 +368,10 @@ final class PDataHandler {
             throw new NullArgumentException("UserName Can't Be Null");
         }
         //This is a list of usernames to return, in order from first choice to last choise
-        ArrayList<String> onlineUserNames = new ArrayList<>();//This is online player's usernames
-        ArrayList<String> onlineNickNames = new ArrayList<>();//This is online player's nicknames
-        ArrayList<String> pUserNames = new ArrayList<>();//This is offline player's usernames
-        ArrayList<String> pNickNames = new ArrayList<>();//This is offline player's nicknames
+        ArrayList<String> onlineUserNames = new ArrayList<String>();//This is online player's usernames
+        ArrayList<String> onlineNickNames = new ArrayList<String>();//This is online player's nicknames
+        ArrayList<String> pUserNames = new ArrayList<String>();//This is offline player's usernames
+        ArrayList<String> pNickNames = new ArrayList<String>();//This is offline player's nicknames
         int onlineNumberFound = 0;
         int offlineNumberFound = 0;
         String user = ChatColor.stripColor(userName).toLowerCase();
@@ -609,7 +609,7 @@ final class PDataHandler {
      * @param dataName The type of the data.
      */
     protected Data[] getAllData(String dataName) {
-        ArrayList<Data> returnArrayList = new ArrayList<>();
+        ArrayList<Data> returnArrayList = new ArrayList<Data>();
         for (PData pData : playerDataList) {
             if (pData.hasData(dataName)) {
                 returnArrayList.add(pData.getData(dataName));

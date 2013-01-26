@@ -18,10 +18,10 @@ import org.bukkit.entity.Player;
  */
 public final class PlayerDataCommandExecutor implements CommandExecutor {
 
-    private final Map<String, String> aliasMap = new HashMap<>();
-    private final Map<String, Boolean> isConsoleMap = new HashMap<>();
-    private final Map<String, String> helpList = new HashMap<>();
-    private final Map<String, String> permMap = new HashMap<>();
+    private final Map<String, String> aliasMap = new HashMap<String, String>();
+    private final Map<String, Boolean> isConsoleMap = new HashMap<String, Boolean>();
+    private final Map<String, String> helpList = new HashMap<String, String>();
+    private final Map<String, String> permMap = new HashMap<String, String>();
     private PlayerData playerDataMain;
 
     /**
@@ -132,7 +132,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
             sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[1] + ColorList.ERROR + " not found!");
             return;
         }
-        ArrayList<String> linesToSend = new ArrayList<>();
+        ArrayList<String> linesToSend = new ArrayList<String>();
         linesToSend.add(ColorList.MAIN + "Info Avalible For " + ColorList.NAME + pData.userName() + ColorList.MAIN + ":");
         linesToSend.add(ColorList.MAIN + "Display Name: " + ColorList.NAME + pData.nickName(true));
         if (pData.isOnline()) {

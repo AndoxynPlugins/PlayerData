@@ -28,9 +28,9 @@ public final class PData {
     private String nickName;
     private long timePlayed;
     private long currentSession;
-    private final ArrayList<Long> logIns = new ArrayList<>();
-    private final ArrayList<Long> logOuts = new ArrayList<>();
-    private final ArrayList<Data> data = new ArrayList<>();
+    private final ArrayList<Long> logIns = new ArrayList<Long>();
+    private final ArrayList<Long> logOuts = new ArrayList<Long>();
+    private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online;
     private boolean alive = false;
     private String group;

@@ -29,9 +29,9 @@ final class FileParser {
         }
         String userName = name;
         String nickName = "";
-        ArrayList<Long> logIns = new ArrayList<>();
-        ArrayList<Long> logOuts = new ArrayList<>();
-        Map<String, ArrayList<String>> dataMap = new HashMap<>();
+        ArrayList<Long> logIns = new ArrayList<Long>();
+        ArrayList<Long> logOuts = new ArrayList<Long>();
+        Map<String, ArrayList<String>> dataMap = new HashMap<String, ArrayList<String>>();
         long timePlayed = 0;//This is the data to store from the timePlayed field;
         String current = "finding";
         for (int i = 0; i < file.size(); i++) {
@@ -77,7 +77,7 @@ final class FileParser {
                 }
             }
         }
-        ArrayList<Data> parsedDataList = new ArrayList<>();
+        ArrayList<Data> parsedDataList = new ArrayList<Data>();
         for (String str : dataMap.keySet()) {
             Data currentD = new Data(str, dataMap.get(str).toArray(new String[0]));
             parsedDataList.add(currentD);
@@ -98,7 +98,7 @@ final class FileParser {
         if (pData == null) {
             throw new IllegalArgumentException("PData Can't Be Null");
         }
-        ArrayList<String> lines = new ArrayList<>();
+        ArrayList<String> lines = new ArrayList<String>();
         lines.add("nickname:");
         lines.add(pData.nickName(false));
         lines.add("");

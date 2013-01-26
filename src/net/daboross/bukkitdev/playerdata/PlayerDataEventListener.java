@@ -49,7 +49,7 @@ public class PlayerDataEventListener implements Listener, CommandExecutor {
     public void onPlayerQuit(PlayerQuitEvent evt) {
         pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedOut();
     }
-    protected ArrayList<Player> pvpP = new ArrayList<>();
+    protected ArrayList<Player> pvpP = new ArrayList<Player>();
 
     /**
      *

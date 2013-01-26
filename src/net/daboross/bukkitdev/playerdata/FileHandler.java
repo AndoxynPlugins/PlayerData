@@ -32,14 +32,12 @@ final class FileHandler {
                 if (!file.exists()) {
                     file.createNewFile();
                 }
-                try (BufferedWriter bf = new BufferedWriter(new FileWriter(file))) {
+                BufferedWriter bf = new BufferedWriter(new FileWriter(file));
                     for (int i = 0; i < lines.size(); i++) {
-                        bf.write(lines.get(i));
-                        bf.newLine();
-                    }
-                    return true;
-                } catch (Exception e) {
+                    bf.write(lines.get(i));
+                    bf.newLine();
                 }
+                return true;
             } catch (Exception e) {
             }
         }
@@ -53,7 +51,7 @@ final class FileHandler {
      * @return The text in the file, or null if it doesn't exist.
      */
     protected static ArrayList<String> ReadFile(File file) {
-        ArrayList<String> lines = new ArrayList</*String*/>();
+        ArrayList<String> lines = new ArrayList<String>();
         if (file.canRead()) {
             FileReader fr = null;
             BufferedReader bf = null;
