@@ -534,6 +534,6 @@ public final class PData {
      * CHECK IF THEY ARE ONLINE first.
      */
     public long lastSeen() {
-        return Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size()));
+        return Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size() - 1));
     }
 }
