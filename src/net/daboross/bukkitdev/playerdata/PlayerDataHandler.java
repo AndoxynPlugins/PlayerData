@@ -119,7 +119,10 @@ public class PlayerDataHandler {
 
     /**
      * This function returns a list of all PData's loaded, or one PData for
-     * every single player who has ever joined this server.
+     * every single player who has ever joined this server. This IS a copy of
+     * the original array, so you can do whatever you want with it. HOWEVER each
+     * of the PData's in it is the same one PDataHandler has, so any changes to
+     * them are changes to PDataHandler's copy.
      *
      * @return A list of PData's Loaded.
      */
