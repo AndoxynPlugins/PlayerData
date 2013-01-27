@@ -31,16 +31,10 @@ public final class PlayerData extends JavaPlugin {
 
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
-        PluginCommand pvp = getCommand("pvp");
         if (pd != null) {
             pd.setExecutor(pDCE);
         } else {
             getLogger().severe("Command PD is null");
-        }
-        if (pvp != null) {
-            pvp.setExecutor(pDEL);
-        } else {
-            getLogger().severe("Command PVP is null");
         }
         if (gu != null) {
             gu.setExecutor(new PossibleUserNames(this));

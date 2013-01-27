@@ -99,7 +99,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
     }
 
     private void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
-        sender.sendMessage(net.daboross.bukkitdev.playerdata.ColorList.MAIN + "List Of Possible Sub Commands:");
+        sender.sendMessage(ColorList.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
             if (str.equalsIgnoreCase(aliasMap.get(str))) {
                 if (sender.hasPermission(str)) {
@@ -111,16 +111,16 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
 
     private String getHelpMessage(String alias, String baseCommand) {
         String str = aliasMap.get(alias);
-        return (net.daboross.bukkitdev.playerdata.ColorList.CMD + "/" + baseCommand + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + " " + alias + net.daboross.bukkitdev.playerdata.ColorList.HELP + " " + helpList.get(aliasMap.get(str)));
+        return (ColorList.CMD + "/" + baseCommand + ColorList.SUBCMD + " " + alias + ColorList.HELP + " " + helpList.get(aliasMap.get(str)));
     }
 
     private String getMultipleAliasHelpMessage(String subcmd, String baseCommand) {
         String[] aliasList = helpAliasMap.get(subcmd);
         String commandList = subcmd;
         for (String str : aliasList) {
-            commandList += net.daboross.bukkitdev.playerdata.ColorList.DIVIDER + "/" + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + str;
+            commandList += ColorList.DIVIDER + "/" + ColorList.SUBCMD + str;
         }
-        return (net.daboross.bukkitdev.playerdata.ColorList.CMD + "/" + baseCommand + net.daboross.bukkitdev.playerdata.ColorList.SUBCMD + " " + commandList + net.daboross.bukkitdev.playerdata.ColorList.HELP + " " + helpList.get(subcmd));
+        return (ColorList.CMD + "/" + baseCommand + ColorList.SUBCMD + " " + commandList + ColorList.HELP + " " + helpList.get(subcmd));
     }
 
     private void runReCreateAllCommand(CommandSender sender, Command cmd, String[] args) {

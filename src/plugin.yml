@@ -13,10 +13,6 @@ commands:
      description: This command gets the full username for a partial username
      usage: /<command> [PartialUserNameOrNickName]
      aliases: [getusername, getu, gusername]
-   pvp:
-     description: This command puts you into the PvP world
-     usage: /<command>
-     aliases: [pvpme, pvpwarp]
 permissions:
   playerdata.*:
     description: Gives access to all PlayerData commands
