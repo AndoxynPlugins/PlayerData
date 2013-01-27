@@ -102,7 +102,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
         sender.sendMessage(ColorList.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
             if (str.equalsIgnoreCase(aliasMap.get(str))) {
-                if (sender.hasPermission(str)) {
+                if (sender.hasPermission(permMap.get(str))) {
                     sender.sendMessage(getMultipleAliasHelpMessage(str, cmd.getLabel()));
                 }
             }
