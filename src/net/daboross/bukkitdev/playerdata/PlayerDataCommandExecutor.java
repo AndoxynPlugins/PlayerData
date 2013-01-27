@@ -30,7 +30,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
      */
     protected PlayerDataCommandExecutor(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
-        initCommand("?", new String[]{"help"}, true, "playerdata.help", "This Command Views This Page");
+        initCommand("help", new String[]{"?"}, true, "playerdata.help", "This Command Views This Page");
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Gets the Info That Player data has stored on a player"));
         initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("This command deletes all player data and recreates it from bukkit!"));
     }
@@ -86,7 +86,7 @@ public final class PlayerDataCommandExecutor implements CommandExecutor {
                     return true;
                 }
             }
-            if (commandName.equalsIgnoreCase("?")) {
+            if (commandName.equalsIgnoreCase("help")) {
                 runHelpCommand(sender, cmd, args);
             } else if (commandName.equalsIgnoreCase("viewinfo")) {
                 runViewInfoCommand(sender, cmd, args);
