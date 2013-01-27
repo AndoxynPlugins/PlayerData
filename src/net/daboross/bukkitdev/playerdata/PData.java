@@ -383,7 +383,26 @@ public final class PData {
     public boolean isAlive() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -2);
-        if (lastLogIn() > cal.getTimeInMillis() || isOnline()) {
+        if (isOnline()) {
+            return true;
+        }
+        if (lastLogIn() > cal.getTimeInMillis()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * This function checks whether the last time the player was seen is within
+     * the specified amount in days.
+     */
+    public boolean joinedLastWithinDays(int days) {
+        if (isOnline()) {
+            return true;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -days);
+        if (lastSeen() > cal.getTimeInMillis()) {
             return true;
         }
         return false;
@@ -507,5 +526,14 @@ public final class PData {
         }
         groupNames = groupNames.substring(0, groupNames.length() - 2);
         PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
+    }
+
+    /**
+     * This function checks when the player was last on the server. This
+     * function will NOT return correctly if the player is currently online, so
+     * CHECK IF THEY ARE ONLINE first.
+     */
+    public long lastSeen() {
+        return Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size()));
     }
 }
