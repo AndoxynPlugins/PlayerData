@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -32,10 +33,19 @@ final class FileHandler {
                 if (!file.exists()) {
                     file.createNewFile();
                 }
-                BufferedWriter bf = new BufferedWriter(new FileWriter(file));
-                    for (int i = 0; i < lines.size(); i++) {
+                FileWriter fw = new FileWriter(file);
+                BufferedWriter bf = new BufferedWriter(fw);
+                for (int i = 0; i < lines.size(); i++) {
                     bf.write(lines.get(i));
                     bf.newLine();
+                }
+                try {
+                    bf.close();
+                } catch (IOException ex) {
+                }
+                try {
+                    fw.close();
+                } catch (IOException ex) {
                 }
                 return true;
             } catch (Exception e) {
