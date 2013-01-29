@@ -521,8 +521,8 @@ public final class PData {
             }
         }
         String groupNames = "";
-        for (String str : permUser.getGroupsNames()) {
-            groupNames += str + ", ";
+        for (PermissionGroup pg : permUser.getGroups()) {
+            groupNames += pg.getName() + ", ";
         }
         groupNames = groupNames.substring(0, groupNames.length() - 2);
         PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
