@@ -20,15 +20,15 @@ public abstract class CommandExecutorBase implements CommandExecutor {
     private final Map<String, String[]> helpAliasMap = new HashMap<String, String[]>();
     private final Map<String, String> permMap = new HashMap<String, String>();
 
-    private void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
-        aliasMap.put(cmd, cmd);
+    protected void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
+        aliasMap.put(cmd.toLowerCase(), cmd.toLowerCase());
         for (String alias : aliases) {
-            aliasMap.put(alias, cmd);
+            aliasMap.put(alias.toLowerCase(), cmd.toLowerCase());
         }
-        isConsoleMap.put(cmd, isConsole);
-        permMap.put(cmd, permission);
-        helpList.put(cmd, helpString);
-        helpAliasMap.put(cmd, aliases);
+        isConsoleMap.put(cmd.toLowerCase(), isConsole);
+        permMap.put(cmd.toLowerCase(), permission.toLowerCase());
+        helpList.put(cmd.toLowerCase(), helpString);
+        helpAliasMap.put(cmd.toLowerCase(), aliases);
     }
 
     private void invalidSubCommandMessage(CommandSender sender, Command cmd, String label, String[] args) {
@@ -64,7 +64,7 @@ public abstract class CommandExecutorBase implements CommandExecutor {
      * the command given, aliases turned into the base command. This will run
      * the help message and return null if the sub command is "help".
      */
-    public String isCommandValid(CommandSender sender, Command cmd, String label, String[] args) {
+    protected String isCommandValid(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length < 1) {
             noSubCommandMessage(sender, cmd, label, args);
             return null;
@@ -104,7 +104,7 @@ public abstract class CommandExecutorBase implements CommandExecutor {
     /**
      * This returns an array that is the given array without the first value.
      */
-    private String[] getSubArray(String[] array) {
+    protected String[] getSubArray(String[] array) {
         if (array.length > 1) {
             return Arrays.asList(array).subList(1, array.length).toArray(new String[0]);
         } else {
@@ -112,7 +112,7 @@ public abstract class CommandExecutorBase implements CommandExecutor {
         }
     }
 
-    private void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
+    protected void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
         sender.sendMessage(ColorList.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
             if (str.equalsIgnoreCase(aliasMap.get(str))) {
@@ -123,12 +123,12 @@ public abstract class CommandExecutorBase implements CommandExecutor {
         }
     }
 
-    public String getHelpMessage(String alias, String baseCommand) {
+    protected String getHelpMessage(String alias, String baseCommand) {
         String str = aliasMap.get(alias);
         return (ColorList.CMD + "/" + baseCommand + ColorList.SUBCMD + " " + alias + ColorList.HELP + " " + helpList.get(aliasMap.get(str)));
     }
 
-    public String getMultipleAliasHelpMessage(String subcmd, String baseCommand) {
+    protected String getMultipleAliasHelpMessage(String subcmd, String baseCommand) {
         String[] aliasList = helpAliasMap.get(subcmd);
         String commandList = subcmd;
         for (String str : aliasList) {
