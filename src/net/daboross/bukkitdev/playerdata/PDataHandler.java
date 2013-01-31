@@ -2,6 +2,8 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -72,6 +74,7 @@ final class PDataHandler {
      */
     protected void init() {
         readData();
+        sortData(false);
     }
 
     /**
@@ -128,10 +131,17 @@ final class PDataHandler {
                         if (type.equals("bpd")) {
                             ArrayList<String> fileContents = FileHandler.ReadFile(fl);
                             String name = fl.getName().substring(0, fl.getName().indexOf('.'));
-                            /*When File parser parses a file, it creates a pdata, ready to return. When a PData is created, it auto adds itself to this class's playerDataList IF THE PLAYER IS ONLINE*/
+                            /*
+                             * When File parser parses a file, it creates a
+                             * PData, ready to return. When a PData is created,
+                             * it auto adds itself to this class's
+                             * playerDataList IF THE PLAYER IS ONLINE.
+                             */
                             PData pData = FileParser.parseList(fileContents, name);
-                            if (!playerDataList.contains(pData) && pData != null) {
-                                playerDataList.add(pData);
+                            if (pData != null) {
+                                if (!playerDataList.contains(pData)) {
+                                    playerDataList.add(pData);
+                                }
                             }
                         } else {
                             playerDataMain.getLogger().log(Level.INFO, "{0} file found in playerData!", type);
@@ -628,5 +638,41 @@ final class PDataHandler {
      */
     protected PData[] getAllPDatas() {
         return playerDataList.toArray(new PData[0]);
+    }
+
+    /**
+     * This will Sort the PData lists depending on how long it has been since
+     * each played last joined.
+     */
+    protected void sortData(boolean checkAllAlive) {
+        Collections.sort(playerDataList, getComparator());
+        if (checkAllAlive) {
+            for (PData pd : playerDataList) {
+                pd.setAlive();
+                pd.checkBukkitForTimes();
+            }
+        }
+        Collections.sort(aliveList, getComparator());
+        Collections.sort(deadList, getComparator());
+    }
+    private lastSeenDataComparator comparatorInstance;
+
+    private lastSeenDataComparator getComparator() {
+        if (comparatorInstance == null) {
+            comparatorInstance = new lastSeenDataComparator();
+        }
+        return comparatorInstance;
+    }
+
+    class lastSeenDataComparator implements Comparator<PData> {
+
+        lastSeenDataComparator() {
+        }
+
+        public int compare(PData pd1, PData pd2) {
+            long l1 = pd1.lastSeen();
+            long l2 = pd2.lastSeen();
+            return (int) (l1 - l2);
+        }
     }
 }
