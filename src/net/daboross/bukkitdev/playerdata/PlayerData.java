@@ -167,7 +167,7 @@ public final class PlayerData extends JavaPlugin {
             }
         }
         if (years == 0 && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
-            returnValue += "now";
+            returnValue += "Not That Long";
         }
         return returnValue;
     }
