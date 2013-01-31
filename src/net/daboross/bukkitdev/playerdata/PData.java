@@ -3,6 +3,8 @@ package net.daboross.bukkitdev.playerdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -51,14 +53,8 @@ public final class PData {
         userName = p.getName();
         nickName = p.getDisplayName();
         timePlayed = 0;
-        currentSession = System.currentTimeMillis();
         online = p.isOnline();
-        if (p.isBanned()) {
-            p.setBanned(false);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), ("/pex user " + p.getName() + " group set banned"));
-        }
-        updateStatus(true, false);
-        setAlive();
+        initialChecks();
     }
 
     /**
@@ -83,14 +79,12 @@ public final class PData {
             Player pl = p.getPlayer();
             nickName = pl.getDisplayName();
             online = true;
-            currentSession = System.currentTimeMillis();
         } else {
             nickName = p.getName();
             online = false;
             logOuts.add(p.getLastPlayed());
         }
-        updateStatus(true, false);
-        setAlive();
+        initialChecks();
     }
 
     /**
@@ -109,21 +103,35 @@ public final class PData {
     protected PData(String userName, String nickName, ArrayList<Long> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
         this.userName = userName;
         this.nickName = nickName;
+        if (this.nickName == null) {
+            this.nickName = this.userName;
+        } else if (this.nickName.length() == 0) {
+            this.nickName = this.userName;
+        }
         this.logIns.addAll(logIns);
         this.logOuts.addAll(logOuts);
         this.timePlayed = timePlayed;
-        currentSession = System.currentTimeMillis();
         this.data.addAll(Arrays.asList(data));
         for (Data d : data) {
             d.setOwner(this);
         }
+        initialChecks();
+    }
+
+    /**
+     * This should ONLY be called from a constructor. And ALWAYS be called from
+     * EVERY constructor.
+     */
+    private void initialChecks() {
+        currentSession = System.currentTimeMillis();
         updateStatus(true, false);
+        checkBukkitForTimes();
         setAlive();
     }
 
     /**
      * This loads data from the player given. Check if that player's username is
-     * the same as this PDat's username before running this function.
+     * the same as this PData's username before running this function.
      *
      * @param p The Player.
      */
@@ -174,9 +182,9 @@ public final class PData {
      * context, "alive" means if the player has joined within since the last 2
      * months. This also sets the alive status in PlayerDataHandler.
      */
-    private void setAlive() {
+    protected void setAlive() {
         PlayerData pd = PlayerData.getCurrentInstance();
-        alive = (isAlive() || online);
+        alive = (checkIsAlive() || online);
         if (pd != null) {
             PDataHandler pDH = pd.getPDataHandler();
             if (pDH != null) {
@@ -282,36 +290,6 @@ public final class PData {
     }
 
     /**
-     * This function gets the last time this player has logged in. If the player
-     * is offline, then it WILL get the last time they logged in, not logged
-     * out.
-     *
-     * @return
-     */
-    public long lastLogIn() {
-        if (logIns.isEmpty()) {
-            return 0;
-        } else {
-            return logIns.get(logIns.size() - 1);
-        }
-    }
-
-    /**
-     * This function gets the last time this player has logged out. If the
-     * player is online, then it WILL get the last time they logged out, not
-     * when they logged in or now.
-     *
-     * @return
-     */
-    public long lastLogOut() {
-        if (logOuts.isEmpty()) {
-            return 0;
-        } else {
-            return logOuts.get(logOuts.size() - 1);
-        }
-    }
-
-    /**
      * This function gets whether or not this player is online.
      *
      * @return Whether or not this player is online
@@ -329,18 +307,7 @@ public final class PData {
      * @return
      */
     public long getFirstLogIn() {
-        OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(userName);
-        long f = p.getFirstPlayed();
-        if (!p.hasPlayedBefore() && !logIns.isEmpty()) {
-            return logIns.get(0);
-        } else if (logIns.isEmpty()) {
-            return 0;
-        } else if (f < logIns.get(0) && f > 0) {
-            logIns.add(0, f);
-            return f;
-        } else {
-            return logIns.get(0);
-        }
+        return logIns.get(0);
     }
 
     /**
@@ -375,21 +342,32 @@ public final class PData {
     /**
      * This returns whether or not this player is 'alive'. Alive in this case
      * means if the player has logged in within the last 2 months. This does run
-     * updateStatus().
+     * updateStatus(). WILL NOT CHECK IF THE PLAYER IS ONLINE!
      *
      * @return Whether or not this player has logged in in the last 2 months or
      * not.
      */
-    public boolean isAlive() {
+    private boolean checkIsAlive() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -2);
         if (isOnline()) {
             return true;
         }
-        if (lastLogIn() > cal.getTimeInMillis()) {
+        if (lastSeen() > cal.getTimeInMillis()) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * This returns whether or not the player has joined within the last 2
+     * months
+     *
+     * @return true if the played has played within the last 2 months, false
+     * otherwise.
+     */
+    public boolean isAlive() {
+        return alive;
     }
 
     /**
@@ -529,11 +507,42 @@ public final class PData {
     }
 
     /**
+     * This function will check the first time this player has played and the
+     * last time this player has played with Bukkit's records.
+     */
+    protected void checkBukkitForTimes() {
+        Comparator<Long> comp = new Comparator<Long>() {
+            public int compare(Long l1, Long l2) {
+                return (int) (l1 - l2);
+            }
+        };
+        Collections.sort(logIns, comp);
+        Collections.sort(logOuts, comp);
+        OfflinePlayer offP = Bukkit.getOfflinePlayer(userName);
+        long bukkitFirstPlayed = offP.getFirstPlayed();
+        long bukkitLastPlayed = offP.getLastPlayed();
+        if (offP.hasPlayedBefore()) {
+            if (logIns.isEmpty()) {
+                logIns.add(bukkitFirstPlayed);
+            } else if (bukkitFirstPlayed < logIns.get(0)) {
+                logIns.add(0, bukkitFirstPlayed);
+            }
+            if (logOuts.isEmpty()) {
+                logOuts.add(bukkitLastPlayed);
+            } else if (bukkitLastPlayed > logOuts.get(0)) {
+                logOuts.add(bukkitLastPlayed);
+            }
+        } else {
+            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING: PData for played who has never played before!!! User: {0}", userName);
+        }
+    }
+
+    /**
      * This function checks when the player was last on the server. This
      * function will NOT return correctly if the player is currently online, so
      * CHECK IF THEY ARE ONLINE first.
      */
     public long lastSeen() {
-        return Math.max(Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size() - 1)), Bukkit.getOfflinePlayer(userName).getLastPlayed());
+        return Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size() - 1));
     }
 }
