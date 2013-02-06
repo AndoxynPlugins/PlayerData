@@ -3,6 +3,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -14,7 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author daboross
  */
 public final class PlayerData extends JavaPlugin {
-    
+
     private static PlayerData currentInstance;
     private static boolean isPermissionsExLoaded;
     private PlayerDataCommandExecutor pDCE;
@@ -29,12 +30,16 @@ public final class PlayerData extends JavaPlugin {
     public void onEnable() {
         currentInstance = this;
         PluginManager pm = this.getServer().getPluginManager();
-        isPermissionsExLoaded= pm.isPluginEnabled("PermissionsEx");
+        isPermissionsExLoaded = pm.isPluginEnabled("PermissionsEx");
         playerDataHandler = new PDataHandler(this);
-        playerDataHandler.init();
+        Runnable initTask = new Runnable() {
+            public void run() {
+                playerDataHandler.init();
+            }
+        };
+        Bukkit.getScheduler().runTask(this, initTask);
         pDCE = new PlayerDataCommandExecutor(this);
         pDEL = new PlayerDataEventListener(this);
-        
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
         if (pd != null) {
@@ -79,7 +84,7 @@ public final class PlayerData extends JavaPlugin {
     protected static PlayerData getCurrentInstance() {
         return currentInstance;
     }
-    
+
     public PlayerDataHandler getHandler() {
         return handler;
     }
@@ -176,11 +181,12 @@ public final class PlayerData extends JavaPlugin {
         }
         return returnValue;
     }
-    
+
     public static boolean isPEX() {
         return isPermissionsExLoaded;
     }
-    protected File getFile(){
+
+    protected File getFile() {
         return getFile();
     }
 }
