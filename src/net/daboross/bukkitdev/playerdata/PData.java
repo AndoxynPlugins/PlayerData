@@ -35,7 +35,7 @@ public final class PData implements Comparable<PData> {
     private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online;
     private boolean alive = false;
-    private String group;
+    private String[] groups;
     private PermissionUser permUser;
 
     /**
@@ -126,7 +126,6 @@ public final class PData implements Comparable<PData> {
         currentSession = System.currentTimeMillis();
         updateStatus(true, false);
         checkBukkitForTimes();
-        setAlive();
     }
 
     /**
@@ -175,24 +174,6 @@ public final class PData implements Comparable<PData> {
             saveStatus();
         }
         return returnV;
-    }
-
-    /**
-     * This Function Updates whether this player is "alive" or not. In this
-     * context, "alive" means if the player has joined within since the last 2
-     * months. This also sets the alive status in PlayerDataHandler.
-     */
-    protected void setAlive() {
-        PlayerData pd = PlayerData.getCurrentInstance();
-        alive = (checkIsAlive() || online);
-        if (pd != null) {
-            PDataHandler pDH = pd.getPDataHandler();
-            if (pDH != null) {
-                pDH.setAlive(this, alive);
-            } else {
-                pd.getLogger().info("PDataHandler Not Found!");
-            }
-        }
     }
 
     /**
@@ -255,9 +236,7 @@ public final class PData implements Comparable<PData> {
         logIns.add(System.currentTimeMillis());
         currentSession = System.currentTimeMillis();
         makeExtraThread();
-        if (!alive) {
-            setAlive();
-        }
+        PlayerData.getCurrentInstance().getPDataHandler().loggedIn(this);
         PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "PData Logged In: {0}", userName);
     }
 
@@ -468,9 +447,19 @@ public final class PData implements Comparable<PData> {
      *
      * @return
      */
-    public String getGroup() {
+    public String[] getGroups() {
         updateGroup();
-        return group;
+        return groups;
+    }
+
+    public boolean isGroup(String group) {
+        updateGroup();
+        for (String gr : groups) {
+            if (group.equals(gr)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -501,21 +490,10 @@ public final class PData implements Comparable<PData> {
     private void updateGroup() {
         if (PlayerData.isPEX()) {
             findPermUser();
-            for (PermissionGroup permG : permUser.getGroups()) {
-                if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
-                    group = permG.getName();
-                    return;
-                }
-            }
-            String groupNames = "";
-            for (PermissionGroup pg : permUser.getGroups()) {
-                groupNames += pg.getName() + ", ";
-            }
-            groupNames = groupNames.substring(0, groupNames.length() - 2);
-            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
+            groups = permUser.getGroupsNames();
         } else {
             permUser = null;
-            group = "Unknown";
+            groups = new String[]{"Unknown"};
         }
     }
 
