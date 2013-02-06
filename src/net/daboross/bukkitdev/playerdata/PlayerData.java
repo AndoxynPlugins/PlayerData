@@ -1,7 +1,10 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -11,8 +14,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author daboross
  */
 public final class PlayerData extends JavaPlugin {
-
+    
     private static PlayerData currentInstance;
+    private static boolean isPermissionsExLoaded;
     private PlayerDataCommandExecutor pDCE;
     private PlayerDataEventListener pDEL;
     private PDataHandler playerDataHandler;
@@ -24,11 +28,13 @@ public final class PlayerData extends JavaPlugin {
     @Override
     public void onEnable() {
         currentInstance = this;
+        PluginManager pm = this.getServer().getPluginManager();
+        isPermissionsExLoaded= pm.isPluginEnabled("PermissionsEx");
         playerDataHandler = new PDataHandler(this);
         playerDataHandler.init();
         pDCE = new PlayerDataCommandExecutor(this);
         pDEL = new PlayerDataEventListener(this);
-
+        
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
         if (pd != null) {
@@ -41,7 +47,6 @@ public final class PlayerData extends JavaPlugin {
         } else {
             getLogger().severe("Command GU is null");
         }
-        PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(pDEL, this);
         playerDataHandler.startServer();
         handler = new PlayerDataHandler(this);
@@ -74,7 +79,7 @@ public final class PlayerData extends JavaPlugin {
     protected static PlayerData getCurrentInstance() {
         return currentInstance;
     }
-
+    
     public PlayerDataHandler getHandler() {
         return handler;
     }
@@ -170,5 +175,12 @@ public final class PlayerData extends JavaPlugin {
             returnValue += "Not That Long";
         }
         return returnValue;
+    }
+    
+    public static boolean isPEX() {
+        return isPermissionsExLoaded;
+    }
+    protected File getFile(){
+        return getFile();
     }
 }
