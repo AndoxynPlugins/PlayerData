@@ -27,7 +27,8 @@ public class PlayerDataEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent evt) {
         PData pData = pDataMain.getPDataHandler().getPDataFromUsername(evt.getPlayer().getName());
         if (pData == null) {
-            pDataMain.getLogger().log(Level.INFO, "Teleporting {0} to spawn: {1}", new Object[]{evt.getPlayer().getName(), evt.getPlayer().performCommand("spawn")});
+            pDataMain.getLogger().log(Level.INFO, "Teleporting {0} to spawn", new Object[]{evt.getPlayer().getName()});
+            evt.getPlayer().performCommand("spawn");
         }
         pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedIn();
 
