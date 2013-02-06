@@ -23,6 +23,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         initCommand("help", new String[]{"?"}, true, "playerdata.help", "This Command Views This Page");
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Gets the Info That Player data has stored on a player"));
         initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("This command deletes all player data and recreates it from bukkit!"));
+        initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", "This Command Lists All Players Who have ever joined the server. In Pages.");
     }
 
     /**
@@ -44,6 +45,8 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 runViewInfoCommand(sender, cmd, args);
             } else if (commandName.equalsIgnoreCase("recreateall")) {
                 runReCreateAllCommand(sender, cmd, args);
+            } else if (commandName.equalsIgnoreCase("list")) {
+                runListCommand(sender, cmd, args[0], getSubArray(args));
             }
             return true;
         }
@@ -88,11 +91,47 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         linesToSend.add(ColorList.MAIN + "Time Played On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + ": " + ColorList.NUMBER + PlayerData.getFormattedDDate(pData.timePlayed()));
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + PlayerData.getFormattedDDate(System.currentTimeMillis() - pData.getFirstLogIn()) + ColorList.MAIN + " ago");
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + new Date(pData.getFirstLogIn()));
-        linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is currently " + ColorList.NUMBER + pData.getGroup());
+        if (PlayerData.isPEX()) {
+            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is currently " + ColorList.NUMBER + pData.getGroup());
+        }
         PDataHandler pdh = playerDataMain.getPDataHandler();
         for (Data d : pData.getData()) {
             linesToSend.addAll(Arrays.asList(pdh.getDisplayData(d, false)));
         }
         sender.sendMessage(linesToSend.toArray(new String[0]));
+    }
+
+    private void runListCommand(CommandSender sender, Command cmd, String aliasLabel, String[] args) {
+        if (args.length > 1) {
+            sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + cmd.getName() + ColorList.SUBCMD + " " + aliasLabel);
+        }
+        int pageNumber;
+        if (args.length == 0) {
+            pageNumber = 1;
+        } else {
+            try {
+                pageNumber = Integer.valueOf(args[0]);
+            } catch (Exception e) {
+                sender.sendMessage(ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " is not a number.");
+                sender.sendMessage(getHelpMessage(aliasLabel, cmd.getLabel()));
+                return;
+            }
+            if (pageNumber < 1) {
+                sender.sendMessage(ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " is not a non-0 positive number.");
+                return;
+            }
+        }
+        PData[] pDataList = playerDataMain.getPDataHandler().getAllPDatas();
+        ArrayList<String> messagesToSend = new ArrayList<String>();
+        messagesToSend.add("");
+        messagesToSend.add(ColorList.MAIN_DARK + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN_DARK + ":");
+        for (int i = ((pageNumber - 1) * 6); i < ((pageNumber - 1) * 6) + 6 & i < pDataList.length; i++) {
+            PData current = pDataList[i];
+            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(current.lastSeen()) + ColorList.MAIN + " ago.");
+        }
+        if (pageNumber < (pDataList.length / 6.0)) {
+            messagesToSend.add(ColorList.MAIN_DARK + "To View The Next Page, Type: " + ColorList.CMD + "/" + cmd.getName() + ColorList.SUBCMD + " " + aliasLabel + ColorList.ARGS + " " + (pageNumber + 1));
+        }
+        sender.sendMessage(messagesToSend.toArray(new String[0]));
     }
 }
