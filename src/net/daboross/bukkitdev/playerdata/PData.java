@@ -24,7 +24,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  *
  * @author daboross
  */
-public final class PData {
+public final class PData implements Comparable<PData> {
 
     private String userName;
     private String nickName;
@@ -546,13 +546,13 @@ public final class PData {
             } else if (bukkitFirstPlayed < logIns.get(0)) {
                 logIns.add(0, bukkitFirstPlayed);
             }
-            if (logOuts.isEmpty()) {
-                logOuts.add(bukkitLastPlayed);
-            } else if (bukkitLastPlayed > logOuts.get(0)) {
-                logOuts.add(bukkitLastPlayed);
+            if (!online) {
+                if (logOuts.isEmpty()) {
+                    logOuts.add(bukkitLastPlayed);
+                } else if (bukkitLastPlayed > logOuts.get(0)) {
+                    logOuts.add(bukkitLastPlayed);
+                }
             }
-        } else {
-            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING: PData for played who has never played before!!! User: {0}", userName);
         }
     }
 
@@ -562,6 +562,25 @@ public final class PData {
      * CHECK IF THEY ARE ONLINE first.
      */
     public long lastSeen() {
-        return Math.max(logIns.get(logIns.size() - 1), logOuts.get(logOuts.size() - 1));
+        return logIns.get(logIns.size() - 1);
+    }
+
+    public int compareTo(PData pd) {
+        if (pd == null) {
+            throw new NullPointerException();
+        }
+        Long l1 = lastSeen();
+        Long l2 = pd.lastSeen();
+        if (l1 == l2 && pd != this) {
+            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Players Are Equal? {0} {1}", new Object[]{userName, pd.userName});
+        }
+        return l2.compareTo(l1);
+    }
+
+    /**
+     * This method should ONLY be called from PDataHandler.
+     */
+    protected void changeTime(boolean bool) {
+        logOuts.set(logOuts.size() - 1, logOuts.get(logOuts.size() - 1) + (bool ? 1 : -1));
     }
 }
