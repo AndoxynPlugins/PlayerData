@@ -1,6 +1,5 @@
 package net.daboross.bukkitdev.playerdata;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -32,6 +31,7 @@ public final class PlayerData extends JavaPlugin {
             public void run() {
                 playerDataHandler.init();
                 playerDataHandler.startServer();
+                getLogger().info("PlayerData Fully Enabled");
             }
         };
         Bukkit.getScheduler().runTask(this, initTask);
@@ -49,7 +49,7 @@ public final class PlayerData extends JavaPlugin {
         }
         pm.registerEvents(new PlayerDataEventListener(this), this);
         handler = new PlayerDataHandler(this);
-        getLogger().info("PlayerData Enabled");
+        getLogger().info("PlayerData Enabled, Setting Initial Load on Delayed Task");
     }
 
     /**
@@ -178,9 +178,5 @@ public final class PlayerData extends JavaPlugin {
 
     public static boolean isPEX() {
         return isPermissionsExLoaded;
-    }
-
-    protected File getFile() {
-        return getFile();
     }
 }
