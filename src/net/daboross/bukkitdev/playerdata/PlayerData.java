@@ -2,10 +2,8 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,8 +16,6 @@ public final class PlayerData extends JavaPlugin {
 
     private static PlayerData currentInstance;
     private static boolean isPermissionsExLoaded;
-    private PlayerDataCommandExecutor pDCE;
-    private PlayerDataEventListener pDEL;
     private PDataHandler playerDataHandler;
     private PlayerDataHandler handler;
 
@@ -35,15 +31,14 @@ public final class PlayerData extends JavaPlugin {
         Runnable initTask = new Runnable() {
             public void run() {
                 playerDataHandler.init();
+                playerDataHandler.startServer();
             }
         };
         Bukkit.getScheduler().runTask(this, initTask);
-        pDCE = new PlayerDataCommandExecutor(this);
-        pDEL = new PlayerDataEventListener(this);
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
         if (pd != null) {
-            pd.setExecutor(pDCE);
+            pd.setExecutor(new PlayerDataCommandExecutor(this));
         } else {
             getLogger().severe("Command PD is null");
         }
@@ -52,8 +47,7 @@ public final class PlayerData extends JavaPlugin {
         } else {
             getLogger().severe("Command GU is null");
         }
-        pm.registerEvents(pDEL, this);
-        playerDataHandler.startServer();
+        pm.registerEvents(new PlayerDataEventListener(this), this);
         handler = new PlayerDataHandler(this);
         getLogger().info("PlayerData Enabled");
     }
@@ -99,7 +93,7 @@ public final class PlayerData extends JavaPlugin {
      * would do 4 years, 2 months and 10 hours returns now if
      *
      * @param millis the millisecond value to turn into a date string
-     * @return A visually nice date. now if millis == 0;
+     * @return A visually nice date. "Not That Long" if millis == 0;
      */
     public static String getFormattedDDate(long millis) {
         long years;
