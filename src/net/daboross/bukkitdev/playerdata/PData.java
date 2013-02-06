@@ -478,11 +478,19 @@ public final class PData {
      * that this PData represents.
      *
      * @return The Permissions User which represents the same player that this
-     * PData represents.
+     * PData represents. null if PermissionEx is not loaded
      */
     public PermissionUser getPermUser() {
         updateGroup();
         return permUser;
+    }
+
+    public boolean hasPermission(String perm) {
+        if (PlayerData.isPEX()) {
+            getPermUser();
+            return permUser.has(perm);
+        }
+        return false;
     }
 
     /**
@@ -491,19 +499,30 @@ public final class PData {
      * according to that.
      */
     private void updateGroup() {
-        permUser = PermissionsEx.getUser(userName);
-        for (PermissionGroup permG : permUser.getGroups()) {
-            if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
-                group = permG.getName();
-                return;
+        if (PlayerData.isPEX()) {
+            findPermUser();
+            for (PermissionGroup permG : permUser.getGroups()) {
+                if (permG.has("basic") || permG.getName().equalsIgnoreCase("basic") || permG.getName().equalsIgnoreCase("banned")) {
+                    group = permG.getName();
+                    return;
+                }
             }
+            String groupNames = "";
+            for (PermissionGroup pg : permUser.getGroups()) {
+                groupNames += pg.getName() + ", ";
+            }
+            groupNames = groupNames.substring(0, groupNames.length() - 2);
+            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
+        } else {
+            permUser = null;
+            group = "Unknown";
         }
-        String groupNames = "";
-        for (PermissionGroup pg : permUser.getGroups()) {
-            groupNames += pg.getName() + ", ";
+    }
+
+    private void findPermUser() {
+        if (PlayerData.isPEX()) {
+            permUser = PermissionsEx.getUser(userName);
         }
-        groupNames = groupNames.substring(0, groupNames.length() - 2);
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "WARNING! Player {0} is not in a group that has the permission basic!!! Instead the only groups they are in are: {1}", new Object[]{userName, groupNames});
     }
 
     /**
