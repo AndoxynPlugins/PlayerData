@@ -3,7 +3,6 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -76,8 +75,10 @@ final class PDataHandler {
     protected void init() {
         if (playerDataFolder.listFiles().length == 0) {
             createEmptyPlayerDataFilesFromBukkit();
+        } else {
+            readData();
         }
-        readData();
+        sortData(false);
     }
 
     /**
@@ -531,7 +532,6 @@ final class PDataHandler {
      * Given is null.
      */
     protected PData getPData(Player p) {
-        PlayerData.getCurrentInstance().getLogger().log(Level.FINE, "Getting PData From Player: {0}", p.getName());
         if (p == null) {
             return null;
         }
@@ -648,36 +648,29 @@ final class PDataHandler {
      * each played last joined.
      */
     protected void sortData(boolean checkAllAlive) {
-        Collections.sort(playerDataList, getComparator());
-        if (checkAllAlive) {
+        ArrayList<Long> timesFound = new ArrayList<Long>();
+        while (true) {
+            boolean done = true;
             for (PData pd : playerDataList) {
-                pd.setAlive();
-                pd.checkBukkitForTimes();
+                if (checkAllAlive) {
+                    pd.setAlive();
+                    pd.checkBukkitForTimes();
+                }
+                long ls = pd.lastSeen();
+                if (timesFound.contains(pd.lastSeen())) {
+                    playerDataMain.getLogger().log(Level.INFO, "2 Players have first joined at the same time!!! {0}", pd.lastSeen());
+                    pd.changeTime(false);
+                    done = false;
+                } else {
+                    timesFound.add(pd.lastSeen());
+                }
+            }
+            if (done) {
+                break;
             }
         }
-        Collections.sort(aliveList, getComparator());
-        Collections.sort(deadList, getComparator());
-    }
-    private lastSeenDataComparator comparatorInstance;
-
-    private lastSeenDataComparator getComparator() {
-        if (comparatorInstance == null) {
-            comparatorInstance = new lastSeenDataComparator();
-        }
-        return comparatorInstance;
-    }
-
-    class lastSeenDataComparator implements Comparator<PData> {
-
-        lastSeenDataComparator() {
-        }
-
-        public int compare(PData pd1, PData pd2) {
-            long l1 = pd1.lastSeen();
-            long l2 = pd2.lastSeen();
-            if (l1 == l2) {
-            }
-            return (int) (l1 - l2);
-        }
+        Collections.sort(playerDataList);
+        Collections.sort(aliveList);
+        Collections.sort(deadList);
     }
 }
