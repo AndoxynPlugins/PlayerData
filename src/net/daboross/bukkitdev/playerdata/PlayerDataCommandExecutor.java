@@ -3,9 +3,6 @@ package net.daboross.bukkitdev.playerdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,11 +13,6 @@ import org.bukkit.command.CommandSender;
  */
 public final class PlayerDataCommandExecutor extends CommandExecutorBase {
 
-    private final Map<String, String> aliasMap = new HashMap<String, String>();
-    private final Map<String, Boolean> isConsoleMap = new HashMap<String, Boolean>();
-    private final Map<String, String> helpList = new HashMap<String, String>();
-    private final Map<String, String[]> helpAliasMap = new HashMap<String, String[]>();
-    private final Map<String, String> permMap = new HashMap<String, String>();
     private PlayerData playerDataMain;
 
     /**
