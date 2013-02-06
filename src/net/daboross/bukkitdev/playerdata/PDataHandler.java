@@ -30,19 +30,7 @@ final class PDataHandler {
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
      */
-    private final ArrayList<PData> playerDataList = new ArrayList<PData>();
-    /**
-     * This is a list of all "alive" PDatas loaded. This list should contain one
-     * PData for EVERY player who has joined the server in the past 2 months. A
-     * PData will tell whether the PDataHandler should include it in the alive
-     * list or the dead list when it is loaded.
-     */
-    private final ArrayList<PData> aliveList = new ArrayList<PData>();
-    /**
-     * This is a list of all "dead" PDatas loaded. This list should contain
-     * every PData that is not in the "alive" list.
-     */
-    private final ArrayList<PData> deadList = new ArrayList<PData>();
+    private ArrayList<PData> playerDataList = new ArrayList<PData>();
     private PlayerData playerDataMain;
     private File playerDataFolder;
     private Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
@@ -78,7 +66,7 @@ final class PDataHandler {
         } else {
             readData();
         }
-        sortData(false);
+        sortData();
     }
 
     /**
@@ -155,8 +143,6 @@ final class PDataHandler {
             }
         }
         playerDataMain.getLogger().log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
-        playerDataMain.getLogger().log(Level.INFO, "Loaded {0} Alive Player Data Files", aliveList.size());
-        playerDataMain.getLogger().log(Level.INFO, "Loaded {0} Dead Player Data Files", deadList.size());
     }
 
     /**
@@ -226,7 +212,7 @@ final class PDataHandler {
             return;
         }
         if (!playerDataList.contains(pData)) {
-            playerDataList.add(pData);
+            playerDataList.add(0, pData);
         }
         String name = pData.userName();
         if (name != null) {
@@ -275,8 +261,8 @@ final class PDataHandler {
         //This is a list of usernames to return, in order from first choice to last choise
         String[] returnUserNames = new String[12];
         String user = ChatColor.stripColor(userName).toLowerCase();
-        for (int i = 0; i < aliveList.size(); i++) {
-            PData pD = aliveList.get(i);
+        for (int i = 0; i < playerDataList.size(); i++) {
+            PData pD = playerDataList.get(i);
             String checkUserName = pD.userName().toLowerCase();
             String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
             String pUserName = pD.userName();
@@ -284,7 +270,7 @@ final class PDataHandler {
             if (pD.isOnline()) {
                 add = 0;
             } else {
-                add = 6;
+                add = 1;
             }
             if (checkUserName != null) {
                 if (checkUserName.equalsIgnoreCase(user)) {
@@ -292,55 +278,20 @@ final class PDataHandler {
                     break;
                 }
                 if (checkUserName.startsWith(user)) {
-                    returnUserNames[2 + add] = pUserName;
-                }
-                if (checkUserName.contains(user)) {
                     returnUserNames[4 + add] = pUserName;
                 }
-                if (checkNickName != null) {
-                    if (checkNickName.equalsIgnoreCase(user)) {
-                        returnUserNames[1 + add] = pUserName;
-                    }
-                    if (checkNickName.startsWith(user)) {
-                        returnUserNames[3 + add] = pUserName;
-                    }
-                    if (checkNickName.contains(user)) {
-                        returnUserNames[5 + add] = pUserName;
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < returnUserNames.length; i++) {
-            if (returnUserNames[i] != null) {
-                return returnUserNames[i];
-            }
-        }
-        returnUserNames = new String[6];
-        for (int i = 0; i < deadList.size(); i++) {
-            PData pD = deadList.get(i);
-            String checkUserName = pD.userName().toLowerCase();
-            String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
-            String pUserName = pD.userName();
-            if (checkUserName != null) {
-                if (checkUserName.equalsIgnoreCase(user)) {
-                    returnUserNames[0] = pUserName;
-                    break;
-                }
-                if (checkUserName.startsWith(user)) {
-                    returnUserNames[2] = pUserName;
-                }
                 if (checkUserName.contains(user)) {
-                    returnUserNames[4] = pUserName;
+                    returnUserNames[8 + add] = pUserName;
                 }
                 if (checkNickName != null) {
                     if (checkNickName.equalsIgnoreCase(user)) {
-                        returnUserNames[1] = pUserName;
+                        returnUserNames[2 + add] = pUserName;
                     }
                     if (checkNickName.startsWith(user)) {
-                        returnUserNames[3] = pUserName;
+                        returnUserNames[6 + add] = pUserName;
                     }
                     if (checkNickName.contains(user)) {
-                        returnUserNames[5] = pUserName;
+                        returnUserNames[10 + add] = pUserName;
                     }
                 }
             }
@@ -389,8 +340,8 @@ final class PDataHandler {
         int onlineNumberFound = 0;
         int offlineNumberFound = 0;
         String user = ChatColor.stripColor(userName).toLowerCase();
-        for (int i = 0; i < aliveList.size(); i++) {
-            PData pD = aliveList.get(i);
+        for (int i = 0; i < playerDataList.size(); i++) {
+            PData pD = playerDataList.get(i);
             boolean online = pD.isOnline();
             String checkUserName = pD.userName().toLowerCase();
             String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
@@ -492,14 +443,9 @@ final class PDataHandler {
                 returnList[i] = onlineUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + onlineNickNames.get(i);
             }
         }
-        int k = onlineNumberFound;
-        for (int i = 0; i < offlineNumberFound && k < returnList.length; i++) {
-            if (pNickNames.get(i) == null) {
-                returnList[k] = pUserNames.get(i);
-            } else {
-                returnList[k] = pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
-            }
-            k++;
+        for (int i = 0, k = onlineNumberFound; i < offlineNumberFound && k < returnList.length; i++, k++) {
+            returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
+
         }
         return returnList;
     }
@@ -545,32 +491,6 @@ final class PDataHandler {
         PData pData = new PData(p);
         playerDataList.add(pData);
         return pData;
-    }
-
-    /**
-     * This function sets whether the given PData is in the alive list or the
-     * dead list. This function should ONLY be called from the PData class. And
-     * should ALWAYS be called when a PData is created.
-     */
-    protected void setAlive(PData pData, boolean alive) {
-        if (!playerDataList.contains(pData)) {
-            playerDataList.add(pData);
-        }
-        if (alive) {
-            if (!aliveList.contains(pData)) {
-                aliveList.add(pData);
-            }
-            if (deadList.contains(pData)) {
-                deadList.remove(pData);
-            }
-        } else {
-            if (aliveList.contains(pData)) {
-                aliveList.remove(pData);
-            }
-            if (!deadList.contains(pData)) {
-                deadList.add(pData);
-            }
-        }
     }
 
     /**
@@ -645,32 +565,61 @@ final class PDataHandler {
 
     /**
      * This will Sort the PData lists depending on how long it has been since
-     * each played last joined.
+     * each played last joined. IN A SEPERATE THREAD.
      */
-    protected void sortData(boolean checkAllAlive) {
-        ArrayList<Long> timesFound = new ArrayList<Long>();
-        while (true) {
-            boolean done = true;
-            for (PData pd : playerDataList) {
-                if (checkAllAlive) {
-                    pd.setAlive();
-                    pd.checkBukkitForTimes();
+    protected void sortData() {
+        sortList();
+    }
+
+    /**
+     * This Function moves the PData given to the top of the list. Should be
+     * only called BY THE PDATA when the player has logged in.
+     */
+    protected void loggedIn(PData pd) {
+        if (playerDataList.contains(pd)) {
+            playerDataList.remove(pd);
+        }
+        playerDataList.add(0, pd);
+    }
+
+    private void sortList() {
+        Thread sorterThread = new Thread(new Sorter());
+        sorterThread.setName("Player Data Sorter Thread");
+        sorterThread.setDaemon(true);
+        sorterThread.start();
+    }
+
+    class Sorter implements Runnable {
+
+        public Sorter() {
+        }
+
+        public void run() {
+            while (true) {
+                ArrayList<PData> tempList = new ArrayList<PData>(playerDataList);
+                ArrayList<Long> timesFound = new ArrayList<Long>();
+                while (true) {
+                    boolean done = true;
+                    for (PData pd : tempList) {
+                        long ls = pd.lastSeen();
+                        if (timesFound.contains(pd.lastSeen())) {
+                            System.out.println("2 Players have first joined at the same time!!!" + pd.lastSeen());
+                            pd.changeTime(false);
+                            done = false;
+                        } else {
+                            timesFound.add(pd.lastSeen());
+                        }
+                    }
+                    if (done) {
+                        break;
+                    }
                 }
-                long ls = pd.lastSeen();
-                if (timesFound.contains(pd.lastSeen())) {
-                    playerDataMain.getLogger().log(Level.INFO, "2 Players have first joined at the same time!!! {0}", pd.lastSeen());
-                    pd.changeTime(false);
-                    done = false;
-                } else {
-                    timesFound.add(pd.lastSeen());
+                Collections.sort(tempList);
+                if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
+                    playerDataList = tempList;
+                    break;
                 }
-            }
-            if (done) {
-                break;
             }
         }
-        Collections.sort(playerDataList);
-        Collections.sort(aliveList);
-        Collections.sort(deadList);
     }
 }
