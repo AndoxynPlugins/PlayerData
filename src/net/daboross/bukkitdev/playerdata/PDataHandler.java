@@ -70,11 +70,14 @@ final class PDataHandler {
     /**
      * This is the "initial" function that should be called directly after this
      * PDataHandler is created. The PDataHandler instance variable in PlayerData
-     * needs to be set to this PDataHandler before this function is called.
+     * needs to be set to this PDataHandler before this function is called. This
+     * will also create new PDatas from Bukkit if file folder is empty.
      */
     protected void init() {
+        if (playerDataFolder.listFiles().length == 0) {
+            createEmptyPlayerDataFilesFromBukkit();
+        }
         readData();
-        sortData(false);
     }
 
     /**
@@ -672,6 +675,8 @@ final class PDataHandler {
         public int compare(PData pd1, PData pd2) {
             long l1 = pd1.lastSeen();
             long l2 = pd2.lastSeen();
+            if (l1 == l2) {
+            }
             return (int) (l1 - l2);
         }
     }
