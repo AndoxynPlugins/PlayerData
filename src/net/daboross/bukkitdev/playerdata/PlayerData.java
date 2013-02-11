@@ -176,6 +176,16 @@ public final class PlayerData extends JavaPlugin {
         return returnValue;
     }
 
+    public static String formatList(String[] str) {
+        String returnS = "";
+        for (int i = 0; i < str.length; i++) {
+            if (!returnS.equals("")) {
+                returnS += ", ";
+            }
+            returnS += str[i];
+        }
+        return returnS;
+    }
     public static boolean isPEX() {
         return isPermissionsExLoaded;
     }
