@@ -33,7 +33,6 @@ public final class PData implements Comparable<PData> {
     private final ArrayList<Long> logOuts = new ArrayList<Long>();
     private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online;
-    private boolean alive = false;
     private String[] groups;
     private PermissionUser permUser;
 
@@ -335,17 +334,6 @@ public final class PData implements Comparable<PData> {
             return true;
         }
         return false;
-    }
-
-    /**
-     * This returns whether or not the player has joined within the last 2
-     * months
-     *
-     * @return true if the played has played within the last 2 months, false
-     * otherwise.
-     */
-    public boolean isAlive() {
-        return alive;
     }
 
     /**
