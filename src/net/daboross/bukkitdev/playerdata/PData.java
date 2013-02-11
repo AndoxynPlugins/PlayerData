@@ -442,7 +442,7 @@ public final class PData implements Comparable<PData> {
     public boolean isGroup(String group) {
         updateGroup();
         for (String gr : groups) {
-            if (group.equals(gr)) {
+            if (group.equalsIgnoreCase(gr)) {
                 return true;
             }
         }
