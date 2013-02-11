@@ -92,24 +92,13 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + PlayerData.getFormattedDDate(System.currentTimeMillis() - pData.getFirstLogIn()) + ColorList.MAIN + " ago");
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + new Date(pData.getFirstLogIn()));
         if (PlayerData.isPEX()) {
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is currently " + ColorList.NUMBER + formatList(pData.getGroups()));
+            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is currently " + ColorList.NUMBER + PlayerData.formatList(pData.getGroups()));
         }
         PDataHandler pdh = playerDataMain.getPDataHandler();
         for (Data d : pData.getData()) {
             linesToSend.addAll(Arrays.asList(pdh.getDisplayData(d, false)));
         }
         sender.sendMessage(linesToSend.toArray(new String[0]));
-    }
-
-    private String formatList(String[] str) {
-        String returnS = "";
-        for (int i = 0; i < str.length; i++) {
-            if (!returnS.equals("")) {
-                returnS += ", ";
-            }
-            returnS += str[i];
-        }
-        return returnS;
     }
 
     private void runListCommand(CommandSender sender, Command cmd, String aliasLabel, String[] args) {
