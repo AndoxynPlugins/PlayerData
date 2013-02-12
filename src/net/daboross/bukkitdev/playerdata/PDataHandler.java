@@ -266,32 +266,39 @@ final class PDataHandler {
             String checkUserName = pD.userName().toLowerCase();
             String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
             String pUserName = pD.userName();
-            int add;
-            if (pD.isOnline()) {
-                add = 0;
-            } else {
-                add = 1;
-            }
+            int add = pD.isOnline() ? 0 : 1;
             if (checkUserName != null) {
                 if (checkUserName.equalsIgnoreCase(user)) {
-                    returnUserNames[0 + add] = pUserName;
+                    if (returnUserNames[0] == null) {
+                        returnUserNames[0] = pUserName;
+                    }
                     break;
                 }
                 if (checkUserName.startsWith(user)) {
-                    returnUserNames[4 + add] = pUserName;
+                    if (returnUserNames[4 + add] == null) {
+                        returnUserNames[4 + add] = pUserName;
+                    }
                 }
                 if (checkUserName.contains(user)) {
-                    returnUserNames[8 + add] = pUserName;
+                    if (returnUserNames[8 + add] == null) {
+                        returnUserNames[8 + add] = pUserName;
+                    }
                 }
                 if (checkNickName != null) {
                     if (checkNickName.equalsIgnoreCase(user)) {
-                        returnUserNames[2 + add] = pUserName;
+                        if (returnUserNames[2 + add] == null) {
+                            returnUserNames[2 + add] = pUserName;
+                        }
                     }
                     if (checkNickName.startsWith(user)) {
-                        returnUserNames[6 + add] = pUserName;
+                        if (returnUserNames[6 + add] == null) {
+                            returnUserNames[6 + add] = pUserName;
+                        }
                     }
                     if (checkNickName.contains(user)) {
-                        returnUserNames[10 + add] = pUserName;
+                        if (returnUserNames[10 + add] == null) {
+                            returnUserNames[10 + add] = pUserName;
+                        }
                     }
                 }
             }
