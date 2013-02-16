@@ -39,15 +39,15 @@ public abstract class CommandExecutorBase implements TabExecutor {
     }
 
     protected void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
-        initCommand(cmd, aliases, isConsole, permission, new String[0], permission);
+        initCommand(cmd, aliases, isConsole, permission, new String[0], helpString);
     }
 
     protected void initCommand(String cmd, boolean isConsole, String permission, String[] arguments, String helpString) {
-        initCommand(cmd, new String[0], isConsole, permission, arguments, permission);
+        initCommand(cmd, new String[0], isConsole, permission, arguments, helpString);
     }
 
     protected void initCommand(String cmd, boolean isConsole, String permission, String helpString) {
-        initCommand(cmd, new String[0], isConsole, permission, new String[0], permission);
+        initCommand(cmd, new String[0], isConsole, permission, new String[0], helpString);
     }
 
     private void invalidSubCommandMessage(CommandSender sender, Command cmd, String label, String[] args) {
