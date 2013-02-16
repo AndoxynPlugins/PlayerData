@@ -31,13 +31,17 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         if (subCommand.equals("viewinfo")) {
             runViewInfoCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
         } else if (subCommand.equals("recreateall")) {
-            runReCreateAllCommand(sender, mainCommand, subCommandArgs);
+            runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
         } else if (subCommand.equals("list")) {
             runListCommand(sender, mainCommand, subCommandLabel, subCommandArgs);
         }
     }
 
-    private void runReCreateAllCommand(CommandSender sender, Command cmd, String[] args) {
+    private void runReCreateAllCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {
+        if (args.length > 0) {
+            sender.sendMessage(ColorList.MAIN + "You Aren't Supposed to say anything after " + ColorList.CMD + "/" + commandLabel + " " + ColorList.SUBCMD + subCommandLabel);
+            return;
+        }
         sender.sendMessage(ColorList.MAIN + "Now Recreating All Player Data!");
         int numberLoaded = playerDataMain.getPDataHandler().createEmptyPlayerDataFilesFromBukkit();
         sender.sendMessage(ColorList.MAIN + "Player Data has loaded " + ColorList.NUMBER + numberLoaded + ColorList.MAIN + " new data files");
