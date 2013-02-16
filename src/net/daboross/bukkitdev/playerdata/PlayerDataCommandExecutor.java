@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
  * @author daboross
  */
 public final class PlayerDataCommandExecutor extends CommandExecutorBase {
-    
+
     private PlayerData playerDataMain;
 
     /**
@@ -29,24 +29,24 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
     @Override
     public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommand.equals("viewinfo")) {
-            runViewInfoCommand(sender, mainCommand, subCommandArgs);
+            runViewInfoCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
         } else if (subCommand.equals("recreateall")) {
             runReCreateAllCommand(sender, mainCommand, subCommandArgs);
         } else if (subCommand.equals("list")) {
             runListCommand(sender, mainCommand, subCommandLabel, subCommandArgs);
         }
     }
-    
+
     private void runReCreateAllCommand(CommandSender sender, Command cmd, String[] args) {
         sender.sendMessage(ColorList.MAIN + "Now Recreating All Player Data!");
         int numberLoaded = playerDataMain.getPDataHandler().createEmptyPlayerDataFilesFromBukkit();
         sender.sendMessage(ColorList.MAIN + "Player Data has loaded " + ColorList.NUMBER + numberLoaded + ColorList.MAIN + " new data files");
     }
-    
-    private void runViewInfoCommand(CommandSender sender, Command cmd, String[] args) {
-        if (args.length < 2) {
+
+    private void runViewInfoCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {
+        if (args.length < 1) {
             sender.sendMessage(ColorList.ILLEGALARGUMENT + "Must Provide A Player!");
-            sender.sendMessage(getHelpMessage(args[0], cmd.getName()));
+            sender.sendMessage(getHelpMessage(subCommandLabel, commandLabel));
             return;
         }
         String playerName = playerDataMain.getPDataHandler().getFullUsername(args[1]);
@@ -84,7 +84,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         }
         sender.sendMessage(linesToSend.toArray(new String[0]));
     }
-    
+
     private void runListCommand(CommandSender sender, Command cmd, String aliasLabel, String[] args) {
         if (args.length > 1) {
             sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + cmd.getName() + ColorList.SUBCMD + " " + aliasLabel);
@@ -123,5 +123,4 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
     public String getCommandName() {
         return "pd";
     }
-    
 }
