@@ -654,6 +654,13 @@ final class PDataHandler {
                 l.log(Level.INFO, "Starting Fifth Load Section (Sync)");
                 startServer();
                 l.log(Level.INFO, "Finished Fifth Load Section (Sync)");
+                if (afterLoadRuns.size() > 0) {
+                    l.log(Level.INFO, "Running Hooked Plugin's After Load Threads");
+                    for (int i = 0; i < afterLoadRuns.size(); i++) {
+                        afterLoadRuns.get(i).run();
+                    }
+                    l.log(Level.INFO, "Finished Running Hooked Plugin's After Load Threads");
+                }
                 l.log(Level.INFO, "Fully Loaded and Enabled");
             }
         });
@@ -706,5 +713,15 @@ final class PDataHandler {
             }
         }
         l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
+    }
+    private boolean isLoaded = false;
+    private ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
+
+    protected void runAfterLoad(Runnable r) {
+        if (isLoaded) {
+            r.run();
+        } else {
+            afterLoadRuns.add(r);
+        }
     }
 }

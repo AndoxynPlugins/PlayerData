@@ -129,4 +129,13 @@ public class PlayerDataHandler {
     public PData[] getAllPDatas() {
         return pDataHandler.getAllPDatas();
     }
+
+    /**
+     * Run this runnable after PlayerData has fully loaded. If PlayerData is
+     * fully loaded currently, then run it right now. This WILL run in the
+     * Bukkit Thread, not an async one.
+     */
+    public void runAfterLoad(Runnable r) {
+        pDataHandler.runAfterLoad(r);
+    }
 }
