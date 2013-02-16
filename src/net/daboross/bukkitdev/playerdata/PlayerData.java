@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -11,7 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author daboross
  */
-public final class PlayerData extends JavaPlugin {
+public final class PlayerData extends JavaPlugin implements Serializable {
 
     private static PlayerData currentInstance;
     private static boolean isPermissionsExLoaded;

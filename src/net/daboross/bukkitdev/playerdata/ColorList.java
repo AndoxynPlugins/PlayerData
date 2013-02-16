@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.io.Serializable;
 import org.bukkit.ChatColor;
 
 /**
@@ -8,7 +9,7 @@ import org.bukkit.ChatColor;
  *
  * @author daboross
  */
-public final class ColorList {
+public final class ColorList implements Serializable {
 
     /**
      * This is the main color.

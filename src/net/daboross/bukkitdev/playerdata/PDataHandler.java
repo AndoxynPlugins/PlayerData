@@ -1,6 +1,7 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import org.bukkit.entity.Player;
  *
  * @author daboross
  */
-final class PDataHandler {
+final class PDataHandler implements Serializable {
 
     /**
      * This is a list of all the PDatas loaded. This list should contain one
@@ -403,7 +404,7 @@ final class PDataHandler {
         }
         for (int i = 0, k = onlineNumberFound; i < offlineNumberFound && k < returnList.length; i++, k++) {
             returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
-            
+
         }
         return returnList;
     }
@@ -539,23 +540,23 @@ final class PDataHandler {
         }
         playerDataList.add(0, pd);
     }
-    
+
     private void sortList(Runnable afterLoad) {
         final Logger l = playerDataMain.getLogger();
         Runnable sorter = new Sorter(l, afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
     }
-    
+
     class Sorter implements Runnable {
-        
+
         private Logger l;
         private Runnable afterLoad;
-        
+
         public Sorter(Logger l, Runnable afterLoad) {
             this.l = l;
             this.afterLoad = afterLoad;
         }
-        
+
         public void run() {
             while (true) {
                 ArrayList<PData> tempList = new ArrayList<PData>();
@@ -587,7 +588,7 @@ final class PDataHandler {
                 if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
                     playerDataList = tempList;
                     break;
-                }else{
+                } else {
                     l.log(Level.INFO, "Repeating SOrt");
                 }
             }
@@ -596,7 +597,7 @@ final class PDataHandler {
             }
         }
     }
-    
+
     private void reReadData(final Runnable runAfter) {
         final Logger l = playerDataMain.getLogger();
         Runnable run = new Runnable() {
@@ -606,7 +607,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
-    
+
     private void asyncRead(final Logger l, final Runnable runAfter) {
         readDataBeforeLoad(l);
         Runnable run = new Runnable() {
@@ -638,7 +639,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
-    
+
     private void asyncInit(final Logger l) {
         l.log(Level.INFO, "Starting Second Load Section (Async)");
         readDataBeforeLoad(l);
@@ -650,7 +651,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
     }
-    
+
     private void syncInit(final Logger l) {
         l.log(Level.INFO, "Starting Third Load Section (Sync)");
         turnBeforeLoadIntoLoaded(l);
@@ -674,7 +675,7 @@ final class PDataHandler {
             }
         });
     }
-    
+
     private void turnBeforeLoadIntoLoaded(Logger l) {
         for (BeforeLoadPlayerData bl : beforeLoadList) {
             PData pd = bl.getPData();
@@ -725,7 +726,7 @@ final class PDataHandler {
     }
     private boolean isLoaded = false;
     private ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
-    
+
     protected void runAfterLoad(Runnable r) {
         if (isLoaded) {
             r.run();
