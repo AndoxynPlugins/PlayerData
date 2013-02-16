@@ -27,7 +27,6 @@ import org.bukkit.entity.Player;
  */
 final class PDataHandler {
 
-    private boolean loading = true;
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
@@ -404,7 +403,7 @@ final class PDataHandler {
         }
         for (int i = 0, k = onlineNumberFound; i < offlineNumberFound && k < returnList.length; i++, k++) {
             returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
-
+            
         }
         return returnList;
     }
@@ -540,37 +539,44 @@ final class PDataHandler {
         }
         playerDataList.add(0, pd);
     }
-
+    
     private void sortList(Runnable afterLoad) {
         final Logger l = playerDataMain.getLogger();
         Runnable sorter = new Sorter(l, afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
     }
-
+    
     class Sorter implements Runnable {
-
+        
         private Logger l;
         private Runnable afterLoad;
-
+        
         public Sorter(Logger l, Runnable afterLoad) {
             this.l = l;
             this.afterLoad = afterLoad;
         }
-
+        
         public void run() {
             while (true) {
-                ArrayList<PData> tempList = new ArrayList<PData>(playerDataList);
+                ArrayList<PData> tempList = new ArrayList<PData>();
+                for (PData pd : playerDataList) {
+                    if (!tempList.contains(pd)) {
+                        tempList.add(pd);
+                    }
+                }
                 ArrayList<Long> timesFound = new ArrayList<Long>();
                 while (true) {
                     boolean done = true;
                     for (PData pd : tempList) {
                         long ls = pd.lastSeen();
-                        if (timesFound.contains(pd.lastSeen())) {
-                            l.log(Level.INFO, "2 Players have first joined at the same time!!! {0}", pd.lastSeen());
+                        if (timesFound.contains(ls)) {
+                            l.log(Level.INFO, "2 Players have first joined at the same time!!! {0} {1}", new Object[]{PlayerData.getFormattedDDate(ls), pd.userName()});
                             pd.changeTime(false);
                             done = false;
+                            timesFound.clear();
+                            break;
                         } else {
-                            timesFound.add(pd.lastSeen());
+                            timesFound.add(ls);
                         }
                     }
                     if (done) {
@@ -581,6 +587,8 @@ final class PDataHandler {
                 if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
                     playerDataList = tempList;
                     break;
+                }else{
+                    l.log(Level.INFO, "Repeating SOrt");
                 }
             }
             if (afterLoad != null) {
@@ -588,7 +596,7 @@ final class PDataHandler {
             }
         }
     }
-
+    
     private void reReadData(final Runnable runAfter) {
         final Logger l = playerDataMain.getLogger();
         Runnable run = new Runnable() {
@@ -598,7 +606,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
-
+    
     private void asyncRead(final Logger l, final Runnable runAfter) {
         readDataBeforeLoad(l);
         Runnable run = new Runnable() {
@@ -630,7 +638,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
-
+    
     private void asyncInit(final Logger l) {
         l.log(Level.INFO, "Starting Second Load Section (Async)");
         readDataBeforeLoad(l);
@@ -642,7 +650,7 @@ final class PDataHandler {
         };
         Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
     }
-
+    
     private void syncInit(final Logger l) {
         l.log(Level.INFO, "Starting Third Load Section (Sync)");
         turnBeforeLoadIntoLoaded(l);
@@ -659,13 +667,14 @@ final class PDataHandler {
                     for (int i = 0; i < afterLoadRuns.size(); i++) {
                         afterLoadRuns.get(i).run();
                     }
+                    isLoaded = true;
                     l.log(Level.INFO, "Finished Running Hooked Plugin's After Load Threads");
                 }
                 l.log(Level.INFO, "Fully Loaded and Enabled");
             }
         });
     }
-
+    
     private void turnBeforeLoadIntoLoaded(Logger l) {
         for (BeforeLoadPlayerData bl : beforeLoadList) {
             PData pd = bl.getPData();
@@ -716,7 +725,7 @@ final class PDataHandler {
     }
     private boolean isLoaded = false;
     private ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
-
+    
     protected void runAfterLoad(Runnable r) {
         if (isLoaded) {
             r.run();
