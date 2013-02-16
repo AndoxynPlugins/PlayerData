@@ -186,6 +186,7 @@ public final class PlayerData extends JavaPlugin {
         }
         return returnS;
     }
+
     public static boolean isPEX() {
         return isPermissionsExLoaded;
     }
