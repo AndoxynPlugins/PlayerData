@@ -78,11 +78,16 @@ final class FileHandler {
             } catch (Exception e) {
             }
             try {
-                bf.close();
+                if (bf != null) {
+                    bf.close();
+                }
             } catch (Exception e) {
             }
+
             try {
-                fr.close();
+                if (fr != null) {
+                    fr.close();
+                }
             } catch (Exception e) {
             }
         }

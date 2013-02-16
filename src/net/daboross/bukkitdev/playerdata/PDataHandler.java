@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +27,7 @@ import org.bukkit.entity.Player;
  */
 final class PDataHandler {
 
+    private boolean loading = true;
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
@@ -55,26 +57,11 @@ final class PDataHandler {
     }
 
     /**
-     * This is the "initial" function that should be called directly after this
-     * PDataHandler is created. The PDataHandler instance variable in PlayerData
-     * needs to be set to this PDataHandler before this function is called. This
-     * will also create new PDatas from Bukkit if file folder is empty.
-     */
-    protected void init() {
-        if (playerDataFolder.listFiles().length == 0) {
-            createEmptyPlayerDataFilesFromBukkit();
-        } else {
-            readData();
-        }
-        sortData();
-    }
-
-    /**
      * This function creates a PData for every player who has ever joined this
      * server. It uses Bukkit's store of players and their data. It will only
      * load the first time a player has played and the last time they have
      * played from this function. This WILL erase all data currently stored by
-     * PlayerData.
+     * PlayerData. This WILL return before the data is loaded.
      *
      * @return The number of new PData Files created.
      */
@@ -87,7 +74,7 @@ final class PDataHandler {
      * This creates an empty PData for every OfflinePlayer in this list. This
      * WILL erase all data currently recorded on any players included in this
      * list. If any of the players have not played on this server before, then
-     * they are not included.
+     * they are not included. This WILL return before the data is loaded.
      *
      * @return The number of players loaded from this list.
      */
@@ -103,46 +90,11 @@ final class PDataHandler {
             }
         }
         saveAllData();
-        readData();
-        return returnValue;
-    }
-
-    /**
-     * This function removes all the current PDatas loaded, and loads new ones
-     * from the files in the playerdata folder. This function should only be
-     * used on startup.
-     */
-    private void readData() {
-        playerDataList.clear();
-        if (playerDataFolder != null) {
-            File[] playerFiles = playerDataFolder.listFiles();
-            for (File fl : playerFiles) {
-                if (fl != null) {
-                    if (fl.canRead()) {
-                        String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                        if (type.equals("bpd")) {
-                            ArrayList<String> fileContents = FileHandler.ReadFile(fl);
-                            String name = fl.getName().substring(0, fl.getName().indexOf('.'));
-                            /*
-                             * When File parser parses a file, it creates a
-                             * PData, ready to return. When a PData is created,
-                             * it auto adds itself to this class's
-                             * playerDataList IF THE PLAYER IS ONLINE.
-                             */
-                            PData pData = FileParser.parseList(fileContents, name);
-                            if (pData != null) {
-                                if (!playerDataList.contains(pData)) {
-                                    playerDataList.add(pData);
-                                }
-                            }
-                        } else {
-                            playerDataMain.getLogger().log(Level.INFO, "{0} file found in playerData!", type);
-                        }
-                    }
-                }
+        reReadData(new Runnable() {
+            public void run() {
             }
-        }
-        playerDataMain.getLogger().log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
+        });
+        return returnValue;
     }
 
     /**
@@ -168,7 +120,7 @@ final class PDataHandler {
      * helpful is if the PlayerData Plugin is loaded when the server is already
      * running and there are players online.
      */
-    protected void startServer() {
+    private void startServer() {
         Player[] ls = Bukkit.getServer().getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
@@ -574,8 +526,8 @@ final class PDataHandler {
      * This will Sort the PData lists depending on how long it has been since
      * each played last joined. IN A SEPERATE THREAD.
      */
-    protected void sortData() {
-        sortList();
+    protected void sortData(Runnable afterLoad) {
+        sortList(afterLoad);
     }
 
     /**
@@ -589,16 +541,20 @@ final class PDataHandler {
         playerDataList.add(0, pd);
     }
 
-    private void sortList() {
-        Thread sorterThread = new Thread(new Sorter());
-        sorterThread.setName("Player Data Sorter Thread");
-        sorterThread.setDaemon(true);
-        sorterThread.start();
+    private void sortList(Runnable afterLoad) {
+        final Logger l = playerDataMain.getLogger();
+        Runnable sorter = new Sorter(l, afterLoad);
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
     }
 
     class Sorter implements Runnable {
 
-        public Sorter() {
+        private Logger l;
+        private Runnable afterLoad;
+
+        public Sorter(Logger l, Runnable afterLoad) {
+            this.l = l;
+            this.afterLoad = afterLoad;
         }
 
         public void run() {
@@ -610,7 +566,7 @@ final class PDataHandler {
                     for (PData pd : tempList) {
                         long ls = pd.lastSeen();
                         if (timesFound.contains(pd.lastSeen())) {
-                            System.out.println("2 Players have first joined at the same time!!!" + pd.lastSeen());
+                            l.log(Level.INFO, "2 Players have first joined at the same time!!! {0}", pd.lastSeen());
                             pd.changeTime(false);
                             done = false;
                         } else {
@@ -627,6 +583,128 @@ final class PDataHandler {
                     break;
                 }
             }
+            if (afterLoad != null) {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, afterLoad);
+            }
         }
+    }
+
+    private void reReadData(final Runnable runAfter) {
+        final Logger l = playerDataMain.getLogger();
+        Runnable run = new Runnable() {
+            public void run() {
+                asyncRead(l, runAfter);
+            }
+        };
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
+    }
+
+    private void asyncRead(final Logger l, final Runnable runAfter) {
+        readDataBeforeLoad(l);
+        Runnable run = new Runnable() {
+            public void run() {
+                turnBeforeLoadIntoLoaded(l);
+                runAfter.run();
+            }
+        };
+        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
+    }
+
+    /**
+     * This is the "initial" function that should be called directly after this
+     * PDataHandler is created. The PDataHandler instance variable in PlayerData
+     * needs to be set to this PDataHandler before this function is called. This
+     * will also create new PDatas from Bukkit if file folder is empty.
+     */
+    protected void init() {
+        final Logger l = playerDataMain.getLogger();
+        l.log(Level.INFO, "Starting First Load Section (Sync)");
+        if (playerDataFolder.listFiles().length == 0) {
+            createEmptyPlayerDataFilesFromBukkit();
+        }
+        l.log(Level.INFO, "Finished First Load Section (Sync)");
+        Runnable run = new Runnable() {
+            public void run() {
+                asyncInit(l);
+            }
+        };
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
+    }
+
+    private void asyncInit(final Logger l) {
+        l.log(Level.INFO, "Starting Second Load Section (Async)");
+        readDataBeforeLoad(l);
+        l.log(Level.INFO, "Finished Second Load Section (Async)");
+        Runnable run = new Runnable() {
+            public void run() {
+                syncInit(l);
+            }
+        };
+        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
+    }
+
+    private void syncInit(final Logger l) {
+        l.log(Level.INFO, "Starting Third Load Section (Sync)");
+        turnBeforeLoadIntoLoaded(l);
+        l.log(Level.INFO, "Finished Third Load Section (Sync)");
+        l.log(Level.INFO, "Starting Fourth Load Section (Async)");
+        sortData(new Runnable() {
+            public void run() {
+                l.log(Level.INFO, "Finished Fourth Load Section (Async)");
+                l.log(Level.INFO, "Starting Fifth Load Section (Sync)");
+                startServer();
+                l.log(Level.INFO, "Finished Fifth Load Section (Sync)");
+                l.log(Level.INFO, "Fully Loaded and Enabled");
+            }
+        });
+    }
+
+    private void turnBeforeLoadIntoLoaded(Logger l) {
+        for (BeforeLoadPlayerData bl : beforeLoadList) {
+            PData pd = bl.getPData();
+            if (pd != null) {
+                if (!playerDataList.contains(pd)) {
+                    playerDataList.add(pd);
+                }
+            }
+        }
+        l.log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
+    }
+    private ArrayList<BeforeLoadPlayerData> beforeLoadList = new ArrayList<BeforeLoadPlayerData>();
+
+    /**
+     * This function removes all the current PDatas loaded, and loads new ones
+     * from the files in the playerdata folder. This function should only be
+     * used on startup.
+     */
+    private void readDataBeforeLoad(Logger l) {
+        playerDataList.clear();
+        if (playerDataFolder != null) {
+            File[] playerFiles = playerDataFolder.listFiles();
+            for (File fl : playerFiles) {
+                if (fl != null) {
+                    if (fl.canRead()) {
+                        String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                        if (type.equals("bpd")) {
+                            ArrayList<String> fileContents = FileHandler.ReadFile(fl);
+                            String name = fl.getName().substring(0, fl.getName().indexOf('.'));
+                            /*
+                             * When File parser parses a file, it creates a
+                             * PData, ready to return. When a PData is created,
+                             * it auto adds itself to this class's
+                             * playerDataList IF THE PLAYER IS ONLINE.
+                             */
+                            BeforeLoadPlayerData beforeLoad = FileParser.parseList(fileContents, name);
+                            if (beforeLoad != null) {
+                                beforeLoadList.add(beforeLoad);
+                            }
+                        } else {
+                            l.log(Level.INFO, "{0} file found in playerData!", type);
+                        }
+                    }
+                }
+            }
+        }
+        l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
     }
 }

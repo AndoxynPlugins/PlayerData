@@ -29,9 +29,8 @@ public final class PlayerData extends JavaPlugin {
         playerDataHandler = new PDataHandler(this);
         Runnable initTask = new Runnable() {
             public void run() {
+                getLogger().info("Starting Async Load Thread");
                 playerDataHandler.init();
-                playerDataHandler.startServer();
-                getLogger().info("PlayerData Fully Enabled");
             }
         };
         Bukkit.getScheduler().runTask(this, initTask);

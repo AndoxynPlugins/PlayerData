@@ -20,7 +20,7 @@ final class FileParser {
      * @return
      * @throws IllegalArgumentException
      */
-    protected static PData parseList(ArrayList<String> file, String name) throws IllegalArgumentException {
+    protected static BeforeLoadPlayerData parseList(ArrayList<String> file, String name) throws IllegalArgumentException {
         if (name == null) {
             throw new IllegalArgumentException("Name Can't Be Null");
         }
@@ -83,7 +83,7 @@ final class FileParser {
             parsedDataList.add(currentD);
         }
         Data[] returnData = parsedDataList.toArray(new Data[0]);
-        PData pData = new PData(userName, nickName, logIns, logOuts, timePlayed, returnData);
+        BeforeLoadPlayerData pData = new BeforeLoadPlayerData(userName, nickName, logIns, logOuts, timePlayed, returnData);
         return pData;
     }
 
