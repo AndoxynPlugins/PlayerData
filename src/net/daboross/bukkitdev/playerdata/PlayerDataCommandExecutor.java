@@ -53,14 +53,14 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
             sender.sendMessage(getHelpMessage(subCommandLabel, commandLabel));
             return;
         }
-        String playerName = playerDataMain.getPDataHandler().getFullUsername(args[1]);
+        String playerName = playerDataMain.getPDataHandler().getFullUsername(args[0]);
         if (playerName == null) {
-            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[1] + ColorList.ERROR + " not found!");
+            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " not found!");
             return;
         }
         PData pData = playerDataMain.getPDataHandler().getPDataFromUsername(playerName);
         if (pData == null) {
-            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[1] + ColorList.ERROR + " not found!");
+            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " not found!");
             return;
         }
         sender.sendMessage(ColorList.MAIN + "Info Avalible For " + ColorList.NAME + pData.userName() + ColorList.MAIN + ":");
