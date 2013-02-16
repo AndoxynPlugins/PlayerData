@@ -1,26 +1,32 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 /**
  *
  * @author daboross
  */
-public abstract class CommandExecutorBase implements CommandExecutor {
+public abstract class CommandExecutorBase implements TabExecutor {
 
     private final Map<String, String> aliasMap = new HashMap<String, String>();
     private final Map<String, Boolean> isConsoleMap = new HashMap<String, Boolean>();
     private final Map<String, String> helpList = new HashMap<String, String>();
     private final Map<String, String[]> helpAliasMap = new HashMap<String, String[]>();
+    private final Map<String, String[]> argsMap = new HashMap<String, String[]>();
     private final Map<String, String> permMap = new HashMap<String, String>();
 
-    protected void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
+    /**
+     * Initialize a sub command on this executor.
+     */
+    protected void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String[] arguments, String helpString) {
         aliasMap.put(cmd.toLowerCase(), cmd.toLowerCase());
         for (String alias : aliases) {
             aliasMap.put(alias.toLowerCase(), cmd.toLowerCase());
@@ -29,10 +35,23 @@ public abstract class CommandExecutorBase implements CommandExecutor {
         permMap.put(cmd.toLowerCase(), permission.toLowerCase());
         helpList.put(cmd.toLowerCase(), helpString);
         helpAliasMap.put(cmd.toLowerCase(), aliases);
+        argsMap.put(cmd.toLowerCase(), arguments);
+    }
+
+    protected void initCommand(String cmd, String[] aliases, boolean isConsole, String permission, String helpString) {
+        initCommand(cmd, aliases, isConsole, permission, new String[0], permission);
+    }
+
+    protected void initCommand(String cmd, boolean isConsole, String permission, String[] arguments, String helpString) {
+        initCommand(cmd, new String[0], isConsole, permission, arguments, permission);
+    }
+
+    protected void initCommand(String cmd, boolean isConsole, String permission, String helpString) {
+        initCommand(cmd, new String[0], isConsole, permission, new String[0], permission);
     }
 
     private void invalidSubCommandMessage(CommandSender sender, Command cmd, String label, String[] args) {
-        sender.sendMessage(ColorList.MAIN + "The SubCommand: " + ColorList.CMD + args[0] + ColorList.MAIN + " Does not exist.");
+        sender.sendMessage(ColorList.MAIN + "The SubCommand: " + ColorList.CMD + args[0] + ColorList.MAIN + " Does not exist for the command " + ColorList.CMD);
         sender.sendMessage(ColorList.MAIN + "To see all possible sub commands, type " + ColorList.CMD + "/" + label + ColorList.SUBCMD + " ?");
     }
 
@@ -95,10 +114,14 @@ public abstract class CommandExecutorBase implements CommandExecutor {
             }
         }
         if (commandName.equalsIgnoreCase("help")) {
-            runHelpCommand(sender, cmd, getSubArray(args));
+            runHelpCommand(sender, cmd, label, getSubArray(args));
             return null;
         }
         return commandName;
+    }
+
+    protected String[] getArgs(String alias) {
+        return argsMap.get(aliasMap.get(alias));
     }
 
     /**
@@ -112,12 +135,12 @@ public abstract class CommandExecutorBase implements CommandExecutor {
         }
     }
 
-    protected void runHelpCommand(CommandSender sender, Command cmd, String[] args) {
+    protected void runHelpCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String[] subCommandArgs) {
         sender.sendMessage(ColorList.MAIN + "List Of Possible Sub Commands:");
         for (String str : aliasMap.keySet()) {
             if (str.equalsIgnoreCase(aliasMap.get(str))) {
                 if (sender.hasPermission(str)) {
-                    sender.sendMessage(getMultipleAliasHelpMessage(str, cmd.getLabel()));
+                    sender.sendMessage(getMultipleAliasHelpMessage(str, mainCommandLabel));
                 }
             }
         }
@@ -136,4 +159,42 @@ public abstract class CommandExecutorBase implements CommandExecutor {
         }
         return (ColorList.CMD + "/" + baseCommand + ColorList.SUBCMD + " " + commandList + ColorList.HELP + " " + helpList.get(subcmd));
     }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        ArrayList<String> returnList = new ArrayList<String>();
+        if (cmd.getName().equalsIgnoreCase(getCommandName())) {
+            if (args.length == 0) {
+                for (String alias : aliasMap.keySet()) {
+                    returnList.add(alias);
+                }
+            } else if (args.length == 1) {
+                for (String alias : aliasMap.keySet()) {
+                    if (alias.startsWith(args[0])) {
+                        returnList.add(alias);
+                    }
+                }
+            } else if (aliasMap.containsKey(args[1])) {
+                returnList.addAll(Arrays.asList(getArgs(args[1])));
+            }
+        }
+        return returnList;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase(getCommandName())) {
+            String commandName = isCommandValid(sender, cmd, label, args);
+            if (commandName == null) {
+                return true;
+            }
+            runCommand(sender, cmd, label, commandName, args[0], getSubArray(args));
+            return true;
+        }
+        return false;
+    }
+
+    public abstract String getCommandName();
+
+    public abstract void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs);
 }
