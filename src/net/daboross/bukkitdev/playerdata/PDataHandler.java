@@ -565,31 +565,12 @@ final class PDataHandler implements Serializable {
                         tempList.add(pd);
                     }
                 }
-                ArrayList<Long> timesFound = new ArrayList<Long>();
-                while (true) {
-                    boolean done = true;
-                    for (PData pd : tempList) {
-                        long ls = pd.lastSeen();
-                        if (timesFound.contains(ls)) {
-                            l.log(Level.INFO, "2 Players have first joined at the same time!!! {0} {1}", new Object[]{PlayerData.getFormattedDDate(ls), pd.userName()});
-                            pd.changeTime(false);
-                            done = false;
-                            timesFound.clear();
-                            break;
-                        } else {
-                            timesFound.add(ls);
-                        }
-                    }
-                    if (done) {
-                        break;
-                    }
-                }
                 Collections.sort(tempList);
                 if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
                     playerDataList = tempList;
                     break;
                 } else {
-                    l.log(Level.INFO, "Repeating SOrt");
+                    l.log(Level.INFO, "Repeating Sort");
                 }
             }
             if (afterLoad != null) {

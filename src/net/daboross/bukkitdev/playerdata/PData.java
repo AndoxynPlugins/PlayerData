@@ -541,11 +541,4 @@ public final class PData implements Comparable<PData> {
         }
         return l2.compareTo(l1);
     }
-
-    /**
-     * This method should ONLY be called from PDataHandler.
-     */
-    protected void changeTime(boolean bool) {
-        logOuts.set(logOuts.size() - 1, logOuts.get(logOuts.size() - 1) + (bool ? 1 : -1));
-    }
 }
