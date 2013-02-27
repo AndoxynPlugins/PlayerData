@@ -30,7 +30,7 @@ public class PlayerDataEventListener implements Listener {
             pDataMain.getLogger().log(Level.INFO, "Teleporting {0} to spawn", new Object[]{evt.getPlayer().getName()});
             evt.getPlayer().performCommand("spawn");
         }
-        pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedIn();
+        pDataMain.getPDataHandler().logIn(evt.getPlayer());
 
     }
 

@@ -29,7 +29,7 @@ public final class PData implements Comparable<PData> {
     private String nickName;
     private long timePlayed;
     private long currentSession;
-    private final ArrayList<Long> logIns = new ArrayList<Long>();
+    private final ArrayList<IPLogin> logIns = new ArrayList<IPLogin>();
     private final ArrayList<Long> logOuts = new ArrayList<Long>();
     private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online;
@@ -46,7 +46,7 @@ public final class PData implements Comparable<PData> {
         if (p == null) {
             throw new IllegalArgumentException("Player Can't Be Null");
         }
-        logIns.add(p.getFirstPlayed());
+        logIns.add(new IPLogin(p.getFirstPlayed(), p.getAddress().toString()));
         timePlayed = 0;
         userName = p.getName();
         nickName = p.getDisplayName();
@@ -70,7 +70,7 @@ public final class PData implements Comparable<PData> {
         if (!p.hasPlayedBefore()) {
             throw new IllegalArgumentException("Player Has Never Been Online!");
         }
-        logIns.add(p.getFirstPlayed());
+        logIns.add(new IPLogin(p.getFirstPlayed()));
         timePlayed = 0;
         userName = p.getName();
         if (p.isOnline()) {
@@ -98,7 +98,7 @@ public final class PData implements Comparable<PData> {
      * @param timePlayed The time this player has played on this server.
      * @param data A List of custom data entries.
      */
-    protected PData(String userName, String nickName, ArrayList<Long> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
+    protected PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
         this.userName = userName;
         this.nickName = nickName;
         if (this.nickName == null) {
@@ -124,17 +124,6 @@ public final class PData implements Comparable<PData> {
         currentSession = System.currentTimeMillis();
         updateStatus(true, false);
         checkBukkitForTimes();
-    }
-
-    /**
-     * This loads data from the player given. Check if that player's username is
-     * the same as this PData's username before running this function.
-     *
-     * @param p The Player.
-     */
-    protected void setPlayer(Player p) {
-        userName = p.getName();
-        nickName = p.getDisplayName();
     }
 
     /**
@@ -230,8 +219,8 @@ public final class PData implements Comparable<PData> {
      * PlayerDataEventListener. This will save the current status of this PData
      * to file.
      */
-    protected void loggedIn() {
-        logIns.add(System.currentTimeMillis());
+    protected void loggedIn(Player p) {
+        logIns.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
         currentSession = System.currentTimeMillis();
         makeExtraThread();
         PlayerData.getCurrentInstance().getPDataHandler().loggedIn(this);
@@ -283,7 +272,7 @@ public final class PData implements Comparable<PData> {
      *
      * @return
      */
-    public long getFirstLogIn() {
+    public IPLogin getFirstLogIn() {
         return logIns.get(0);
     }
 
@@ -302,8 +291,8 @@ public final class PData implements Comparable<PData> {
      * @return A list of timestamps when this player has logged in. Each In
      * milliseconds.
      */
-    public Long[] logIns() {
-        return logIns.toArray(new Long[0]);
+    public IPLogin[] logIns() {
+        return logIns.toArray(new IPLogin[0]);
     }
 
     /**
@@ -314,26 +303,6 @@ public final class PData implements Comparable<PData> {
      */
     public Long[] logOuts() {
         return logOuts.toArray(new Long[0]);
-    }
-
-    /**
-     * This returns whether or not this player is 'alive'. Alive in this case
-     * means if the player has logged in within the last 2 months. This does run
-     * updateStatus(). WILL NOT CHECK IF THE PLAYER IS ONLINE!
-     *
-     * @return Whether or not this player has logged in in the last 2 months or
-     * not.
-     */
-    private boolean checkIsAlive() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -2);
-        if (isOnline()) {
-            return true;
-        }
-        if (lastSeen() > cal.getTimeInMillis()) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -495,21 +464,21 @@ public final class PData implements Comparable<PData> {
      * last time this player has played with Bukkit's records.
      */
     protected void checkBukkitForTimes() {
-        Comparator<Long> comp = new Comparator<Long>() {
-            public int compare(Long l1, Long l2) {
-                return (int) (l1 - l2);
+        Comparator<IPLogin> comp = new Comparator<IPLogin>() {
+            public int compare(IPLogin ipl1, IPLogin ipl2) {
+                return Long.compare(ipl1.time(), ipl2.time());
             }
         };
         Collections.sort(logIns, comp);
-        Collections.sort(logOuts, comp);
+        Collections.sort(logOuts);
         OfflinePlayer offP = Bukkit.getOfflinePlayer(userName);
         long bukkitFirstPlayed = offP.getFirstPlayed();
         long bukkitLastPlayed = offP.getLastPlayed();
         if (offP.hasPlayedBefore()) {
             if (logIns.isEmpty()) {
-                logIns.add(bukkitFirstPlayed);
-            } else if (bukkitFirstPlayed < logIns.get(0)) {
-                logIns.add(0, bukkitFirstPlayed);
+                logIns.add(new IPLogin(bukkitFirstPlayed));
+            } else if (bukkitFirstPlayed < logIns.get(0).time()) {
+                logIns.add(0, new IPLogin(bukkitFirstPlayed));
             }
             if (!online) {
                 if (logOuts.isEmpty()) {
@@ -527,7 +496,7 @@ public final class PData implements Comparable<PData> {
      * CHECK IF THEY ARE ONLINE first.
      */
     public long lastSeen() {
-        return logIns.get(logIns.size() - 1);
+        return logOuts.get(logOuts.size() - 1);
     }
 
     public int compareTo(PData pd) {
@@ -536,9 +505,6 @@ public final class PData implements Comparable<PData> {
         }
         Long l1 = lastSeen();
         Long l2 = pd.lastSeen();
-        if (l1 == l2 && pd != this) {
-            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "Players Are Equal? {0} {1}", new Object[]{userName, pd.userName});
-        }
         return l2.compareTo(l1);
     }
 }

@@ -124,7 +124,7 @@ final class PDataHandler implements Serializable {
         Player[] ls = Bukkit.getServer().getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
-            pData.loggedIn();
+            pData.loggedIn(p);
         }
     }
 
@@ -443,13 +443,33 @@ final class PDataHandler implements Serializable {
         for (int i = 0; i < playerDataList.size(); i++) {
             PData pData = playerDataList.get(i);
             if (pData.userName().equalsIgnoreCase(p.getName())) {
-                pData.setPlayer(p);
                 return pData;
             }
         }
         PData pData = new PData(p);
-        playerDataList.add(pData);
+        if (!playerDataList.contains(pData)) {
+            playerDataList.add(pData);
+        }
         return pData;
+    }
+
+    /**
+     * This will log in a given player's PData.
+     */
+    public void logIn(Player p) {
+        if (p == null) {
+            return;
+        }
+        for (int i = 0; i < playerDataList.size(); i++) {
+            PData pData = playerDataList.get(i);
+            if (pData.userName().equalsIgnoreCase(p.getName())) {
+                pData.loggedIn(p);
+            }
+        }
+        PData pData = new PData(p);
+        if (!playerDataList.contains(pData)) {
+            playerDataList.add(pData);
+        }
     }
 
     /**

@@ -29,7 +29,7 @@ final class FileParser {
         }
         String userName = name;
         String nickName = "";
-        ArrayList<Long> logIns = new ArrayList<Long>();
+        ArrayList<IPLogin> logIns = new ArrayList<IPLogin>();
         ArrayList<Long> logOuts = new ArrayList<Long>();
         Map<String, ArrayList<String>> dataMap = new HashMap<String, ArrayList<String>>();
         long timePlayed = 0;//This is the data to store from the timePlayed field;
@@ -59,7 +59,7 @@ final class FileParser {
                     }
                 } else if (current.equalsIgnoreCase("logins")) {
                     try {
-                        logIns.add(Long.valueOf(currentString));
+                        logIns.add(IPLogin.fromString(currentString));
                     } catch (Exception e) {
                         PlayerData.getCurrentInstance().getLogger().log(Level.SEVERE, "Error Parsing Player Data!!! Name: {0} line: {1}", new Object[]{userName, i});
                     }
@@ -103,7 +103,7 @@ final class FileParser {
         lines.add(pData.nickName(false));
         lines.add("");
         lines.add("logins:");
-        Long[] logIns = pData.logIns();
+        IPLogin[] logIns = pData.logIns();
         for (int i = 0; i < logIns.length; i++) {
             lines.add(logIns[i].toString());
         }
