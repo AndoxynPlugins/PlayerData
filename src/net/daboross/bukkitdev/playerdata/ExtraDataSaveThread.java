@@ -27,8 +27,11 @@ public class ExtraDataSaveThread implements Runnable {
 
     public void run() {
         while (true) {
-            for (int i = 0; i < dataToSave.size(); i++) {
-                edh.saveDataAsyncFromExtraDataSaveThread(dataToSave.get(i));
+            while (!dataToSave.isEmpty()) {
+                String d = dataToSave.get(0);
+                if (d != null) {
+                    edh.saveDataAsyncFromExtraDataSaveThread(d);
+                }
             }
             synchronized (dataToSave) {
                 try {
