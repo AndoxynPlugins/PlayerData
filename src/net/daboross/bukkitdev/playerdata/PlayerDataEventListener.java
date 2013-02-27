@@ -12,9 +12,9 @@ import org.bukkit.event.player.PlayerQuitEvent;
  * @author daboross
  */
 public class PlayerDataEventListener implements Listener {
-
+    
     private PlayerData pDataMain;
-
+    
     protected PlayerDataEventListener(PlayerData main) {
         pDataMain = main;
     }
@@ -31,7 +31,7 @@ public class PlayerDataEventListener implements Listener {
             evt.getPlayer().performCommand("spawn");
         }
         pDataMain.getPDataHandler().logIn(evt.getPlayer());
-
+        
     }
 
     /**
