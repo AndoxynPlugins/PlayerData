@@ -39,15 +39,31 @@ public class IPLogin {
      * (just a long).
      */
     public static IPLogin fromString(final String coded) {
-        String[] firstLast = coded.split("-");
+        String[] firstLast = new String[]{coded};
+        if (coded.contains("  :  ")) {
+            firstLast = coded.split("  :  ");
+        } else if (coded.contains("-")) {
+            String[] temp = coded.split("-");
+            if (temp.length == 2) {
+                firstLast = temp;
+            } else if (temp.length > 2) {
+                String second = "";
+                for (int i = 1; i < temp.length; i++) {
+                    second += temp[i];
+                }
+                firstLast = new String[]{temp[0], second};
+            }
+        }
         if (firstLast.length > 2) {
+            System.out.println("Error Parsing String! 1:" + coded);
             return null;
         } else if (firstLast.length == 0) {
+            System.out.println("Error Parsing String! 2:" + coded);
             return null;
         } else if (firstLast.length == 1) {
             long time;
             try {
-                time = Long.parseLong(firstLast[0]);
+                time = Long.parseLong(coded);
             } catch (Exception e) {
                 return null;
             }
@@ -62,17 +78,17 @@ public class IPLogin {
             String ip = firstLast[1];
             return new IPLogin(time, ip);
         } else {
+            System.out.println("Error Parsing String! 3:" + coded);
             return null;
         }
-
     }
 
     /**
-     * This returns a coded version of the IPLogin. It is in the form of
-     * time+"-"+ip.
+     * This returns a coded version of the IPLogin. It is in the form of time +
+     * "  :  " + ip.
      */
     @Override
     public String toString() {
-        return time + "-" + ip;
+        return time + "  :  " + ip;
     }
 }
