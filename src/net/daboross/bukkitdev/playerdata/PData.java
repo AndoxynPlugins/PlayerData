@@ -464,8 +464,16 @@ public final class PData implements Comparable<PData> {
      * last time this player has played with Bukkit's records.
      */
     protected void checkBukkitForTimes() {
+        for (int i = 0; i < logIns.size(); i++) {
+            if (logIns.get(i) == null) {
+                logIns.remove(i);
+            }
+        }
         Comparator<IPLogin> comp = new Comparator<IPLogin>() {
             public int compare(IPLogin ipl1, IPLogin ipl2) {
+                if (ipl1 == null || ipl2 == null) {
+                    throw new IllegalArgumentException();
+                }
                 return Long.compare(ipl1.time(), ipl2.time());
             }
         };
@@ -486,6 +494,7 @@ public final class PData implements Comparable<PData> {
                 } else if (bukkitLastPlayed > logOuts.get(0)) {
                     logOuts.add(bukkitLastPlayed);
                 }
+            } else {
             }
         }
     }
@@ -496,15 +505,29 @@ public final class PData implements Comparable<PData> {
      * CHECK IF THEY ARE ONLINE first.
      */
     public long lastSeen() {
-        return logOuts.get(logOuts.size() - 1);
+        if (logOuts.size() > 0) {
+            return logOuts.get(logOuts.size() - 1);
+        } else {
+            return 0;
+        }
     }
 
     public int compareTo(PData pd) {
         if (pd == null) {
             throw new NullPointerException();
         }
-        Long l1 = lastSeen();
-        Long l2 = pd.lastSeen();
+        Long l1;
+        Long l2;
+        if (online) {
+            l1 = System.currentTimeMillis();
+        } else {
+            l1 = lastSeen();
+        }
+        if (pd.online) {
+            l2 = System.currentTimeMillis();
+        } else {
+            l2 = pd.lastSeen();
+        }
         return l2.compareTo(l1);
     }
 }
