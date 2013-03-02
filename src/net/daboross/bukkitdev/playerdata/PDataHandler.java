@@ -464,6 +464,7 @@ final class PDataHandler implements Serializable {
             PData pData = playerDataList.get(i);
             if (pData.userName().equalsIgnoreCase(p.getName())) {
                 pData.loggedIn(p);
+                return;
             }
         }
         PData pData = new PData(p);
@@ -555,7 +556,7 @@ final class PDataHandler implements Serializable {
      * only called BY THE PDATA when the player has logged in.
      */
     protected void loggedIn(PData pd) {
-        if (playerDataList.contains(pd)) {
+        while (playerDataList.contains(pd)) {
             playerDataList.remove(pd);
         }
         playerDataList.add(0, pd);
