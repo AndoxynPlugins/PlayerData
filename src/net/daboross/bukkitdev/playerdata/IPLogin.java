@@ -1,7 +1,5 @@
 package net.daboross.bukkitdev.playerdata;
 
-import org.omg.CORBA.ACTIVITY_COMPLETED;
-
 /**
  *
  * @author daboross
@@ -85,7 +83,7 @@ public class IPLogin {
 
     /**
      * This returns a coded version of the IPLogin. It is in the form of time +
-     * "  :  " + ip.
+     * " : " + ip.
      */
     @Override
     public String toString() {
