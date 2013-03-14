@@ -3,11 +3,13 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 
 /**
@@ -23,33 +25,47 @@ final class FileHandler {
      * @return True if successful, False otherwise.
      */
     protected static boolean WriteFile(File file, ArrayList<String> lines) {
-        Bukkit.getServer().getLogger().log(Level.FINEST, "Player Data File Handler: Writing New File: {0}", file.getAbsolutePath());
         if (lines == null || file == null) {
             return false;
         }
         if (file.canWrite() || !file.exists()) {
-            try {
-                file.getParentFile().mkdirs();
-                if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            if (!file.exists()) {
+                try {
                     file.createNewFile();
+                } catch (IOException ex) {
+                    Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+                    return false;
                 }
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bf = new BufferedWriter(fw);
-                for (int i = 0; i < lines.size(); i++) {
+            }
+            FileWriter fw;
+            try {
+                fw = new FileWriter(file);
+            } catch (IOException ex) {
+                Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+                return false;
+            }
+            BufferedWriter bf = new BufferedWriter(fw);
+            for (int i = 0; i < lines.size(); i++) {
+                try {
                     bf.write(lines.get(i));
                     bf.newLine();
-                }
-                try {
-                    bf.close();
                 } catch (IOException ex) {
+                    Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+                    return false;
                 }
-                try {
-                    fw.close();
-                } catch (IOException ex) {
-                }
-                return true;
-            } catch (Exception e) {
             }
+            try {
+                bf.close();
+            } catch (IOException ex) {
+                Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+            }
+            try {
+                fw.close();
+            } catch (IOException ex) {
+                Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+            }
+            return true;
         }
         return false;
     }
@@ -64,31 +80,39 @@ final class FileHandler {
         ArrayList<String> lines = new ArrayList<String>();
         if (file.canRead()) {
             FileReader fr = null;
-            BufferedReader bf = null;
+            BufferedReader bf;
             try {
                 fr = new FileReader(file);
+            } catch (FileNotFoundException ex) {
+                Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+            }
+            if (fr != null) {
                 bf = new BufferedReader(fr);
                 while (true) {
-                    String line = bf.readLine();
+                    String line;
+                    try {
+                        line = bf.readLine();
+                    } catch (IOException ex) {
+                        Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
+                        break;
+                    }
                     if (line == null) {
                         break;
                     }
                     lines.add(line);
                 }
-            } catch (Exception e) {
-            }
-            try {
-                if (bf != null) {
+                try {
                     bf.close();
+                } catch (Exception ex) {
+                    Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
                 }
-            } catch (Exception e) {
             }
-
-            try {
-                if (fr != null) {
+            if (fr != null) {
+                try {
                     fr.close();
+                } catch (Exception ex) {
+                    Bukkit.getLogger().log(Level.FINER, "Player Data File Handler Exception!", ex);
                 }
-            } catch (Exception e) {
             }
         }
         return lines;
