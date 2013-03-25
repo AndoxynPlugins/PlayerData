@@ -1,5 +1,8 @@
 package net.daboross.bukkitdev.playerdata;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 /**
  * This is a object that holds custom data given to and from the
  * PlayerDataHandler. It holds a name, which is the data type, an Array of
@@ -68,5 +71,32 @@ public class Data {
      */
     protected void setOwner(PData pData) {
         this.owner = pData;
+    }
+
+    private static String listToString(String[] data) {
+        String result = "";
+        for (String s : data) {
+            if (!"".equals(result)) {
+                result += "&$&$&";
+            }
+            result += s;
+        }
+        return result;
+    }
+
+    private static String[] stringToList(String data) {
+        return data.split("&$&$&");
+    }
+
+    public Element toXML(Document d) {
+        Element e = d.createElement(name);
+        e.setAttribute("name", name);
+        e.setAttribute("data", listToString(data));
+        return e;
+    }
+
+    public Data(Element e) {
+        this.name = e.getAttribute("name");
+        this.data = stringToList(e.getAttribute("data"));
     }
 }

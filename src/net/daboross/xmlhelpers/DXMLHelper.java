@@ -10,6 +10,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -17,6 +18,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,6 +44,10 @@ public class DXMLHelper {
         if (transformerTemp != null) {
             transformerTemp.setOutputProperty(OutputKeys.INDENT, "yes");
             transformerTemp.setOutputProperty(OutputKeys.STANDALONE, "no");
+            try {
+                transformerTemp.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            } catch (IllegalArgumentException ex) {
+            }
         }
         transformer = transformerTemp;
         docFactory = DocumentBuilderFactory.newInstance();
@@ -89,22 +95,46 @@ public class DXMLHelper {
     }
 
     public static void writeXML(Document source, File file) throws DXMLException {
-        DOMSource sourceDOM = new DOMSource(source);
-        writeXML(sourceDOM, file);
+        if (source == null || file == null) {
+            throw new IllegalArgumentException("1 or more null arguments");
+        }
+        Result result = new StreamResult(file);
+        writeXML(source, result);
     }
 
-    private static void writeXML(Source source, File file) throws DXMLException {
-        if (source == null || file == null) {
+    public static void writeXML(Document source, Result result) throws DXMLException {
+        if (source == null || result == null) {
+            throw new IllegalArgumentException("1 or more null arguments");
+        }
+        DOMSource sourceDOM = new DOMSource(source);
+        writeXML(sourceDOM, result);
+    }
+
+    public static void writeXML(Source source, Result result) throws DXMLException {
+        if (source == null || result == null) {
             throw new IllegalArgumentException("1 or more null arguments");
         }
         if (transformer == null) {
             throw new DXMLException("Null Transformer");
         }
-        StreamResult result = new StreamResult(file);
         try {
             transformer.transform(source, result);
         } catch (TransformerException ex) {
             throw new DXMLException(ex);
         }
+    }
+
+    public static void writeXML(Source source, File file) throws DXMLException {
+        if (source == null || file == null) {
+            throw new IllegalArgumentException("1 or more null arguments");
+        }
+        StreamResult result = new StreamResult(file);
+        writeXML(source, result);
+    }
+
+    public static Element createElement(Document d, String name, String value) {
+        Element e = d.createElement(name);
+        e.appendChild(d.createTextNode(value));
+        return e;
     }
 }

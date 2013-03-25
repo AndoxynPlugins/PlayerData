@@ -3,6 +3,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Callable;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,6 +25,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Gets the Info That Player data has stored on a player"));
         initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("This command deletes all player data and recreates it from bukkit!"));
         initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", "This Command Lists All Players Who have ever joined the server. In Pages.");
+        initCommand("xml", new String[]{}, true, "playerdata.xml", "Blah");
     }
 
     @Override
@@ -34,7 +36,19 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
             runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
         } else if (subCommand.equals("list")) {
             runListCommand(sender, mainCommand, subCommandLabel, subCommandArgs);
+        } else if (subCommand.equals("xml")) {
+            runXmlCommand(sender);
         }
+    }
+
+    private void runXmlCommand(final CommandSender sender) {
+        sender.sendMessage(ColorList.MAIN + "Creating XML Files");
+        playerDataMain.getPDataHandler().saveXML(new Callable<Void>() {
+            public Void call() throws Exception {
+                sender.sendMessage(ColorList.MAIN + "XML File Creation Done");
+                return null;
+            }
+        });
     }
 
     private void runReCreateAllCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {

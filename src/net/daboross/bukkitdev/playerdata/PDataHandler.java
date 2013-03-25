@@ -1,13 +1,15 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.io.File;
-import java.io.Serializable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.daboross.xmlhelpers.DXMLException;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,7 +28,7 @@ import org.bukkit.entity.Player;
  *
  * @author daboross
  */
-final class PDataHandler implements Serializable {
+final class PDataHandler {
 
     /**
      * This is a list of all the PDatas loaded. This list should contain one
@@ -703,22 +705,22 @@ final class PDataHandler implements Serializable {
             for (File fl : playerFiles) {
                 if (fl != null) {
                     if (fl.canRead()) {
-                        String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                        if (type.equals("bpd")) {
-                            ArrayList<String> fileContents = FileHandler.ReadFile(fl);
-                            String name = fl.getName().substring(0, fl.getName().indexOf('.'));
-                            /*
-                             * When File parser parses a file, it creates a
-                             * PData, ready to return. When a PData is created,
-                             * it auto adds itself to this class's
-                             * playerDataList IF THE PLAYER IS ONLINE.
-                             */
-                            BeforeLoadPlayerData beforeLoad = FileParser.parseList(fileContents, name);
-                            if (beforeLoad != null) {
-                                beforeLoadList.add(beforeLoad);
+                        if (fl.isFile()) {
+                            String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                            if (type.equals("bpd")) {
+                                ArrayList<String> fileContents = FileHandler.ReadFile(fl);
+                                String name = fl.getName().substring(0, fl.getName().indexOf('.'));
+                                /*
+                                 * When File parser parses a file, it creates a
+                                 * PData, ready to return. When a PData is created,
+                                 * it auto adds itself to this class's
+                                 * playerDataList IF THE PLAYER IS ONLINE.
+                                 */
+                                BeforeLoadPlayerData beforeLoad = FileParser.parseList(fileContents, name);
+                                if (beforeLoad != null) {
+                                    beforeLoadList.add(beforeLoad);
+                                }
                             }
-                        } else {
-                            l.log(Level.INFO, "{0} file found in playerData!", type);
                         }
                     }
                 }
@@ -735,5 +737,30 @@ final class PDataHandler implements Serializable {
         } else {
             afterLoadRuns.add(r);
         }
+    }
+
+    public void saveXML(final Callable<Void> callAfter) {
+        final File pluginFolder = playerDataMain.getDataFolder();
+        final File xmlFolder = new File(pluginFolder, "xml");
+        xmlFolder.mkdirs();
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+            public void run() {
+                for (PData pd : playerDataList) {
+                    File xmlFile = new File(xmlFolder, pd.userName() + ".xml");
+                    try {
+                        xmlFile.createNewFile();
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    try {
+                        XMLFileParser.writeToFile(pd, xmlFile);
+                    } catch (DXMLException ex) {
+                        Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
+            }
+        });
     }
 }
