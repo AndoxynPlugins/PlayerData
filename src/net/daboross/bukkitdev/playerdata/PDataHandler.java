@@ -421,7 +421,6 @@ final class PDataHandler {
      * @return The PData that is loaded for that player, or null if not found.
      */
     protected PData getPDataFromUsername(String name) {
-        PlayerData.getCurrentInstance().getLogger().log(Level.FINE, "Getting PData: {0}", name);
         for (int i = 0; i < playerDataList.size(); i++) {
             if (playerDataList.get(i).userName().equalsIgnoreCase(name)) {
                 return playerDataList.get(i);
@@ -457,22 +456,25 @@ final class PDataHandler {
 
     /**
      * This will log in a given player's PData.
+     *
+     * @return Whether or not this player has joined before.
      */
-    public void logIn(Player p) {
+    public boolean logIn(Player p) {
         if (p == null) {
-            return;
+            throw new IllegalArgumentException("Null Argument");
         }
         for (int i = 0; i < playerDataList.size(); i++) {
             PData pData = playerDataList.get(i);
             if (pData.userName().equalsIgnoreCase(p.getName())) {
                 pData.loggedIn(p);
-                return;
+                return true;
             }
         }
         PData pData = new PData(p);
         if (!playerDataList.contains(pData)) {
             playerDataList.add(pData);
         }
+        return false;
     }
 
     /**
@@ -667,13 +669,15 @@ final class PDataHandler {
                 l.log(Level.INFO, "Starting Fifth Load Section (Sync)");
                 startServer();
                 l.log(Level.INFO, "Finished Fifth Load Section (Sync)");
-                if (afterLoadRuns.size() > 0) {
-                    l.log(Level.INFO, "Running Hooked Plugin's After Load Threads");
-                    for (int i = 0; i < afterLoadRuns.size(); i++) {
-                        afterLoadRuns.get(i).run();
+                synchronized (afterLoadRuns) {
+                    if (!afterLoadRuns.isEmpty()) {
+                        l.log(Level.INFO, "Starting AfterLoad Tasks");
+                        while (!afterLoadRuns.isEmpty()) {
+                            Bukkit.getScheduler().runTask(playerDataMain, afterLoadRuns.get(0));
+                            afterLoadRuns.remove(0);
+                        }
+                        isLoaded = true;
                     }
-                    isLoaded = true;
-                    l.log(Level.INFO, "Finished Running Hooked Plugin's After Load Threads");
                 }
                 l.log(Level.INFO, "Fully Loaded and Enabled");
             }
@@ -729,13 +733,15 @@ final class PDataHandler {
         l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
     }
     private boolean isLoaded = false;
-    private ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
+    private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
 
     protected void runAfterLoad(Runnable r) {
-        if (isLoaded) {
-            r.run();
-        } else {
-            afterLoadRuns.add(r);
+        synchronized (afterLoadRuns) {
+            if (isLoaded) {
+                Bukkit.getScheduler().runTask(playerDataMain, r);
+            } else {
+                afterLoadRuns.add(r);
+            }
         }
     }
 

@@ -27,12 +27,10 @@ public class PlayerDataEventListener implements Listener {
     public void onPlayerJoin(final PlayerJoinEvent evt) {
         Runnable logInRunnable = new Runnable() {
             public void run() {
-                PData pData = pDataMain.getPDataHandler().getPDataFromUsername(evt.getPlayer().getName());
-                if (pData == null) {
+                if (!pDataMain.getPDataHandler().logIn(evt.getPlayer())) {
                     pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", new Object[]{evt.getPlayer().getName()});
                     evt.getPlayer().performCommand("spawn");
                 }
-                pDataMain.getPDataHandler().logIn(evt.getPlayer());
             }
         };
         pDataMain.getPDataHandler().runAfterLoad(logInRunnable);
