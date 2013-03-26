@@ -25,7 +25,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  */
 public final class PData implements Comparable<PData> {
 
-    private String userName;
+    private final String userName;
     private String nickName;
     private long timePlayed;
     private long currentSession;
@@ -210,7 +210,7 @@ public final class PData implements Comparable<PData> {
         currentSession = System.currentTimeMillis();
         logOuts.add(System.currentTimeMillis());
         updateStatus(true, true);
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "PData Logged Out: {0}", userName);
+        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", userName);
     }
 
     /**
@@ -224,7 +224,7 @@ public final class PData implements Comparable<PData> {
         currentSession = System.currentTimeMillis();
         makeExtraThread();
         PlayerData.getCurrentInstance().getPDataHandler().loggedIn(this);
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "PData Logged In: {0}", userName);
+        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", userName);
     }
 
     /**
@@ -261,7 +261,6 @@ public final class PData implements Comparable<PData> {
      * @return Whether or not this player is online
      */
     public boolean isOnline() {
-        updateStatus(false, false);
         return online;
     }
 

@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class PlayerDataEventListener implements Listener {
 
-    private PlayerData pDataMain;
+    private final PlayerData pDataMain;
 
     protected PlayerDataEventListener(PlayerData main) {
         pDataMain = main;
@@ -24,15 +24,18 @@ public class PlayerDataEventListener implements Listener {
      * @param evt
      */
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerJoin(PlayerJoinEvent evt) {
-        PData pData = pDataMain.getPDataHandler().getPDataFromUsername(evt.getPlayer().getName());
-        if (pData == null) {
-            pDataMain.getLogger().log(Level.INFO, "Teleporting {0} to spawn", new Object[]{evt.getPlayer().getName()});
-            evt.getPlayer().performCommand("spawn");
-        }
-        pDataMain.getLogger().log(Level.INFO, "{0} Joined", evt.getPlayer().getName());
-        pDataMain.getPDataHandler().logIn(evt.getPlayer());
-
+    public void onPlayerJoin(final PlayerJoinEvent evt) {
+        Runnable logInRunnable = new Runnable() {
+            public void run() {
+                PData pData = pDataMain.getPDataHandler().getPDataFromUsername(evt.getPlayer().getName());
+                if (pData == null) {
+                    pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", new Object[]{evt.getPlayer().getName()});
+                    evt.getPlayer().performCommand("spawn");
+                }
+                pDataMain.getPDataHandler().logIn(evt.getPlayer());
+            }
+        };
+        pDataMain.getPDataHandler().runAfterLoad(logInRunnable);
     }
 
     /**
@@ -40,7 +43,12 @@ public class PlayerDataEventListener implements Listener {
      * @param evt
      */
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerQuit(PlayerQuitEvent evt) {
-        pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedOut();
+    public void onPlayerQuit(final PlayerQuitEvent evt) {
+        Runnable logOutRunnable = new Runnable() {
+            public void run() {
+                pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedOut();
+            }
+        };
+        pDataMain.getPDataHandler().runAfterLoad(logOutRunnable);
     }
 }
