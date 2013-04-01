@@ -79,7 +79,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         }
         sender.sendMessage(ColorList.MAIN + "Info Avalible For " + ColorList.NAME + pData.userName() + ColorList.MAIN + ":");
         ArrayList<String> linesToSend = new ArrayList<String>();
-        linesToSend.add(ColorList.MAIN + "Display Name: " + ColorList.NAME + pData.nickName(true));
+        linesToSend.add(ColorList.MAIN + "Display Name: " + ColorList.NAME + pData.nickName());
         if (pData.isOnline()) {
             linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is online");
             IPLogin[] logIns = pData.logIns();

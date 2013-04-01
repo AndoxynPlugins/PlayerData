@@ -1,7 +1,11 @@
 package net.daboross.bukkitdev.playerdata;
 
-import org.w3c.dom.Document;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * This is a object that holds custom data given to and from the
@@ -22,7 +26,7 @@ public class Data {
     /**
      * This is the raw data.
      */
-    private String[] data;
+    private List<String> data;
     /**
      * This is the owner.
      */
@@ -36,7 +40,7 @@ public class Data {
      */
     public Data(String name, String[] data) {
         this.name = name;
-        this.data = data;
+        this.data = new ArrayList<String>(Arrays.asList(data));
     }
 
     /**
@@ -54,7 +58,7 @@ public class Data {
      * @return The Raw Data stored in this Data.
      */
     public String[] getData() {
-        return data;
+        return data.toArray(new String[data.size()]);
     }
 
     /**
@@ -73,30 +77,30 @@ public class Data {
         this.owner = pData;
     }
 
-    private static String listToString(String[] data) {
-        String result = "";
-        for (String s : data) {
-            if (!"".equals(result)) {
-                result += "&$&$&";
-            }
-            result += s;
-        }
-        return result;
-    }
-
-    private static String[] stringToList(String data) {
-        return data.split("&$&$&");
-    }
-
-    public Element toXML(Document d) {
-        Element e = d.createElement(name);
+    public void putDataOnXML(Element e) {
         e.setAttribute("name", name);
-        e.setAttribute("data", listToString(data));
-        return e;
+        Element dataElement = e.getOwnerDocument().createElement("data");
+        for (int i = 0; i < data.size(); i++) {
+            dataElement.setAttribute("dataline" + i, data.get(i));
+        }
+        e.appendChild(dataElement);
     }
 
-    public Data(Element e) {
-        this.name = e.getAttribute("name");
-        this.data = stringToList(e.getAttribute("data"));
+    public Data(Node node) {
+        NamedNodeMap list = node.getAttributes();
+        for (int i = 0; i < list.getLength(); i++) {
+            Node n = list.item(i);
+            if (n.getNodeName().equals("name")) {
+                this.name = n.getNodeValue();
+            } else if (n.getNodeName().equals("data")) {
+                NamedNodeMap list2 = n.getAttributes();
+                for (int k = 0; k < list2.getLength(); k++) {
+                    Node n2 = list2.item(i);
+                    if (n2.getNodeName().startsWith("dataline")) {
+                        data.add(n2.getNodeValue());
+                    }
+                }
+            }
+        }
     }
 }

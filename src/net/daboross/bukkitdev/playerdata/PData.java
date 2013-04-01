@@ -135,32 +135,37 @@ public final class PData implements Comparable<PData> {
      * display name, or if the player is offline. false otherwise.
      */
     protected boolean updateStatus(boolean saveIfOnline, boolean saveIfOffline) {
-        Player[] pList = Bukkit.getServer().getOnlinePlayers();
-        online = false;
-        boolean returnV = true;
-        for (Player p : pList) {
-            String name = p.getName();
-            String nName = p.getDisplayName();
-            if (name.equals(this.userName)) {
-                if (!nName.equals(name)) {
-                    this.nickName = nName;
-                } else {
-                    returnV = false;
-                }
-                online = true;
-                timePlayed += (System.currentTimeMillis() - currentSession);
-                currentSession = System.currentTimeMillis();
-                if (saveIfOnline) {
-                    saveStatus();
-                }
-                updateGroup();
-                return returnV;
+        Player p = Bukkit.getPlayer(this.userName);
+        if (p != null) {
+            updateNick(p);
+            online = true;
+            timePlayed += (System.currentTimeMillis() - currentSession);
+            currentSession = System.currentTimeMillis();
+            updateGroup();
+            if (saveIfOnline) {
+                saveStatus();
             }
+            return (p.getName().equalsIgnoreCase(p.getDisplayName()));
+        } else {
+            online = false;
+            if (saveIfOffline) {
+                saveStatus();
+            }
+            return true;
         }
-        if (saveIfOffline) {
-            saveStatus();
+    }
+
+    private void updateNick(Player p) {
+        if (p.getName().equalsIgnoreCase(this.userName)) {
+            this.nickName = p.getDisplayName();
         }
-        return returnV;
+    }
+
+    private void updateNick() {
+        Player p = Bukkit.getPlayer(this.userName);
+        if (p != null) {
+            this.nickName = p.getDisplayName();
+        }
     }
 
     /**
@@ -248,10 +253,8 @@ public final class PData implements Comparable<PData> {
      * returned.
      * @return
      */
-    public String nickName(boolean updateStatus) {
-        if (updateStatus) {
-            updateStatus(false, false);
-        }
+    public String nickName() {
+        updateNick();
         return nickName;
     }
 

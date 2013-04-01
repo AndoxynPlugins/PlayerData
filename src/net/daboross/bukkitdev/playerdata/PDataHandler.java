@@ -36,7 +36,8 @@ final class PDataHandler {
      */
     private ArrayList<PData> playerDataList = new ArrayList<PData>();
     private PlayerData playerDataMain;
-    private File playerDataFolder;
+    private final File playerDataFolder;
+    private final File xmlDataFolder;
     private Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
 
     /**
@@ -47,13 +48,21 @@ final class PDataHandler {
         this.playerDataMain = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
+            xmlDataFolder = new File(pluginFolder, "xml");
             playerDataFolder = new File(pluginFolder, "playerData");
             if (playerDataFolder != null) {
                 if (!playerDataFolder.isDirectory()) {
                     playerDataFolder.mkdirs();
                 }
             }
+            if (xmlDataFolder != null) {
+                if (!xmlDataFolder.isDirectory()) {
+                    xmlDataFolder.mkdirs();
+                }
+            }
         } else {
+            playerDataFolder = null;
+            xmlDataFolder = null;
             playerDataMain.getLogger().severe("Plugin Data Folder Is Null!");
         }
     }
@@ -218,7 +227,7 @@ final class PDataHandler {
         for (int i = 0; i < playerDataList.size(); i++) {
             PData pD = playerDataList.get(i);
             String checkUserName = pD.userName().toLowerCase();
-            String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
+            String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
             String pUserName = pD.userName();
             int add = pD.isOnline() ? 0 : 1;
             if (checkUserName != null) {
@@ -305,9 +314,9 @@ final class PDataHandler {
             PData pD = playerDataList.get(i);
             boolean online = pD.isOnline();
             String checkUserName = pD.userName().toLowerCase();
-            String checkNickName = ChatColor.stripColor(pD.nickName(false)).toLowerCase();
+            String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
             String pUserName = pD.userName();
-            String pNickName = pD.nickName(false);
+            String pNickName = pD.nickName();
             if (checkUserName != null) {
                 if (checkNickName == null || checkUserName.equalsIgnoreCase(checkNickName)) {
                     if (checkUserName.equalsIgnoreCase(user)) {
@@ -572,7 +581,7 @@ final class PDataHandler {
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
     }
 
-    class Sorter implements Runnable {
+    private class Sorter implements Runnable {
 
         private Logger l;
         private Runnable afterLoad;
@@ -746,13 +755,10 @@ final class PDataHandler {
     }
 
     public void saveXML(final Callable<Void> callAfter) {
-        final File pluginFolder = playerDataMain.getDataFolder();
-        final File xmlFolder = new File(pluginFolder, "xml");
-        xmlFolder.mkdirs();
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
             public void run() {
                 for (PData pd : playerDataList) {
-                    File xmlFile = new File(xmlFolder, pd.userName() + ".xml");
+                    File xmlFile = new File(xmlDataFolder, pd.userName() + ".xml");
                     try {
                         xmlFile.createNewFile();
 

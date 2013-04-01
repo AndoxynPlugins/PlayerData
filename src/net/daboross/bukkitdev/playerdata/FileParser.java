@@ -100,7 +100,7 @@ final class FileParser {
         }
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("nickname:");
-        lines.add(pData.nickName(false));
+        lines.add(pData.nickName());
         lines.add("");
         lines.add("logins:");
         IPLogin[] logIns = pData.logIns();

@@ -1,5 +1,9 @@
 package net.daboross.bukkitdev.playerdata;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
 /**
  *
  * @author daboross
@@ -88,5 +92,16 @@ public class IPLogin {
     @Override
     public String toString() {
         return time + "  :  " + ip;
+    }
+
+    public void putDataOnXML(Element e) {
+        e.setAttribute("ip", ip);
+        e.setAttribute("timestamp", String.valueOf(time));
+    }
+
+    public IPLogin(Node n) {
+        NamedNodeMap nnm = n.getAttributes();
+        ip = nnm.getNamedItem("ip").getNodeValue();
+        time = Long.valueOf(nnm.getNamedItem("timestamp").getNodeValue());
     }
 }
