@@ -2,7 +2,9 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.daboross.xmlhelpers.DXMLException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -102,14 +104,24 @@ public class Data {
             if (n.getNodeName().equals("data")) {
                 NamedNodeMap list2 = n.getAttributes();
                 data = new ArrayList<String>(list2.getLength());
+                Map<String, String> beforeData = new HashMap<String, String>();
                 for (int k = 0; k < list2.getLength(); k++) {
                     Node n2 = list2.item(k);
                     if (n2.getNodeName().startsWith("dataline")) {
-                        data.add(n2.getNodeValue());
+                        beforeData.put(n2.getNodeName(), n2.getNodeValue());
                     } else {
                         throw new DXMLException("Unknown Attribute on data child:" + n2.getNodeName());
                     }
                 }
+                int k = 0;
+                while (true) {
+                    String str = beforeData.get("dataline" + k++);
+                    if (str == null) {
+                        break;
+                    }
+                    data.add(str);
+                }
+
             }
             if (data == null || name == null) {
                 throw new DXMLException("Not Data Element");
