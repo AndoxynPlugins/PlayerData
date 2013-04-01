@@ -122,6 +122,6 @@ public class XMLFileParser {
         } catch (NumberFormatException nfe) {
             throw new DXMLException("Long Format? user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts);
         }
-        return new BeforeLoadPlayerData(username, username, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
+        return new BeforeLoadPlayerData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
     }
 }
