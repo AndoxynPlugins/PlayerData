@@ -24,7 +24,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  * @author daboross
  */
 public final class PData implements Comparable<PData> {
-
+    
     private final String userName;
     private String nickName;
     private long timePlayed;
@@ -154,13 +154,13 @@ public final class PData implements Comparable<PData> {
             return true;
         }
     }
-
+    
     private void updateNick(Player p) {
         if (p.getName().equalsIgnoreCase(this.userName)) {
             this.nickName = p.getDisplayName();
         }
     }
-
+    
     private void updateNick() {
         Player p = Bukkit.getPlayer(this.userName);
         if (p != null) {
@@ -409,7 +409,7 @@ public final class PData implements Comparable<PData> {
         updateGroup();
         return groups;
     }
-
+    
     public boolean isGroup(String group) {
         updateGroup();
         for (String gr : groups) {
@@ -431,7 +431,7 @@ public final class PData implements Comparable<PData> {
         updateGroup();
         return permUser;
     }
-
+    
     public boolean hasPermission(String perm) {
         if (PlayerData.isPEX()) {
             getPermUser();
@@ -454,7 +454,7 @@ public final class PData implements Comparable<PData> {
             groups = new String[]{"Unknown"};
         }
     }
-
+    
     private void findPermUser() {
         if (PlayerData.isPEX()) {
             permUser = PermissionsEx.getUser(userName);
@@ -498,14 +498,14 @@ public final class PData implements Comparable<PData> {
                 }
             }
         }
-        ArrayList<Long> logOutsKnown = new ArrayList<Long>();
+        ArrayList<Long> logOutsNewList = new ArrayList<Long>();
         for (Long l : logOuts) {
-            if (logOutsKnown.contains(l)) {
-                logOuts.remove(l);
-            } else {
-                logOutsKnown.add(l);
+            if (!logOutsNewList.contains(l)) {
+                logOutsNewList.add(l);
             }
         }
+        logOuts.clear();
+        logOuts.addAll(logOutsNewList);
     }
 
     /**
@@ -521,7 +521,7 @@ public final class PData implements Comparable<PData> {
             return 0;
         }
     }
-
+    
     public int compareTo(PData pd) {
         if (pd == null) {
             throw new NullPointerException();
