@@ -30,9 +30,9 @@ import org.bukkit.entity.Player;
  *
  * @author daboross
  */
-final class PDataHandler {
+public final class PDataHandler {
 
-    private static final boolean xml = true;
+    private static final boolean xml = false;
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
@@ -619,7 +619,7 @@ final class PDataHandler {
 
     }
 
-    private class Sorter implements Runnable {
+    class Sorter implements Runnable {
 
         private Logger l;
         private Runnable afterLoad;

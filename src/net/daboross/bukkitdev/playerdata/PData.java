@@ -493,20 +493,28 @@ public final class PData implements Comparable<PData> {
             if (!online) {
                 if (logOuts.isEmpty()) {
                     logOuts.add(bukkitLastPlayed);
-                } else if (bukkitLastPlayed > logOuts.get(0)) {
+                } else if (bukkitLastPlayed > logOuts.get(logOuts.size() - 1)) {
                     logOuts.add(bukkitLastPlayed);
                 }
+            }
+        }
+        ArrayList<Long> logOutsKnown = new ArrayList<Long>();
+        for (Long l : logOuts) {
+            if (logOutsKnown.contains(l)) {
+                logOuts.remove(l);
             } else {
+                logOutsKnown.add(l);
             }
         }
     }
 
     /**
-     * This function checks when the player was last on the server. This
-     * function will NOT return correctly if the player is currently online, so
-     * CHECK IF THEY ARE ONLINE first.
+     * This function checks when the player was last on the server.
      */
     public long lastSeen() {
+        if (online) {
+            return System.currentTimeMillis();
+        }
         if (logOuts.size() > 0) {
             return logOuts.get(logOuts.size() - 1);
         } else {

@@ -25,7 +25,8 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Gets the Info That Player data has stored on a player"));
         initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("This command deletes all player data and recreates it from bukkit!"));
         initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", "This Command Lists All Players Who have ever joined the server. In Pages.");
-        initCommand("xml", new String[]{}, true, "playerdata.xml", "Blah");
+        initCommand("xml", new String[]{}, true, "playerdata.xml", "Save All Data As XML");
+        initCommand("bpd", new String[]{}, true, "playerdata.bpd", "Save All Data AS BPD");
     }
 
     @Override
@@ -37,15 +38,27 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         } else if (subCommand.equals("list")) {
             runListCommand(sender, mainCommand, subCommandLabel, subCommandArgs);
         } else if (subCommand.equals("xml")) {
-            runXmlCommand(sender);
+            runXMLCommand(sender);
+        } else if (subCommand.equals("bpd")) {
+            runBPDCommand(sender);
         }
     }
 
-    private void runXmlCommand(final CommandSender sender) {
+    private void runXMLCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.MAIN + "Creating XML Files");
         playerDataMain.getPDataHandler().saveAllXML(new Callable<Void>() {
             public Void call() throws Exception {
                 sender.sendMessage(ColorList.MAIN + "XML File Creation Done");
+                return null;
+            }
+        });
+    }
+
+    private void runBPDCommand(final CommandSender sender) {
+        sender.sendMessage(ColorList.MAIN + "Creating BPD Files");
+        playerDataMain.getPDataHandler().saveAllBPD(new Callable<Void>() {
+            public Void call() throws Exception {
+                sender.sendMessage(ColorList.MAIN + "BPD File Creation Done");
                 return null;
             }
         });
