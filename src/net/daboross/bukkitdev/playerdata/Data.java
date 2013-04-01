@@ -110,7 +110,6 @@ public class Data {
                         throw new DXMLException("Unknown Attribute on data child:" + n2.getNodeName());
                     }
                 }
-                System.out.println(":::" + data.size() + " : " + data);
             }
             if (data == null || name == null) {
                 throw new DXMLException("Not Data Element");
