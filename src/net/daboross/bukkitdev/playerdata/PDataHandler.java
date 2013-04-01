@@ -32,7 +32,7 @@ import org.bukkit.entity.Player;
  */
 public final class PDataHandler {
 
-    private static final boolean xml = false;
+    private static final boolean xml = true;
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
