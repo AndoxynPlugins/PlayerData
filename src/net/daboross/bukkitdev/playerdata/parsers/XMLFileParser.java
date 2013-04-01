@@ -87,7 +87,7 @@ public class XMLFileParser {
                 logOuts = current;
             } else if (current.getNodeName().equals("data")) {
                 data = current;
-            } else {
+            } else if (!current.getNodeName().equals("#text")) {
                 throw new DXMLException("Field:" + current.getNodeName());
             }
         }
