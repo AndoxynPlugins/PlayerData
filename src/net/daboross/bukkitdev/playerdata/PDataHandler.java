@@ -20,16 +20,17 @@ import org.bukkit.entity.Player;
  * This is the internal handler of all PData. This class is the network that
  * holds all the other functioning objects and classes together. When the server
  * starts up, it will go through all the files in the playerdata folder, and
- * read each one with the FileHandler. Then get a PData from the FileParser, and
- * put that PData into its internal list. It stores all the PDatas in two lists.
- * All the PDatas are in the playerDataList. Then they are also either in the
- * aliveList or the deadList. When a PData is created, it will ask the
+ * read each one with the FileHandler. Then get a PData from the BPDFileParser,
+ * and put that PData into its internal list. It stores all the PDatas in two
+ * lists. All the PDatas are in the playerDataList. Then they are also either in
+ * the aliveList or the deadList. When a PData is created, it will ask the
  * PDataHandler to put it in either the aliveList or the dead List.
  *
  * @author daboross
  */
 final class PDataHandler {
 
+    private static final boolean xml = true;
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
@@ -39,6 +40,9 @@ final class PDataHandler {
     private final File playerDataFolder;
     private final File xmlDataFolder;
     private Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
+    private boolean isLoaded = false;
+    private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
+    private ArrayList<BeforeLoadPlayerData> beforeLoadList = new ArrayList<BeforeLoadPlayerData>();
 
     /**
      * Use this to create a new PDataHandler when PlayerData is loaded. There
@@ -101,10 +105,7 @@ final class PDataHandler {
             }
         }
         saveAllData();
-        reReadData(new Runnable() {
-            public void run() {
-            }
-        });
+        reReadData(null);
         return returnValue;
     }
 
@@ -144,24 +145,38 @@ final class PDataHandler {
      * save.
      */
     protected void saveAllData() {
-        for (int i = 0; i < playerDataList.size(); i++) {
-            PData pData = playerDataList.get(i);
-            if (pData != null) {
-                pData.updateStatus(false, false);
-                String name = pData.userName();
-                if (name != null) {
-                    File pFile = new File(playerDataFolder, (name + ".bpd"));
-                    ArrayList<String> playerFileLines = FileParser.parseToList(pData);
-                    if (playerFileLines == null) {
-                        playerDataMain.getLogger().severe("File Parser Has Given Null Refrence!");
-                    } else {
-                        FileHandler.WriteFile(pFile, playerFileLines);
-                    }
-                } else {
-                    playerDataList.remove(pData);
-                }
+        for (PData pData : playerDataList) {
+            pData.updateStatus(false, false);
+            if (xml) {
+                savePDataXML(pData);
+            } else {
+                savePDataBPD(pData);
             }
         }
+    }
+
+    public void saveAllXML(final Callable<Void> callAfter) {
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+            public void run() {
+                for (PData pData : playerDataList) {
+                    pData.updateStatus(false, false);
+                    savePDataXML(pData);
+                }
+                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
+            }
+        });
+    }
+
+    public void saveAllBPD(final Callable<Void> callAfter) {
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+            public void run() {
+                for (PData pData : playerDataList) {
+                    pData.updateStatus(false, false);
+                    savePDataBPD(pData);
+                }
+                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
+            }
+        });
     }
 
     /**
@@ -177,16 +192,35 @@ final class PDataHandler {
         if (!playerDataList.contains(pData)) {
             playerDataList.add(0, pData);
         }
-        String name = pData.userName();
-        if (name != null) {
-            File pFile = new File(playerDataFolder, (name + ".bpd"));
-            ArrayList<String> playerFileLines = FileParser.parseToList(pData);
-            if (playerFileLines == null || playerFileLines.isEmpty()) {
-                playerDataMain.getLogger().severe("File Parser Has Given Invalid Line List!");
-            } else {
-                FileHandler.WriteFile(pFile, playerFileLines);
-            }
+        if (xml) {
+            savePDataXML(pData);
+        } else {
+            savePDataBPD(pData);
         }
+    }
+
+    private void savePDataXML(PData pd) {
+        File file = new File(xmlDataFolder, pd.userName() + ".xml");
+        try {
+            file.createNewFile();
+        } catch (IOException ex) {
+            playerDataMain.getLogger().log(Level.SEVERE, "Exception Creating New File", ex);
+        }
+        try {
+            XMLFileParser.writeToFile(pd, file);
+        } catch (DXMLException ex) {
+            playerDataMain.getLogger().log(Level.SEVERE, "Exception Writing To File", ex);
+        }
+    }
+
+    private void savePDataBPD(PData pd) {
+        File file = new File(playerDataFolder, pd.userName() + ".bpd");
+        try {
+            file.createNewFile();
+        } catch (IOException ex) {
+            playerDataMain.getLogger().log(Level.SEVERE, "Exception Creating New File", ex);
+        }
+        BPDFileParser.writeToFile(pd, file);
     }
 
     /**
@@ -579,6 +613,8 @@ final class PDataHandler {
         final Logger l = playerDataMain.getLogger();
         Runnable sorter = new Sorter(l, afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
+
+
     }
 
     private class Sorter implements Runnable {
@@ -628,7 +664,9 @@ final class PDataHandler {
         Runnable run = new Runnable() {
             public void run() {
                 turnBeforeLoadIntoLoaded(l);
-                runAfter.run();
+                if (runAfter != null) {
+                    runAfter.run();
+                }
             }
         };
         Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
@@ -704,7 +742,6 @@ final class PDataHandler {
         }
         l.log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
     }
-    private ArrayList<BeforeLoadPlayerData> beforeLoadList = new ArrayList<BeforeLoadPlayerData>();
 
     /**
      * This function removes all the current PDatas loaded, and loads new ones
@@ -712,24 +749,30 @@ final class PDataHandler {
      * used on startup.
      */
     private void readDataBeforeLoad(Logger l) {
-        playerDataList.clear();
-        if (playerDataFolder != null) {
-            File[] playerFiles = playerDataFolder.listFiles();
+        if (xml) {
+            loadAllPDataXML();
+        } else {
+            loadAllPDataBPD();
+        }
+        l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
+    }
+
+    private void loadAllPDataXML() {
+        beforeLoadList.clear();
+        if (xmlDataFolder != null) {
+            File[] playerFiles = xmlDataFolder.listFiles();
             for (File fl : playerFiles) {
                 if (fl != null) {
                     if (fl.canRead()) {
                         if (fl.isFile()) {
                             String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                            if (type.equals("bpd")) {
-                                ArrayList<String> fileContents = FileHandler.ReadFile(fl);
-                                String name = fl.getName().substring(0, fl.getName().indexOf('.'));
-                                /*
-                                 * When File parser parses a file, it creates a
-                                 * PData, ready to return. When a PData is created,
-                                 * it auto adds itself to this class's
-                                 * playerDataList IF THE PLAYER IS ONLINE.
-                                 */
-                                BeforeLoadPlayerData beforeLoad = FileParser.parseList(fileContents, name);
+                            if (type.equals("xml")) {
+                                BeforeLoadPlayerData beforeLoad = null;
+                                try {
+                                    beforeLoad = XMLFileParser.readFromFile(fl);
+                                } catch (DXMLException ex) {
+                                    playerDataMain.getLogger().log(Level.SEVERE, "", ex);
+                                }
                                 if (beforeLoad != null) {
                                     beforeLoadList.add(beforeLoad);
                                 }
@@ -739,10 +782,29 @@ final class PDataHandler {
                 }
             }
         }
-        l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
     }
-    private boolean isLoaded = false;
-    private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
+
+    private void loadAllPDataBPD() {
+        playerDataList.clear();
+        if (playerDataFolder != null) {
+            File[] playerFiles = playerDataFolder.listFiles();
+            for (File fl : playerFiles) {
+                if (fl != null) {
+                    if (fl.canRead()) {
+                        if (fl.isFile()) {
+                            String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                            if (type.equals("bpd")) {
+                                BeforeLoadPlayerData beforeLoad = BPDFileParser.readFromFile(fl);
+                                if (beforeLoad != null) {
+                                    beforeLoadList.add(beforeLoad);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     protected void runAfterLoad(Runnable r) {
         synchronized (afterLoadRuns) {
@@ -752,27 +814,5 @@ final class PDataHandler {
                 afterLoadRuns.add(r);
             }
         }
-    }
-
-    public void saveXML(final Callable<Void> callAfter) {
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
-            public void run() {
-                for (PData pd : playerDataList) {
-                    File xmlFile = new File(xmlDataFolder, pd.userName() + ".xml");
-                    try {
-                        xmlFile.createNewFile();
-
-                    } catch (IOException ex) {
-                        Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    try {
-                        XMLFileParser.writeToFile(pd, xmlFile);
-                    } catch (DXMLException ex) {
-                        Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
-            }
-        });
     }
 }

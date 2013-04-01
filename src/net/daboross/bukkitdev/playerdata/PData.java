@@ -294,7 +294,7 @@ public final class PData implements Comparable<PData> {
      * milliseconds.
      */
     public IPLogin[] logIns() {
-        return logIns.toArray(new IPLogin[0]);
+        return logIns.toArray(new IPLogin[logIns.size()]);
     }
 
     /**
@@ -304,7 +304,7 @@ public final class PData implements Comparable<PData> {
      * milliseconds.
      */
     public Long[] logOuts() {
-        return logOuts.toArray(new Long[0]);
+        return logOuts.toArray(new Long[logOuts.size()]);
     }
 
     /**

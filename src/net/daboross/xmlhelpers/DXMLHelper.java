@@ -42,12 +42,8 @@ public class DXMLHelper {
             transformerTemp = null;
         }
         if (transformerTemp != null) {
-            transformerTemp.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformerTemp.setOutputProperty(OutputKeys.INDENT, "no");
             transformerTemp.setOutputProperty(OutputKeys.STANDALONE, "no");
-            try {
-                transformerTemp.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            } catch (IllegalArgumentException ex) {
-            }
         }
         transformer = transformerTemp;
         docFactory = DocumentBuilderFactory.newInstance();

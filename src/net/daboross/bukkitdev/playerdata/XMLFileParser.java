@@ -53,8 +53,8 @@ public class XMLFileParser {
         DXMLHelper.writeXML(document, fileResult);
     }
 
-    public static BeforeLoadPlayerData readFromFile(File f) throws DXMLException {
-        Document d = DXMLHelper.readDocument(f);
+    public static BeforeLoadPlayerData readFromFile(File fl) throws DXMLException {
+        Document d = DXMLHelper.readDocument(fl);
         Node root = d.getFirstChild();
         if (!root.getNodeName().equals("playerdata")) {
             throw new DXMLException("File Given Isn't PlayerData File");
@@ -72,21 +72,23 @@ public class XMLFileParser {
         for (int i = 0; i < list.getLength(); i++) {
             Node current = list.item(i);
             if (current.getNodeName().equals("username")) {
-                username = current.getNodeValue();
+                username = current.getFirstChild().getNodeValue();
             } else if (current.getNodeName().equals("displayname")) {
-                displayname = current.getNodeValue();
+                displayname = current.getFirstChild().getNodeValue();
             } else if (current.getNodeName().equals("timeplayed")) {
-                timePlayed = current.getNodeValue();
+                timePlayed = current.getFirstChild().getNodeValue();
             } else if (current.getNodeName().equals("logins")) {
                 logIns = current;
             } else if (current.getNodeName().equals("logouts")) {
                 logOuts = current;
             } else if (current.getNodeName().equals("data")) {
                 data = current;
+            } else {
+                throw new DXMLException("Field:" + current.getNodeName());
             }
         }
         if (logOuts == null || logIns == null || username == null || displayname == null || timePlayed == null || data == null) {
-            throw new DXMLException("Doesn't Contain All Fields");
+            throw new DXMLException("Doesn't Contain All Fields user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts);
         }
         NodeList logOutList = logOuts.getChildNodes();
         ArrayList<Long> logOutsFinal = new ArrayList<Long>(logOutList.getLength());
@@ -94,7 +96,11 @@ public class XMLFileParser {
         ArrayList<IPLogin> logInsFinal = new ArrayList<IPLogin>(logInList.getLength());
         for (int i = 0; i < logOutList.getLength(); i++) {
             Node current = logOutList.item(i);
-            logOutsFinal.add(Long.valueOf(current.getNodeValue()));
+            try {
+                logOutsFinal.add(Long.valueOf(current.getFirstChild().getNodeValue()));
+            } catch (NumberFormatException nfe) {
+                throw new DXMLException("Long Format? user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts + " logout:" + current.getNodeValue());
+            }
         }
         for (int i = 0; i < logInList.getLength(); i++) {
             Node current = logInList.item(i);
@@ -106,6 +112,12 @@ public class XMLFileParser {
             Node current = dataList.item(i);
             dataFinal.add(new Data(current));
         }
-        return new BeforeLoadPlayerData(username, username, logInsFinal, logOutsFinal, Long.valueOf(timePlayed), dataFinal.toArray(new Data[dataFinal.size()]));
+        long timePlayedLong;
+        try {
+            timePlayedLong = Long.parseLong(timePlayed);
+        } catch (NumberFormatException nfe) {
+            throw new DXMLException("Long Format? user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts);
+        }
+        return new BeforeLoadPlayerData(username, username, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
     }
 }

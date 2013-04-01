@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,7 +12,18 @@ import java.util.logging.Level;
  *
  * @author daboross
  */
-final class FileParser {
+final class BPDFileParser {
+
+    public static void writeToFile(PData pData, File fileResult) {
+        ArrayList<String> lineList = parseToList(pData);
+        FileHandler.WriteFile(fileResult, lineList);
+    }
+
+    public static BeforeLoadPlayerData readFromFile(File fl) {
+        String name = fl.getName().substring(0, fl.getName().indexOf('.'));
+        ArrayList<String> lineList = FileHandler.ReadFile(fl);
+        return parseList(lineList, name);
+    }
 
     /**
      *
@@ -20,7 +32,7 @@ final class FileParser {
      * @return
      * @throws IllegalArgumentException
      */
-    protected static BeforeLoadPlayerData parseList(ArrayList<String> file, String name) throws IllegalArgumentException {
+    private static BeforeLoadPlayerData parseList(ArrayList<String> file, String name) {
         if (name == null) {
             throw new IllegalArgumentException("Name Can't Be Null");
         }
@@ -94,7 +106,7 @@ final class FileParser {
      * @return A list that can be stored in a file then parsed into a PData
      * again using parseFromList
      */
-    protected static ArrayList<String> parseToList(PData pData) {
+    private static ArrayList<String> parseToList(PData pData) {
         if (pData == null) {
             throw new IllegalArgumentException("PData Can't Be Null");
         }

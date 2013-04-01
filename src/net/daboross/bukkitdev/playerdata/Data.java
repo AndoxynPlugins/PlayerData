@@ -3,9 +3,11 @@ package net.daboross.bukkitdev.playerdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import net.daboross.xmlhelpers.DXMLException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This is a object that holds custom data given to and from the
@@ -86,20 +88,32 @@ public class Data {
         e.appendChild(dataElement);
     }
 
-    public Data(Node node) {
-        NamedNodeMap list = node.getAttributes();
-        for (int i = 0; i < list.getLength(); i++) {
-            Node n = list.item(i);
+    public Data(Node node) throws DXMLException {
+        NamedNodeMap attributes = node.getAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node n = attributes.item(i);
             if (n.getNodeName().equals("name")) {
                 this.name = n.getNodeValue();
-            } else if (n.getNodeName().equals("data")) {
+            }
+        }
+        NodeList childNodes = node.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node n = childNodes.item(i);
+            if (n.getNodeName().equals("data")) {
                 NamedNodeMap list2 = n.getAttributes();
+                data = new ArrayList<String>(list2.getLength());
                 for (int k = 0; k < list2.getLength(); k++) {
-                    Node n2 = list2.item(i);
+                    Node n2 = list2.item(k);
                     if (n2.getNodeName().startsWith("dataline")) {
                         data.add(n2.getNodeValue());
+                    } else {
+                        throw new DXMLException("Unknown Attribute on data child:" + n2.getNodeName());
                     }
                 }
+                System.out.println(":::" + data.size() + " : " + data);
+            }
+            if (data == null || name == null) {
+                throw new DXMLException("Not Data Element");
             }
         }
     }

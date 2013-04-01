@@ -43,7 +43,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
 
     private void runXmlCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.MAIN + "Creating XML Files");
-        playerDataMain.getPDataHandler().saveXML(new Callable<Void>() {
+        playerDataMain.getPDataHandler().saveAllXML(new Callable<Void>() {
             public Void call() throws Exception {
                 sender.sendMessage(ColorList.MAIN + "XML File Creation Done");
                 return null;
