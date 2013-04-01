@@ -1,4 +1,4 @@
-package net.daboross.bukkitdev.playerdata;
+package net.daboross.bdphelpers;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,7 +14,7 @@ import org.bukkit.Bukkit;
 /**
  * This class provides Functions to read and write to and from Files.
  */
-final class FileHandler {
+public final class FileHandler {
 
     /**
      * Writes a file with text lines to a given File.
@@ -23,7 +23,7 @@ final class FileHandler {
      * @param lines This is the text to put in a file.
      * @return True if successful, False otherwise.
      */
-    protected static boolean WriteFile(File file, ArrayList<String> lines) {
+    public static boolean WriteFile(File file, ArrayList<String> lines) {
         if (lines == null || file == null) {
             return false;
         }
@@ -75,7 +75,7 @@ final class FileHandler {
      * @param file This is the file to read from
      * @return The text in the file, or null if it doesn't exist.
      */
-    protected static ArrayList<String> ReadFile(File file) {
+    public static ArrayList<String> ReadFile(File file) {
         ArrayList<String> lines = new ArrayList<String>();
         if (file.canRead()) {
             FileReader fr = null;

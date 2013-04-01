@@ -15,7 +15,7 @@ public class BeforeLoadPlayerData {
     private long timePlayed;
     private Data[] data;
 
-    protected BeforeLoadPlayerData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
+    public BeforeLoadPlayerData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
         this.userName = userName;
         this.nickName = nickName;
         this.logIns = logIns;

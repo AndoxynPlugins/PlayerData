@@ -73,7 +73,7 @@ public final class PlayerData extends JavaPlugin {
      *
      * @return
      */
-    protected static PlayerData getCurrentInstance() {
+    public static PlayerData getCurrentInstance() {
         return currentInstance;
     }
 

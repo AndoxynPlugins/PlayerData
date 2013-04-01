@@ -1,7 +1,11 @@
-package net.daboross.bukkitdev.playerdata;
+package net.daboross.bukkitdev.playerdata.parsers;
 
 import java.io.File;
 import java.util.ArrayList;
+import net.daboross.bukkitdev.playerdata.BeforeLoadPlayerData;
+import net.daboross.bukkitdev.playerdata.Data;
+import net.daboross.bukkitdev.playerdata.IPLogin;
+import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.xmlhelpers.DXMLException;
 import net.daboross.xmlhelpers.DXMLHelper;
 import org.w3c.dom.Document;

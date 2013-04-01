@@ -1,18 +1,24 @@
-package net.daboross.bukkitdev.playerdata;
+package net.daboross.bukkitdev.playerdata.parsers;
 
+import net.daboross.bdphelpers.FileHandler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import net.daboross.bukkitdev.playerdata.BeforeLoadPlayerData;
+import net.daboross.bukkitdev.playerdata.Data;
+import net.daboross.bukkitdev.playerdata.IPLogin;
+import net.daboross.bukkitdev.playerdata.PData;
+import net.daboross.bukkitdev.playerdata.PlayerData;
 
 /**
  * This is a class to Parse lines into
  *
  * @author daboross
  */
-final class BPDFileParser {
+public final class BPDFileParser {
 
     public static void writeToFile(PData pData, File fileResult) {
         ArrayList<String> lineList = parseToList(pData);
