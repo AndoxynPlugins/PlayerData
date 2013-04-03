@@ -6,14 +6,16 @@ package net.daboross.bukkitdev.playerdata;
  * @author daboross
  */
 public class PlayerDataHandler {
-
-    private PDataHandler pDataHandler;
+    
+    private final PDataHandler pDataHandler;
+    private final PlayerData playerDataMain;
 
     /**
      * Creates A Player Data Handler given a PlayerData
      */
-    protected PlayerDataHandler(PlayerData pd) {
-        this.pDataHandler = pd.getPDataHandler();
+    public PlayerDataHandler(PlayerData playerDataMain) {
+        this.pDataHandler = playerDataMain.getPDataHandler();
+        this.playerDataMain = playerDataMain;
     }
 
     /**
@@ -137,5 +139,13 @@ public class PlayerDataHandler {
      */
     public void runAfterLoad(Runnable r) {
         pDataHandler.runAfterLoad(r);
+    }
+    
+    public void addJoinListener(PDPlayerJoinListener pdpjl) {
+        playerDataMain.getEventListener().addJoinListener(pdpjl);
+    }
+
+    public void addLeaveListener(PDPlayerLeaveListener pdpll) {
+        playerDataMain.getEventListener().addLeaveListener(pdpll);
     }
 }

@@ -17,6 +17,7 @@ public final class PlayerData extends JavaPlugin {
     private static boolean isPermissionsExLoaded;
     private PDataHandler playerDataHandler;
     private PlayerDataHandler handler;
+    private PlayerDataEventListener eventListener;
 
     /**
      *
@@ -45,7 +46,8 @@ public final class PlayerData extends JavaPlugin {
         } else {
             getLogger().severe("Command GU is null");
         }
-        pm.registerEvents(new PlayerDataEventListener(this), this);
+        eventListener = new PlayerDataEventListener(this);
+        pm.registerEvents(eventListener, this);
         handler = new PlayerDataHandler(this);
         getLogger().info("PlayerData Enabled, Setting Initial Load on Delayed Task");
     }
@@ -187,5 +189,9 @@ public final class PlayerData extends JavaPlugin {
 
     public static boolean isPEX() {
         return isPermissionsExLoaded;
+    }
+
+    public PlayerDataEventListener getEventListener() {
+        return eventListener;
     }
 }
