@@ -14,27 +14,27 @@ import org.bukkit.event.player.PlayerQuitEvent;
  * @author daboross
  */
 public class PlayerDataEventListener implements Listener {
-    
+
     private final PlayerData pDataMain;
     private final List<PDPlayerJoinListener> joinListeners = new ArrayList<PDPlayerJoinListener>();
     private final List<PDPlayerLeaveListener> leaveListeners = new ArrayList<PDPlayerLeaveListener>();
-    
+
     protected void addJoinListener(PDPlayerJoinListener pdpjl) {
         joinListeners.add(pdpjl);
     }
-    
+
     protected void addLeaveListener(PDPlayerLeaveListener pdpll) {
         leaveListeners.add(pdpll);
     }
-    
+
     protected void removeJoinListener(PDPlayerJoinListener pdpjl) {
         joinListeners.remove(pdpjl);
     }
-    
+
     protected void removeLeaveListeners(PDPlayerLeaveListener pdpll) {
         leaveListeners.remove(pdpll);
     }
-    
+
     protected PlayerDataEventListener(PlayerData main) {
         pDataMain = main;
     }

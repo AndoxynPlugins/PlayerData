@@ -6,11 +6,11 @@ import net.daboross.bukkitdev.playerdata.BeforeLoadPlayerData;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
-import net.daboross.xmlhelpers.DXMLException;
-import net.daboross.xmlhelpers.DXMLHelper;
+import net.daboross.dxml.DXMLException;
+import net.daboross.dxml.DXMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import static net.daboross.xmlhelpers.DXMLHelper.createElement;
+import static net.daboross.dxml.DXMLHelper.createElement;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

@@ -6,7 +6,7 @@ package net.daboross.bukkitdev.playerdata;
  * @author daboross
  */
 public class PlayerDataHandler {
-    
+
     private final PDataHandler pDataHandler;
     private final PlayerData playerDataMain;
 
@@ -140,7 +140,7 @@ public class PlayerDataHandler {
     public void runAfterLoad(Runnable r) {
         pDataHandler.runAfterLoad(r);
     }
-    
+
     public void addJoinListener(PDPlayerJoinListener pdpjl) {
         playerDataMain.getEventListener().addJoinListener(pdpjl);
     }
