@@ -100,9 +100,12 @@ public class Data {
         }
         NodeList childNodes = node.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
-            Node n = childNodes.item(i);
-            if (n.getNodeName().equals("data")) {
-                NamedNodeMap list2 = n.getAttributes();
+            Node current = childNodes.item(i);
+            if (current.getNodeName().equals("#text")) {
+                continue;
+            }
+            if (current.getNodeName().equals("data")) {
+                NamedNodeMap list2 = current.getAttributes();
                 data = new ArrayList<String>(list2.getLength());
                 Map<String, String> beforeData = new HashMap<String, String>();
                 for (int k = 0; k < list2.getLength(); k++) {

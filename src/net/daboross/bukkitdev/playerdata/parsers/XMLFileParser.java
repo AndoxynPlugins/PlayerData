@@ -2,10 +2,12 @@ package net.daboross.bukkitdev.playerdata.parsers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.BeforeLoadPlayerData;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
+import net.daboross.bukkitdev.playerdata.PlayerData;
 import net.daboross.dxml.DXMLException;
 import net.daboross.dxml.DXMLHelper;
 import org.w3c.dom.Document;
@@ -100,27 +102,45 @@ public class XMLFileParser {
         ArrayList<IPLogin> logInsFinal = new ArrayList<IPLogin>(logInList.getLength());
         for (int i = 0; i < logOutList.getLength(); i++) {
             Node current = logOutList.item(i);
+            if (current.getNodeName().equals("#text")) {
+                continue;
+            }
+            Node child = current.getFirstChild();
+            if (child == null) {
+                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                continue;
+            }
             try {
-                logOutsFinal.add(Long.valueOf(current.getFirstChild().getNodeValue()));
+                logOutsFinal.add(Long.valueOf(child.getNodeValue()));
             } catch (NumberFormatException nfe) {
-                throw new DXMLException("Long Format? user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts + " logout:" + current.getNodeValue());
+                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
             }
         }
         for (int i = 0; i < logInList.getLength(); i++) {
             Node current = logInList.item(i);
-            logInsFinal.add(new IPLogin(current));
+            if (current.getNodeName().equals("#text")) {
+                continue;
+            }
+            try {
+                logInsFinal.add(new IPLogin(current));
+            } catch (DXMLException dxmle) {
+                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
+            }
         }
         NodeList dataList = data.getChildNodes();
         ArrayList<Data> dataFinal = new ArrayList<Data>(dataList.getLength());
         for (int i = 0; i < dataList.getLength(); i++) {
             Node current = dataList.item(i);
+            if (current.getNodeName().equals("#text")) {
+                continue;
+            }
             dataFinal.add(new Data(current));
         }
-        long timePlayedLong;
+        long timePlayedLong = 0;
         try {
             timePlayedLong = Long.parseLong(timePlayed);
         } catch (NumberFormatException nfe) {
-            throw new DXMLException("Long Format? user:" + username + " display:" + displayname + " time:" + timePlayed + " data:" + data + " logins:" + logIns + " logouts:" + logOuts);
+            PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
         return new BeforeLoadPlayerData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
     }

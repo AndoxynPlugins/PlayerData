@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -471,15 +470,7 @@ public final class PData implements Comparable<PData> {
                 logIns.remove(i);
             }
         }
-        Comparator<IPLogin> comp = new Comparator<IPLogin>() {
-            public int compare(IPLogin ipl1, IPLogin ipl2) {
-                if (ipl1 == null || ipl2 == null) {
-                    throw new IllegalArgumentException();
-                }
-                return Long.compare(ipl1.time(), ipl2.time());
-            }
-        };
-        Collections.sort(logIns, comp);
+        Collections.sort(logIns);
         Collections.sort(logOuts);
         OfflinePlayer offP = Bukkit.getOfflinePlayer(userName);
         long bukkitFirstPlayed = offP.getFirstPlayed();
@@ -522,8 +513,8 @@ public final class PData implements Comparable<PData> {
         }
     }
 
-    public int compareTo(PData pd) {
-        if (pd == null) {
+    public int compareTo(PData other) {
+        if (other == null) {
             throw new NullPointerException();
         }
         Long l1;
@@ -533,10 +524,10 @@ public final class PData implements Comparable<PData> {
         } else {
             l1 = lastSeen();
         }
-        if (pd.online) {
+        if (other.isOnline()) {
             l2 = System.currentTimeMillis();
         } else {
-            l2 = pd.lastSeen();
+            l2 = other.lastSeen();
         }
         return l2.compareTo(l1);
     }

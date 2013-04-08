@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import net.daboross.dxml.DXMLException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -8,7 +9,7 @@ import org.w3c.dom.Node;
  *
  * @author daboross
  */
-public class IPLogin {
+public class IPLogin implements Comparable<IPLogin> {
 
     private long time;
     private String ip;
@@ -99,9 +100,23 @@ public class IPLogin {
         e.setAttribute("timestamp", String.valueOf(time));
     }
 
-    public IPLogin(Node n) {
+    public IPLogin(Node n) throws DXMLException {
         NamedNodeMap nnm = n.getAttributes();
-        ip = nnm.getNamedItem("ip").getNodeValue();
-        time = Long.valueOf(nnm.getNamedItem("timestamp").getNodeValue());
+        Node ipNode = nnm.getNamedItem("ip");
+        if (ipNode == null) {
+            throw new DXMLException("Null IP Node when Creating IPLogin");
+        }
+        ip = ipNode.getNodeValue();
+        Node timeNode = nnm.getNamedItem("timestamp");
+        if (timeNode == null) {
+            throw new DXMLException("Null TimeStamp Node when Creating IPLogin");
+        }
+        time = Long.valueOf(timeNode.getNodeValue());
+    }
+
+    public int compareTo(IPLogin other) {
+        Long l1 = this.time;
+        Long l2 = other.time();
+        return l1.compareTo(l2);
     }
 }

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -38,6 +39,7 @@ public final class PDataHandler {
      * PData for EVERY player who has EVER joined the server.
      */
     private ArrayList<PData> playerDataList = new ArrayList<PData>();
+    private ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
     private PlayerData playerDataMain;
     private final File playerDataFolder;
     private final File xmlDataFolder;
@@ -102,6 +104,9 @@ public final class PDataHandler {
                 PData pData = new PData(players[i]);
                 if (!playerDataList.contains(pData)) {
                     playerDataList.add(pData);
+                }
+                if (!playerDataListFirstJoin.contains(pData)) {
+                    playerDataListFirstJoin.add(pData);
                 }
                 returnValue += 1;
             }
@@ -193,6 +198,9 @@ public final class PDataHandler {
         }
         if (!playerDataList.contains(pData)) {
             playerDataList.add(0, pData);
+        }
+        if (!playerDataListFirstJoin.contains(pData)) {
+            playerDataListFirstJoin.add(pData);
         }
         if (xml) {
             savePDataXML(pData);
@@ -496,6 +504,9 @@ public final class PDataHandler {
         if (!playerDataList.contains(pData)) {
             playerDataList.add(pData);
         }
+        if (!playerDataListFirstJoin.contains(pData)) {
+            playerDataListFirstJoin.add(pData);
+        }
         return pData;
     }
 
@@ -516,8 +527,12 @@ public final class PDataHandler {
             }
         }
         PData pData = new PData(p);
+        pData.loggedIn(p);
         if (!playerDataList.contains(pData)) {
             playerDataList.add(pData);
+        }
+        if (!playerDataListFirstJoin.contains(pData)) {
+            playerDataListFirstJoin.add(pData);
         }
         return false;
     }
@@ -589,7 +604,11 @@ public final class PDataHandler {
      * @return A copy of the list of PDatas that PDataHandler keeps.
      */
     protected PData[] getAllPDatas() {
-        return playerDataList.toArray(new PData[0]);
+        return playerDataList.toArray(new PData[playerDataList.size()]);
+    }
+
+    protected PData[] getAllPDatasFirstJoin() {
+        return playerDataListFirstJoin.toArray(new PData[playerDataListFirstJoin.size()]);
     }
 
     /**
@@ -632,14 +651,25 @@ public final class PDataHandler {
         public void run() {
             while (true) {
                 ArrayList<PData> tempList = new ArrayList<PData>();
+                ArrayList<PData> tempList2 = new ArrayList<PData>();
+
                 for (PData pd : playerDataList) {
                     if (!tempList.contains(pd)) {
                         tempList.add(pd);
                     }
+                    if (!tempList2.contains(pd)) {
+                        tempList2.add(pd);
+                    }
                 }
                 Collections.sort(tempList);
+                Collections.sort(tempList2, new Comparator<PData>() {
+                    public int compare(PData o1, PData o2) {
+                        return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
+                    }
+                });
                 if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
                     playerDataList = tempList;
+                    playerDataListFirstJoin = tempList2;
                     break;
                 } else {
                     l.log(Level.INFO, "Repeating Sort");
@@ -734,11 +764,16 @@ public final class PDataHandler {
     }
 
     private void turnBeforeLoadIntoLoaded(Logger l) {
+        playerDataList.clear();
+        playerDataListFirstJoin.clear();
         for (BeforeLoadPlayerData bl : beforeLoadList) {
             PData pd = bl.getPData();
             if (pd != null) {
                 if (!playerDataList.contains(pd)) {
                     playerDataList.add(pd);
+                }
+                if (!playerDataListFirstJoin.contains(pd)) {
+                    playerDataListFirstJoin.add(pd);
                 }
             }
         }
@@ -760,7 +795,6 @@ public final class PDataHandler {
     }
 
     private void loadAllPDataXML() {
-        beforeLoadList.clear();
         if (xmlDataFolder != null) {
             File[] playerFiles = xmlDataFolder.listFiles();
             for (File fl : playerFiles) {
@@ -772,8 +806,8 @@ public final class PDataHandler {
                                 BeforeLoadPlayerData beforeLoad = null;
                                 try {
                                     beforeLoad = XMLFileParser.readFromFile(fl);
-                                } catch (DXMLException ex) {
-                                    playerDataMain.getLogger().log(Level.SEVERE, "", ex);
+                                } catch (DXMLException dxmle) {
+                                    playerDataMain.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
                                 }
                                 if (beforeLoad != null) {
                                     beforeLoadList.add(beforeLoad);
@@ -787,7 +821,6 @@ public final class PDataHandler {
     }
 
     private void loadAllPDataBPD() {
-        playerDataList.clear();
         if (playerDataFolder != null) {
             File[] playerFiles = playerDataFolder.listFiles();
             for (File fl : playerFiles) {
