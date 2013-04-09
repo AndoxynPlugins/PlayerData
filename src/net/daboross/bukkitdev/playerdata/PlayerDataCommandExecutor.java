@@ -25,10 +25,10 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         this.playerDataMain = playerDataMain;
         initCommand("help", new String[]{"?"}, true, "playerdata.help", "Views This Page");
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Get info on a player"));
-        initCommand("recreateall", new String[]{}, true, "playerdata.admin", ("Deletes all player data and recreates it from bukkit"));
+        initCommand("recreateall", true, "playerdata.admin", ("Deletes all player data and recreates it from bukkit"));
         initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", "Lists all players who have ever joined this server in order of last seen");
-        initCommand("xml", new String[]{}, true, "playerdata.xml", "Save All Data As XML");
-        initCommand("bpd", new String[]{}, true, "playerdata.bpd", "Save All Data AS BPD");
+        initCommand("xml", true, "playerdata.xml", "Save All Data As XML");
+        initCommand("bpd", true, "playerdata.bpd", "Save All Data AS BPD");
         initCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", "List allplayers who have have ever joined this server in order of first join");
     }
 
@@ -86,10 +86,6 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
             return;
         }
         String playerName = playerDataMain.getPDataHandler().getFullUsername(args[0]);
-        if (playerName == null) {
-            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " not found!");
-            return;
-        }
         PData pData = playerDataMain.getPDataHandler().getPDataFromUsername(playerName);
         if (pData == null) {
             sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + args[0] + ColorList.ERROR + " not found!");

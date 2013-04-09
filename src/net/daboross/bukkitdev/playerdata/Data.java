@@ -90,6 +90,10 @@ public class Data {
         e.appendChild(dataElement);
     }
 
+    /**
+     * Do NOT use this constructor outside of XMLFileParser. It does NOT do what
+     * you think.
+     */
     public Data(Node node) throws DXMLException {
         NamedNodeMap attributes = node.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {

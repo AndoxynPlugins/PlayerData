@@ -427,7 +427,7 @@ public final class PData implements Comparable<PData> {
      * PData represents. null if PermissionEx is not loaded
      */
     public PermissionUser getPermUser() {
-        updateGroup();
+        findPermUser();
         return permUser;
     }
 

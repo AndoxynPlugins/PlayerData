@@ -475,6 +475,9 @@ public final class PDataHandler {
      * @return The PData that is loaded for that player, or null if not found.
      */
     protected PData getPDataFromUsername(String name) {
+        if (name == null) {
+            return null;
+        }
         for (int i = 0; i < playerDataList.size(); i++) {
             if (playerDataList.get(i).userName().equalsIgnoreCase(name)) {
                 return playerDataList.get(i);
