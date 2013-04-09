@@ -75,6 +75,7 @@
         <jar jarfile="${dist.jar}" update="true">  
             <zipfileset src="${dist.jar}" includes="**/*.class" />  
             <zipfileset src="${reference.DXMLLibrary.jar}" includes="**/*.class"/>   
+            <zipfileset src="${reference.CommandExecutorBase.jar}" includes="**/*.class"/>   
         </jar>   
     </target>
 </project>
