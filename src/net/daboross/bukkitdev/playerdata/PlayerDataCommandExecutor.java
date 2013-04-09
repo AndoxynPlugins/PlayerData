@@ -24,12 +24,12 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
     protected PlayerDataCommandExecutor(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
         initCommand("help", new String[]{"?"}, true, "playerdata.help", "Views This Page");
-        initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", (ColorList.ARGS + "<Player>" + ColorList.HELP + " Get info on a player"));
-        initCommand("recreateall", true, "playerdata.admin", ("Deletes all player data and recreates it from bukkit"));
-        initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", "Lists all players who have ever joined this server in order of last seen");
+        initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"}, "Get info on a player");
+        initCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit");
+        initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", new String[]{"PageNumber"}, "Lists all players who have ever joined this server in order of last seen");
         initCommand("xml", true, "playerdata.xml", "Save All Data As XML");
         initCommand("bpd", true, "playerdata.bpd", "Save All Data AS BPD");
-        initCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", "List allplayers who have have ever joined this server in order of first join");
+        initCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", new String[]{"PageNumber"}, "List allplayers who have have ever joined this server in order of first join");
     }
 
     @Override
