@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -571,7 +572,7 @@ public final class PDataHandler {
      * @param longInfo Whether to call the DataDisplayParser's LongInfo. If
      * false, then the ShortInfo method is called.
      */
-    protected String[] getDisplayData(Data d, boolean longInfo) {
+    public String[] getDisplayData(Data d, boolean longInfo) {
         if (ddpMap.containsKey(d.getName())) {
             if (longInfo) {
                 return ddpMap.get(d.getName()).longInfo(d);
@@ -607,12 +608,15 @@ public final class PDataHandler {
      *
      * @return A copy of the list of PDatas that PDataHandler keeps.
      */
-    protected PData[] getAllPDatas() {
+    public PData[] getAllPDatas() {
         return playerDataList.toArray(new PData[playerDataList.size()]);
     }
 
-    protected PData[] getAllPDatasFirstJoin() {
-        return playerDataListFirstJoin.toArray(new PData[playerDataListFirstJoin.size()]);
+    /**
+     * This returns the REAL ARRAY. So Don't mess with it!
+     */
+    public List<PData> getAllPDatasFirstJoin() {
+        return playerDataListFirstJoin;
     }
 
     /**

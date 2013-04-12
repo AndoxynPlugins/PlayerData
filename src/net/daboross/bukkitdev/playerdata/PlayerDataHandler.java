@@ -148,4 +148,17 @@ public class PlayerDataHandler {
     public void addLeaveListener(PDPlayerLeaveListener pdpll) {
         playerDataMain.getEventListener().addLeaveListener(pdpll);
     }
+
+    /**
+     * This gets a PData from a given username. The usernames needs to be an
+     * exact match of the PData's recorded username, not case sensitive. If you
+     * want to find the exact username given a partial username, then use the
+     * getFullUsername() function.
+     *
+     * @param name The FULL username of a player in the database.
+     * @return The PData that is loaded for that player, or null if not found.
+     */
+    public PData getPDataFromUsername(String name) {
+        return pDataHandler.getPDataFromUsername(name);
+    }
 }

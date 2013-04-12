@@ -64,10 +64,12 @@ public final class PlayerData extends JavaPlugin {
     }
 
     /**
+     * This is the internal PDataHandler. Use getHandler() instead if you are
+     * outside of the PlayerData project.
      *
      * @return
      */
-    protected PDataHandler getPDataHandler() {
+    public PDataHandler getPDataHandler() {
         return playerDataHandler;
     }
 
