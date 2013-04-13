@@ -28,14 +28,13 @@ public class ViewInfoCommandReactor implements CommandReactor {
     }
 
     public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel,
-            String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge commandExecutorBridge) {
+            String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
         if (subCommandArgs.length < 1) {
             sender.sendMessage(ColorList.ILLEGALARGUMENT + "Must Provide A Player!");
-            sender.sendMessage(commandExecutorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
+            sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
             return;
         }
-        String playerName = playerDataMain.getHandler().getFullUsername(subCommandArgs[0]);
-        PData pData = playerDataMain.getHandler().getPDataFromUsername(playerName);
+        PData pData = playerDataMain.getHandler().getPData(subCommandArgs[0]);
         if (pData == null) {
             sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " not found!");
             return;

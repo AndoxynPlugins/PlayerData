@@ -36,6 +36,8 @@ import org.bukkit.entity.Player;
 public final class PDataHandler {
 
     private static final boolean xml = true;
+    private final Object beforeLoadListLock = new Object();
+    private final Object playerDataListLock = new Object();
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
@@ -60,14 +62,17 @@ public final class PDataHandler {
         if (pluginFolder != null) {
             xmlDataFolder = new File(pluginFolder, "xml");
             playerDataFolder = new File(pluginFolder, "playerData");
-            if (playerDataFolder != null) {
-                if (!playerDataFolder.isDirectory()) {
-                    playerDataFolder.mkdirs();
+            if (xml) {
+                if (xmlDataFolder != null) {
+                    if (!xmlDataFolder.isDirectory()) {
+                        xmlDataFolder.mkdirs();
+                    }
                 }
-            }
-            if (xmlDataFolder != null) {
-                if (!xmlDataFolder.isDirectory()) {
-                    xmlDataFolder.mkdirs();
+            } else {
+                if (playerDataFolder != null) {
+                    if (!playerDataFolder.isDirectory()) {
+                        playerDataFolder.mkdirs();
+                    }
                 }
             }
         } else {
@@ -101,16 +106,18 @@ public final class PDataHandler {
      */
     protected int createEmptyPlayerDataFiles(OfflinePlayer[] players) {
         int returnValue = 0;
-        for (int i = 0; i < players.length; i++) {
-            if (players[i].hasPlayedBefore()) {
-                PData pData = new PData(players[i]);
-                if (!playerDataList.contains(pData)) {
-                    playerDataList.add(pData);
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < players.length; i++) {
+                if (players[i].hasPlayedBefore()) {
+                    PData pData = new PData(players[i]);
+                    if (!playerDataList.contains(pData)) {
+                        playerDataList.add(pData);
+                    }
+                    if (!playerDataListFirstJoin.contains(pData)) {
+                        playerDataListFirstJoin.add(pData);
+                    }
+                    returnValue += 1;
                 }
-                if (!playerDataListFirstJoin.contains(pData)) {
-                    playerDataListFirstJoin.add(pData);
-                }
-                returnValue += 1;
             }
         }
         saveAllData();
@@ -154,36 +161,52 @@ public final class PDataHandler {
      * save.
      */
     protected void saveAllData() {
-        for (PData pData : playerDataList) {
-            pData.updateStatus(false, false);
-            if (xml) {
-                savePDataXML(pData);
-            } else {
-                savePDataBPD(pData);
+        synchronized (playerDataListLock) {
+            for (PData pData : playerDataList) {
+                pData.updateStatus(false, false);
+                if (xml) {
+                    savePDataXML(pData);
+                } else {
+                    savePDataBPD(pData);
+                }
             }
         }
     }
 
     public void saveAllXML(final Callable<Void> callAfter) {
+        if (xmlDataFolder != null) {
+            if (!xmlDataFolder.isDirectory()) {
+                xmlDataFolder.mkdirs();
+            }
+        }
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
             public void run() {
-                for (PData pData : playerDataList) {
-                    pData.updateStatus(false, false);
-                    savePDataXML(pData);
+                synchronized (playerDataListLock) {
+                    for (PData pData : playerDataList) {
+                        pData.updateStatus(false, false);
+                        savePDataXML(pData);
+                    }
+                    Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
                 }
-                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
             }
         });
     }
 
     public void saveAllBPD(final Callable<Void> callAfter) {
+        if (playerDataFolder != null) {
+            if (!playerDataFolder.isDirectory()) {
+                playerDataFolder.mkdirs();
+            }
+        }
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
             public void run() {
-                for (PData pData : playerDataList) {
-                    pData.updateStatus(false, false);
-                    savePDataBPD(pData);
+                synchronized (playerDataListLock) {
+                    for (PData pData : playerDataList) {
+                        pData.updateStatus(false, false);
+                        savePDataBPD(pData);
+                    }
+                    Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
                 }
-                Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
             }
         });
     }
@@ -198,11 +221,13 @@ public final class PDataHandler {
         if (pData == null) {
             return;
         }
-        if (!playerDataList.contains(pData)) {
-            playerDataList.add(0, pData);
-        }
-        if (!playerDataListFirstJoin.contains(pData)) {
-            playerDataListFirstJoin.add(pData);
+        synchronized (playerDataListLock) {
+            if (!playerDataList.contains(pData)) {
+                playerDataList.add(0, pData);
+            }
+            if (!playerDataListFirstJoin.contains(pData)) {
+                playerDataListFirstJoin.add(pData);
+            }
         }
         if (xml) {
             savePDataXML(pData);
@@ -270,43 +295,45 @@ public final class PDataHandler {
         //This is a list of usernames to return, in order from first choice to last choise
         String[] returnUserNames = new String[12];
         String user = ChatColor.stripColor(userName).toLowerCase();
-        for (int i = 0; i < playerDataList.size(); i++) {
-            PData pD = playerDataList.get(i);
-            String checkUserName = pD.userName().toLowerCase();
-            String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
-            String pUserName = pD.userName();
-            int add = pD.isOnline() ? 0 : 1;
-            if (checkUserName != null) {
-                if (checkUserName.equalsIgnoreCase(user)) {
-                    if (returnUserNames[0] == null) {
-                        returnUserNames[0] = pUserName;
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PData pD = playerDataList.get(i);
+                String checkUserName = pD.userName().toLowerCase();
+                String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
+                String pUserName = pD.userName();
+                int add = pD.isOnline() ? 0 : 1;
+                if (checkUserName != null) {
+                    if (checkUserName.equalsIgnoreCase(user)) {
+                        if (returnUserNames[0] == null) {
+                            returnUserNames[0] = pUserName;
+                        }
+                        break;
                     }
-                    break;
-                }
-                if (checkUserName.startsWith(user)) {
-                    if (returnUserNames[4 + add] == null) {
-                        returnUserNames[4 + add] = pUserName;
-                    }
-                }
-                if (checkUserName.contains(user)) {
-                    if (returnUserNames[8 + add] == null) {
-                        returnUserNames[8 + add] = pUserName;
-                    }
-                }
-                if (checkNickName != null) {
-                    if (checkNickName.equalsIgnoreCase(user)) {
-                        if (returnUserNames[2 + add] == null) {
-                            returnUserNames[2 + add] = pUserName;
+                    if (checkUserName.startsWith(user)) {
+                        if (returnUserNames[4 + add] == null) {
+                            returnUserNames[4 + add] = pUserName;
                         }
                     }
-                    if (checkNickName.startsWith(user)) {
-                        if (returnUserNames[6 + add] == null) {
-                            returnUserNames[6 + add] = pUserName;
+                    if (checkUserName.contains(user)) {
+                        if (returnUserNames[8 + add] == null) {
+                            returnUserNames[8 + add] = pUserName;
                         }
                     }
-                    if (checkNickName.contains(user)) {
-                        if (returnUserNames[10 + add] == null) {
-                            returnUserNames[10 + add] = pUserName;
+                    if (checkNickName != null) {
+                        if (checkNickName.equalsIgnoreCase(user)) {
+                            if (returnUserNames[2 + add] == null) {
+                                returnUserNames[2 + add] = pUserName;
+                            }
+                        }
+                        if (checkNickName.startsWith(user)) {
+                            if (returnUserNames[6 + add] == null) {
+                                returnUserNames[6 + add] = pUserName;
+                            }
+                        }
+                        if (checkNickName.contains(user)) {
+                            if (returnUserNames[10 + add] == null) {
+                                returnUserNames[10 + add] = pUserName;
+                            }
                         }
                     }
                 }
@@ -356,96 +383,98 @@ public final class PDataHandler {
         int onlineNumberFound = 0;
         int offlineNumberFound = 0;
         String user = ChatColor.stripColor(userName).toLowerCase();
-        for (int i = 0; i < playerDataList.size(); i++) {
-            PData pD = playerDataList.get(i);
-            boolean online = pD.isOnline();
-            String checkUserName = pD.userName().toLowerCase();
-            String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
-            String pUserName = pD.userName();
-            String pNickName = pD.nickName();
-            if (checkUserName != null) {
-                if (checkNickName == null || checkUserName.equalsIgnoreCase(checkNickName)) {
-                    if (checkUserName.equalsIgnoreCase(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(null);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(null);
-                            offlineNumberFound++;
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PData pD = playerDataList.get(i);
+                boolean online = pD.isOnline();
+                String checkUserName = pD.userName().toLowerCase();
+                String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
+                String pUserName = pD.userName();
+                String pNickName = pD.nickName();
+                if (checkUserName != null) {
+                    if (checkNickName == null || checkUserName.equalsIgnoreCase(checkNickName)) {
+                        if (checkUserName.equalsIgnoreCase(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(null);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(null);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkUserName.startsWith(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(null);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(null);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkUserName.contains(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(null);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(null);
+                                offlineNumberFound++;
+                            }
                         }
-                    } else if (checkUserName.startsWith(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(null);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(null);
-                            offlineNumberFound++;
-                        }
-                    } else if (checkUserName.contains(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(null);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(null);
-                            offlineNumberFound++;
-                        }
-                    }
-                } else {
-                    if (checkUserName.equalsIgnoreCase(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(pNickName);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(pNickName);
-                            offlineNumberFound++;
-                        }
-                    } else if (checkUserName.contains(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(pNickName);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(pNickName);
-                            offlineNumberFound++;
-                        }
-                    } else if (checkNickName.equalsIgnoreCase(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(pNickName);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(pNickName);
-                            offlineNumberFound++;
-                        }
-                    } else if (checkNickName.startsWith(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(pNickName);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(pNickName);
-                            offlineNumberFound++;
-                        }
-                    } else if (checkNickName.contains(user)) {
-                        if (online) {
-                            onlineUserNames.add(pUserName);
-                            onlineNickNames.add(pNickName);
-                            onlineNumberFound++;
-                        } else {
-                            pUserNames.add(pUserName);
-                            pNickNames.add(pNickName);
-                            offlineNumberFound++;
+                    } else {
+                        if (checkUserName.equalsIgnoreCase(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(pNickName);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(pNickName);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkUserName.contains(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(pNickName);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(pNickName);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkNickName.equalsIgnoreCase(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(pNickName);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(pNickName);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkNickName.startsWith(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(pNickName);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(pNickName);
+                                offlineNumberFound++;
+                            }
+                        } else if (checkNickName.contains(user)) {
+                            if (online) {
+                                onlineUserNames.add(pUserName);
+                                onlineNickNames.add(pNickName);
+                                onlineNumberFound++;
+                            } else {
+                                pUserNames.add(pUserName);
+                                pNickNames.add(pNickName);
+                                offlineNumberFound++;
+                            }
                         }
                     }
                 }
@@ -479,9 +508,11 @@ public final class PDataHandler {
         if (name == null) {
             return null;
         }
-        for (int i = 0; i < playerDataList.size(); i++) {
-            if (playerDataList.get(i).userName().equalsIgnoreCase(name)) {
-                return playerDataList.get(i);
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                if (playerDataList.get(i).userName().equalsIgnoreCase(name)) {
+                    return playerDataList.get(i);
+                }
             }
         }
         return null;
@@ -499,20 +530,22 @@ public final class PDataHandler {
         if (p == null) {
             return null;
         }
-        for (int i = 0; i < playerDataList.size(); i++) {
-            PData pData = playerDataList.get(i);
-            if (pData.userName().equalsIgnoreCase(p.getName())) {
-                return pData;
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PData pData = playerDataList.get(i);
+                if (pData.userName().equalsIgnoreCase(p.getName())) {
+                    return pData;
+                }
             }
+            PData pData = new PData(p);
+            if (!playerDataList.contains(pData)) {
+                playerDataList.add(pData);
+            }
+            if (!playerDataListFirstJoin.contains(pData)) {
+                playerDataListFirstJoin.add(pData);
+            }
+            return pData;
         }
-        PData pData = new PData(p);
-        if (!playerDataList.contains(pData)) {
-            playerDataList.add(pData);
-        }
-        if (!playerDataListFirstJoin.contains(pData)) {
-            playerDataListFirstJoin.add(pData);
-        }
-        return pData;
     }
 
     /**
@@ -524,22 +557,24 @@ public final class PDataHandler {
         if (p == null) {
             throw new IllegalArgumentException("Null Argument");
         }
-        for (int i = 0; i < playerDataList.size(); i++) {
-            PData pData = playerDataList.get(i);
-            if (pData.userName().equalsIgnoreCase(p.getName())) {
-                pData.loggedIn(p);
-                return true;
+        synchronized (playerDataListLock) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PData pData = playerDataList.get(i);
+                if (pData.userName().equalsIgnoreCase(p.getName())) {
+                    pData.loggedIn(p);
+                    return true;
+                }
             }
+            PData pData = new PData(p);
+            pData.loggedIn(p);
+            if (!playerDataList.contains(pData)) {
+                playerDataList.add(pData);
+            }
+            if (!playerDataListFirstJoin.contains(pData)) {
+                playerDataListFirstJoin.add(pData);
+            }
+            return false;
         }
-        PData pData = new PData(p);
-        pData.loggedIn(p);
-        if (!playerDataList.contains(pData)) {
-            playerDataList.add(pData);
-        }
-        if (!playerDataListFirstJoin.contains(pData)) {
-            playerDataListFirstJoin.add(pData);
-        }
-        return false;
     }
 
     /**
@@ -591,13 +626,15 @@ public final class PDataHandler {
      * @param dataName The type of the data.
      */
     protected Data[] getAllData(String dataName) {
-        ArrayList<Data> returnArrayList = new ArrayList<Data>();
-        for (PData pData : playerDataList) {
-            if (pData.hasData(dataName)) {
-                returnArrayList.add(pData.getData(dataName));
+        synchronized (playerDataListLock) {
+            ArrayList<Data> returnArrayList = new ArrayList<Data>();
+            for (PData pData : playerDataList) {
+                if (pData.hasData(dataName)) {
+                    returnArrayList.add(pData.getData(dataName));
+                }
             }
+            return returnArrayList.toArray(new Data[0]);
         }
-        return returnArrayList.toArray(new Data[0]);
     }
 
     /**
@@ -609,7 +646,9 @@ public final class PDataHandler {
      * @return A copy of the list of PDatas that PDataHandler keeps.
      */
     public PData[] getAllPDatas() {
-        return playerDataList.toArray(new PData[playerDataList.size()]);
+        synchronized (playerDataListLock) {
+            return playerDataList.toArray(new PData[playerDataList.size()]);
+        }
     }
 
     /**
@@ -632,10 +671,12 @@ public final class PDataHandler {
      * only called BY THE PDATA when the player has logged in.
      */
     protected void loggedIn(PData pd) {
-        while (playerDataList.contains(pd)) {
-            playerDataList.remove(pd);
+        synchronized (playerDataListLock) {
+            while (playerDataList.contains(pd)) {
+                playerDataList.remove(pd);
+            }
+            playerDataList.add(0, pd);
         }
-        playerDataList.add(0, pd);
     }
 
     private void sortList(Runnable afterLoad) {
@@ -658,29 +699,30 @@ public final class PDataHandler {
 
         public void run() {
             while (true) {
-                ArrayList<PData> tempList = new ArrayList<PData>();
-                ArrayList<PData> tempList2 = new ArrayList<PData>();
-
-                for (PData pd : playerDataList) {
-                    if (!tempList.contains(pd)) {
-                        tempList.add(pd);
+                synchronized (playerDataListLock) {
+                    ArrayList<PData> tempList = new ArrayList<PData>();
+                    ArrayList<PData> tempList2 = new ArrayList<PData>();
+                    for (PData pd : playerDataList) {
+                        if (!tempList.contains(pd)) {
+                            tempList.add(pd);
+                        }
+                        if (!tempList2.contains(pd)) {
+                            tempList2.add(pd);
+                        }
                     }
-                    if (!tempList2.contains(pd)) {
-                        tempList2.add(pd);
+                    Collections.sort(tempList);
+                    Collections.sort(tempList2, new Comparator<PData>() {
+                        public int compare(PData o1, PData o2) {
+                            return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
+                        }
+                    });
+                    if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
+                        playerDataList = tempList;
+                        playerDataListFirstJoin = tempList2;
+                        break;
+                    } else {
+                        l.log(Level.INFO, "Repeating Sort");
                     }
-                }
-                Collections.sort(tempList);
-                Collections.sort(tempList2, new Comparator<PData>() {
-                    public int compare(PData o1, PData o2) {
-                        return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
-                    }
-                });
-                if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
-                    playerDataList = tempList;
-                    playerDataListFirstJoin = tempList2;
-                    break;
-                } else {
-                    l.log(Level.INFO, "Repeating Sort");
                 }
             }
             if (afterLoad != null) {
@@ -772,20 +814,24 @@ public final class PDataHandler {
     }
 
     private void turnBeforeLoadIntoLoaded(Logger l) {
-        playerDataList.clear();
-        playerDataListFirstJoin.clear();
-        for (BeforeLoadPlayerData bl : beforeLoadList) {
-            PData pd = bl.getPData();
-            if (pd != null) {
-                if (!playerDataList.contains(pd)) {
-                    playerDataList.add(pd);
-                }
-                if (!playerDataListFirstJoin.contains(pd)) {
-                    playerDataListFirstJoin.add(pd);
+        synchronized (playerDataListLock) {
+            playerDataList.clear();
+            playerDataListFirstJoin.clear();
+            synchronized (beforeLoadListLock) {
+                for (BeforeLoadPlayerData bl : beforeLoadList) {
+                    PData pd = bl.getPData();
+                    if (pd != null) {
+                        if (!playerDataList.contains(pd)) {
+                            playerDataList.add(pd);
+                        }
+                        if (!playerDataListFirstJoin.contains(pd)) {
+                            playerDataListFirstJoin.add(pd);
+                        }
+                    }
                 }
             }
+            l.log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
         }
-        l.log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
     }
 
     /**
@@ -794,58 +840,64 @@ public final class PDataHandler {
      * used on startup.
      */
     private void readDataBeforeLoad(Logger l) {
-        if (xml) {
-            loadAllPDataXML();
-        } else {
-            loadAllPDataBPD();
-        }
-        l.log(Level.INFO, "Read {0} Player Data Files", beforeLoadList.size());
+        int count = xml ? loadAllPDataXML() : loadAllPDataBPD();
+        l.log(Level.INFO, "Read {0} Player Data Files", count);
     }
 
-    private void loadAllPDataXML() {
-        if (xmlDataFolder != null) {
+    private int loadAllPDataXML() {
+        if (xmlDataFolder != null && xmlDataFolder.exists()) {
             File[] playerFiles = xmlDataFolder.listFiles();
-            for (File fl : playerFiles) {
-                if (fl != null) {
-                    if (fl.canRead()) {
-                        if (fl.isFile()) {
-                            String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                            if (type.equals("xml")) {
-                                BeforeLoadPlayerData beforeLoad = null;
-                                try {
-                                    beforeLoad = XMLFileParser.readFromFile(fl);
-                                } catch (DXMLException dxmle) {
-                                    playerDataMain.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
-                                }
-                                if (beforeLoad != null) {
-                                    beforeLoadList.add(beforeLoad);
+            synchronized (beforeLoadListLock) {
+                for (File fl : playerFiles) {
+                    if (fl != null) {
+                        if (fl.canRead()) {
+                            if (fl.isFile()) {
+                                String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                                if (type.equals("xml")) {
+                                    BeforeLoadPlayerData beforeLoad = null;
+                                    try {
+                                        beforeLoad = XMLFileParser.readFromFile(fl);
+                                    } catch (DXMLException dxmle) {
+                                        playerDataMain.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
+                                    }
+                                    if (beforeLoad != null) {
+                                        beforeLoadList.add(beforeLoad);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                return beforeLoadList.size();
             }
+        } else {
+            return 0;
         }
     }
 
-    private void loadAllPDataBPD() {
-        if (playerDataFolder != null) {
+    private int loadAllPDataBPD() {
+        if (playerDataFolder != null && playerDataFolder.exists()) {
             File[] playerFiles = playerDataFolder.listFiles();
-            for (File fl : playerFiles) {
-                if (fl != null) {
-                    if (fl.canRead()) {
-                        if (fl.isFile()) {
-                            String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                            if (type.equals("bpd")) {
-                                BeforeLoadPlayerData beforeLoad = BPDFileParser.readFromFile(fl);
-                                if (beforeLoad != null) {
-                                    beforeLoadList.add(beforeLoad);
+            synchronized (beforeLoadListLock) {
+                for (File fl : playerFiles) {
+                    if (fl != null) {
+                        if (fl.canRead()) {
+                            if (fl.isFile()) {
+                                String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                                if (type.equals("bpd")) {
+                                    BeforeLoadPlayerData beforeLoad = BPDFileParser.readFromFile(fl);
+                                    if (beforeLoad != null) {
+                                        beforeLoadList.add(beforeLoad);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                return beforeLoadList.size();
             }
+        } else {
+            return 0;
         }
     }
 
