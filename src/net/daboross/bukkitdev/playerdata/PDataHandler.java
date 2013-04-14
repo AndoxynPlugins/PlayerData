@@ -763,7 +763,7 @@ public final class PDataHandler {
     protected void init() {
         final Logger l = playerDataMain.getLogger();
         l.log(Level.INFO, "Starting First Load Section (Sync)");
-        if (playerDataFolder.listFiles().length == 0) {
+        if ((xml ? xmlDataFolder : playerDataFolder).listFiles().length == 0) {
             createEmptyPlayerDataFilesFromBukkit();
         }
         l.log(Level.INFO, "Finished First Load Section (Sync)");
