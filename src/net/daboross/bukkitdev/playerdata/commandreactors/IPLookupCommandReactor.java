@@ -15,13 +15,13 @@ import org.bukkit.command.CommandSender;
  * @author daboross
  */
 public class IPLookupCommandReactor implements CommandExecutorBase.CommandReactor {
-    
+
     private final PlayerData playerDataMain;
-    
+
     public IPLookupCommandReactor(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
-    
+
     public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel,
             String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
         if (subCommandArgs.length < 1) {
