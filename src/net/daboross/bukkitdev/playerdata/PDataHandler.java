@@ -741,17 +741,48 @@ public final class PDataHandler {
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
 
+    public void reReadData(final Runnable runAfter, final boolean useXML) {
+        final Logger l = playerDataMain.getLogger();
+        Runnable run = new Runnable() {
+            public void run() {
+                asyncRead(l, new Runnable() {
+                    public void run() {
+                        sortData(runAfter);
+                    }
+                }, useXML);
+            }
+        };
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
+    }
+
     private void asyncRead(final Logger l, final Runnable runAfter) {
         readDataBeforeLoad(l);
         Runnable run = new Runnable() {
             public void run() {
-                turnBeforeLoadIntoLoaded(l);
+                turnBeforeLoadIntoLoadedSync(l);
                 if (runAfter != null) {
                     runAfter.run();
                 }
             }
         };
         Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
+    }
+
+    private void asyncRead(final Logger l, final Runnable runAfter, boolean useXML) {
+        int i = readDataToBeforeLoadList(l, useXML);
+        if (i > 0) {
+            Runnable run = new Runnable() {
+                public void run() {
+                    turnBeforeLoadIntoLoadedSync(l);
+                    if (runAfter != null) {
+                        runAfter.run();
+                    }
+                }
+            };
+            Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
+        } else {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, runAfter);
+        }
     }
 
     /**
@@ -769,27 +800,27 @@ public final class PDataHandler {
         l.log(Level.INFO, "Finished First Load Section (Sync)");
         Runnable run = new Runnable() {
             public void run() {
-                asyncInit(l);
+                secondLoadSectionAsync(l);
             }
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
 
-    private void asyncInit(final Logger l) {
+    private void secondLoadSectionAsync(final Logger l) {
         l.log(Level.INFO, "Starting Second Load Section (Async)");
         readDataBeforeLoad(l);
         l.log(Level.INFO, "Finished Second Load Section (Async)");
         Runnable run = new Runnable() {
             public void run() {
-                syncInit(l);
+                lastLoadSectionSync(l);
             }
         };
         Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
     }
 
-    private void syncInit(final Logger l) {
+    private void lastLoadSectionSync(final Logger l) {
         l.log(Level.INFO, "Starting Third Load Section (Sync)");
-        turnBeforeLoadIntoLoaded(l);
+        turnBeforeLoadIntoLoadedSync(l);
         l.log(Level.INFO, "Finished Third Load Section (Sync)");
         l.log(Level.INFO, "Starting Fourth Load Section (Async)");
         sortData(new Runnable() {
@@ -813,19 +844,21 @@ public final class PDataHandler {
         });
     }
 
-    private void turnBeforeLoadIntoLoaded(Logger l) {
+    private void turnBeforeLoadIntoLoadedSync(Logger l) {
         synchronized (playerDataListLock) {
-            playerDataList.clear();
-            playerDataListFirstJoin.clear();
             synchronized (beforeLoadListLock) {
-                for (BeforeLoadPlayerData bl : beforeLoadList) {
-                    PData pd = bl.getPData();
-                    if (pd != null) {
-                        if (!playerDataList.contains(pd)) {
-                            playerDataList.add(pd);
-                        }
-                        if (!playerDataListFirstJoin.contains(pd)) {
-                            playerDataListFirstJoin.add(pd);
+                if (beforeLoadList.size() > 1) {
+                    playerDataList.clear();
+                    playerDataListFirstJoin.clear();
+                    for (BeforeLoadPlayerData bl : beforeLoadList) {
+                        PData pd = bl.getPData();
+                        if (pd != null) {
+                            if (!playerDataList.contains(pd)) {
+                                playerDataList.add(pd);
+                            }
+                            if (!playerDataListFirstJoin.contains(pd)) {
+                                playerDataListFirstJoin.add(pd);
+                            }
                         }
                     }
                 }
@@ -840,14 +873,26 @@ public final class PDataHandler {
      * used on startup.
      */
     private void readDataBeforeLoad(Logger l) {
-        int count = xml ? loadAllPDataXML() : loadAllPDataBPD();
+        int count = xml ? loadAllPDataXMLToBeforeLoadList() : loadAllPDataBPDToBeforeLoadList();
         l.log(Level.INFO, "Read {0} Player Data Files", count);
     }
 
-    private int loadAllPDataXML() {
-        if (xmlDataFolder != null && xmlDataFolder.exists()) {
-            File[] playerFiles = xmlDataFolder.listFiles();
-            synchronized (beforeLoadListLock) {
+    /**
+     * This function removes all the current PDatas loaded, and loads new ones
+     * from the files in the playerdata folder. This function should only be
+     * used on startup.
+     */
+    private int readDataToBeforeLoadList(Logger l, boolean useXML) {
+        int count = useXML ? loadAllPDataXMLToBeforeLoadList() : loadAllPDataBPDToBeforeLoadList();
+        l.log(Level.INFO, "Read {0} Player Data Files from " + (useXML ? "XML" : "BPD"), count);
+        return count;
+    }
+
+    private int loadAllPDataXMLToBeforeLoadList() {
+        synchronized (beforeLoadListLock) {
+            beforeLoadList.clear();
+            if (xmlDataFolder != null && xmlDataFolder.exists()) {
+                File[] playerFiles = xmlDataFolder.listFiles();
                 for (File fl : playerFiles) {
                     if (fl != null) {
                         if (fl.canRead()) {
@@ -869,16 +914,17 @@ public final class PDataHandler {
                     }
                 }
                 return beforeLoadList.size();
+            } else {
+                return 0;
             }
-        } else {
-            return 0;
         }
     }
 
-    private int loadAllPDataBPD() {
-        if (playerDataFolder != null && playerDataFolder.exists()) {
-            File[] playerFiles = playerDataFolder.listFiles();
-            synchronized (beforeLoadListLock) {
+    private int loadAllPDataBPDToBeforeLoadList() {
+        synchronized (beforeLoadListLock) {
+            beforeLoadList.clear();
+            if (playerDataFolder != null && playerDataFolder.exists()) {
+                File[] playerFiles = playerDataFolder.listFiles();
                 for (File fl : playerFiles) {
                     if (fl != null) {
                         if (fl.canRead()) {
@@ -895,9 +941,9 @@ public final class PDataHandler {
                     }
                 }
                 return beforeLoadList.size();
+            } else {
+                return 0;
             }
-        } else {
-            return 0;
         }
     }
 

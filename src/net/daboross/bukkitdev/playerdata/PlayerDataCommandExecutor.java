@@ -46,6 +46,12 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 runBPDCommand(sender);
             }
         });
+        initCommand("loadbpd", true, "playerdata.loadbpd", "Load data from BPD PLEASE DON'T USE THIS IF YOU ARE USING XML STORAGE, IT WILL ERASE ALL XML STORAGE AND REPLACE WITH BPD DATA", new CommandReactor() {
+            public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
+                runLoadBPDCommand(sender);
+            }
+        });
+
     }
 
     private void runXMLCommand(final CommandSender sender) {
@@ -66,6 +72,16 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 return null;
             }
         });
+    }
+
+    private void runLoadBPDCommand(final CommandSender sender) {
+        sender.sendMessage(ColorList.MAIN + "Loading data from BPD");
+        Runnable runnable = new Runnable() {
+            public void run() {
+                sender.sendMessage(ColorList.MAIN + "Done Loading, you know the server is ALWAYS going to save back to XML, so the data loaded from BPD will eventually override the XML data.");
+            }
+        };
+        playerDataMain.getPDataHandler().reReadData(runnable, false);
     }
 
     private void runReCreateAllCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {
