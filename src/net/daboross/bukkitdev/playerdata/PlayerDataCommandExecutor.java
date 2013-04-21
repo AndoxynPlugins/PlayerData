@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
 import net.daboross.bukkitdev.playerdata.commandreactors.IPLookupCommandReactor;
+import net.daboross.bukkitdev.playerdata.commandreactors.IPReverseLookupCommandReactor;
 import net.daboross.bukkitdev.playerdata.commandreactors.ListPlayersByFirstJoinCommandReactor;
 import net.daboross.bukkitdev.playerdata.commandreactors.ListPlayersCommandReactor;
 import net.daboross.bukkitdev.playerdata.commandreactors.ViewInfoCommandReactor;
@@ -35,7 +36,8 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         initCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", new String[]{"PageNumber"},
                 "List allplayers who have have ever joined this server in order of first join", new ListPlayersByFirstJoinCommandReactor(playerDataMain));
         initCommand("iplookup", new String[]{"ipl", "ip"}, true, "playerdata.iplookup", new String[]{"Player"},
-                "Gets all different IPs used by a Player", new IPLookupCommandReactor(playerDataMain));
+                "Gets all different IPs used by a Player", new IPLookupCommandReactor(playerDataMain));initCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
+                "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain));
         initCommand("xml", true, "playerdata.xml", "Save All Data As XML", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runXMLCommand(sender);
