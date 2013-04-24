@@ -684,7 +684,6 @@ public final class PDataHandler {
         Runnable sorter = new Sorter(l, afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
 
-
     }
 
     class Sorter implements Runnable {
