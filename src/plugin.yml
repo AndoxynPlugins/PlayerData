@@ -5,6 +5,7 @@ author: Dabo Ross
 prefix: PD
 description: This Plugin Keeps Track Of Various Data on all Players who have ever joined this server. It also offers an API that allows any other plugin to add custom data to any player, and have that data be saved on shutdown and loaded back on startup.
 softdepend: [PermissionsEx]
+dev-url: http://dev.bukkit.org/server-mods/playerdata/
 commands:
    pd:
      description: This is the base command for Player Data.
