@@ -39,17 +39,17 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 "Gets all different IPs used by a Player", new IPLookupCommandReactor(playerDataMain));
         initCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
                 "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain));
-        initCommand("xml", true, "playerdata.xml", "Save All Data As XML", new CommandReactor() {
+        initCommand("xml", true, "playerdata.admin", "Save All Data As XML", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runXMLCommand(sender);
             }
         });
-        initCommand("bpd", true, "playerdata.bpd", "Save All Data AS BPD", new CommandReactor() {
+        initCommand("bpd", true, "playerdata.admin", "Save All Data AS BPD!", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runBPDCommand(sender);
             }
         });
-        initCommand("loadbpd", true, "playerdata.loadbpd", "Load data from BPD PLEASE DON'T USE THIS IF YOU ARE USING XML STORAGE, IT WILL ERASE ALL XML STORAGE AND REPLACE WITH BPD DATA", new CommandReactor() {
+        initCommand("loadbpd", true, "playerdata.admin", "Load data from BPD! PLEASE DON'T USE THIS IF YOU ARE USING XML STORAGE, IT WILL ERASE ALL XML STORAGE AND REPLACE WITH BPD DATA", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runLoadBPDCommand(sender);
             }
