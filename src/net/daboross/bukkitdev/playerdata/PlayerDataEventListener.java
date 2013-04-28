@@ -49,7 +49,7 @@ public class PlayerDataEventListener implements Listener {
             public void run() {
                 if (!pDataMain.getPDataHandler().logIn(evt.getPlayer())) {
                     pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", new Object[]{evt.getPlayer().getName()});
-                    evt.getPlayer().performCommand("spawn");
+                    //evt.getPlayer().performCommand("spawn");
                 }
                 for (PDPlayerJoinListener pdpjl : joinListeners) {
                     pdpjl.playerJoinNotify(evt);

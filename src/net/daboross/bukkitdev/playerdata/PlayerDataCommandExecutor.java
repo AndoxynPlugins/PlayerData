@@ -24,13 +24,8 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
      */
     protected PlayerDataCommandExecutor(final PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
-        initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"}, "Get info on a player", new ViewInfoCommandReactor(playerDataMain));
-        initCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit", new CommandReactor() {
-            public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
-                runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
-            }
-        });
-
+        initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},
+                "Get info on a player", new ViewInfoCommandReactor(playerDataMain));
         initCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", new String[]{"PageNumber"},
                 "Lists all players who have ever joined this server in order of last seen", new ListPlayersCommandReactor(playerDataMain));
         initCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", new String[]{"PageNumber"},
@@ -44,47 +39,21 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 runXMLCommand(sender);
             }
         });
-        initCommand("bpd", true, "playerdata.admin", "Save All Data AS BPD!", new CommandReactor() {
+        initCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
-                runBPDCommand(sender);
+                runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
             }
         });
-        initCommand("loadbpd", true, "playerdata.admin", "Load data from BPD! PLEASE DON'T USE THIS IF YOU ARE USING XML STORAGE, IT WILL ERASE ALL XML STORAGE AND REPLACE WITH BPD DATA", new CommandReactor() {
-            public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
-                runLoadBPDCommand(sender);
-            }
-        });
-
     }
 
     private void runXMLCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.MAIN + "Creating XML Files");
-        playerDataMain.getPDataHandler().saveAllXML(new Callable<Void>() {
-            public Void call() throws Exception {
+        playerDataMain.getPDataHandler().saveAllData(true, new Callable<Void>() {
+            public Void call() {
                 sender.sendMessage(ColorList.MAIN + "XML File Creation Done");
                 return null;
             }
         });
-    }
-
-    private void runBPDCommand(final CommandSender sender) {
-        sender.sendMessage(ColorList.MAIN + "Creating BPD Files");
-        playerDataMain.getPDataHandler().saveAllBPD(new Callable<Void>() {
-            public Void call() throws Exception {
-                sender.sendMessage(ColorList.MAIN + "BPD File Creation Done");
-                return null;
-            }
-        });
-    }
-
-    private void runLoadBPDCommand(final CommandSender sender) {
-        sender.sendMessage(ColorList.MAIN + "Loading data from BPD");
-        Runnable runnable = new Runnable() {
-            public void run() {
-                sender.sendMessage(ColorList.MAIN + "Done Loading, you know the server is ALWAYS going to save back to XML, so the data loaded from BPD will eventually override the XML data.");
-            }
-        };
-        playerDataMain.getPDataHandler().reReadData(runnable, false);
     }
 
     private void runReCreateAllCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {

@@ -1,7 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.concurrent.TimeUnit;
-import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,12 +27,6 @@ public final class PlayerData extends JavaPlugin {
         PluginManager pm = this.getServer().getPluginManager();
         isPermissionsExLoaded = pm.isPluginEnabled("PermissionsEx");
         playerDataHandler = new PDataHandler(this);
-        Runnable initTask = new Runnable() {
-            public void run() {
-                playerDataHandler.init();
-            }
-        };
-        Bukkit.getScheduler().runTask(this, initTask);
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
         if (pd != null) {
@@ -49,7 +42,8 @@ public final class PlayerData extends JavaPlugin {
         eventListener = new PlayerDataEventListener(this);
         pm.registerEvents(eventListener, this);
         handler = new PlayerDataHandler(this);
-        getLogger().info("PlayerData Enabled, Setting Initial Load on Delayed Task");
+        playerDataHandler.init();
+        getLogger().info("PlayerData Fully Enabled");
     }
 
     /**
@@ -58,9 +52,9 @@ public final class PlayerData extends JavaPlugin {
     @Override
     public void onDisable() {
         playerDataHandler.endServer();
-        playerDataHandler.saveAllData();
+        playerDataHandler.saveAllData(false, null);
         currentInstance = null;
-        getLogger().info("PlayerData Disabled");
+        getLogger().info("PlayerData Fully Disabled");
     }
 
     /**
@@ -98,6 +92,9 @@ public final class PlayerData extends JavaPlugin {
      * @return A visually nice date. "Not That Long" if millis == 0;
      */
     public static String getFormattedDDate(long millis) {
+        if (millis == 0) {
+            return "Not That Long";
+        }
         long years;
         long days;
         long hours;
@@ -171,9 +168,6 @@ public final class PlayerData extends JavaPlugin {
             } else {
                 returnValue += seconds + " seconds";
             }
-        }
-        if (years == 0 && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
-            returnValue += "Not That Long";
         }
         return returnValue;
     }

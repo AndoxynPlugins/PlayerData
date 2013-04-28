@@ -24,14 +24,14 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  */
 public final class PData implements Comparable<PData> {
 
-    private final String userName;
-    private String nickName;
-    private long timePlayed;
+    private final String username;
+    private String displayname;
+    private long timePlayed = 0;
     private long currentSession;
     private final ArrayList<IPLogin> logIns = new ArrayList<IPLogin>();
     private final ArrayList<Long> logOuts = new ArrayList<Long>();
     private final ArrayList<Data> data = new ArrayList<Data>();
-    private boolean online;
+    private boolean online = false;
     private String[] groups;
     private PermissionUser permUser;
 
@@ -47,11 +47,11 @@ public final class PData implements Comparable<PData> {
         }
         logIns.add(new IPLogin(p.getFirstPlayed(), p.getAddress().toString()));
         timePlayed = 0;
-        userName = p.getName();
-        nickName = p.getDisplayName();
-        timePlayed = 0;
+        username = p.getName();
+        displayname = p.getDisplayName();
         online = p.isOnline();
-        initialChecks();
+        currentSession = System.currentTimeMillis();
+        sortTimes();
     }
 
     /**
@@ -60,33 +60,35 @@ public final class PData implements Comparable<PData> {
      * used when PlayerData is creating empty player data files from another
      * data storage, such as Bukkit's store.
      *
-     * @param p The Offline Player to create a PData from.
+     * @param offlinePlayer The Offline Player to create a PData from.
      */
-    protected PData(OfflinePlayer p) {
-        if (p == null) {
+    protected PData(OfflinePlayer offlinePlayer) {
+        if (offlinePlayer == null) {
             throw new IllegalArgumentException("Player Can't Be Null");
         }
-        if (!p.hasPlayedBefore()) {
+        if (!offlinePlayer.hasPlayedBefore()) {
             throw new IllegalArgumentException("Player Has Never Been Online!");
         }
-        logIns.add(new IPLogin(p.getFirstPlayed()));
+        logIns.add(new IPLogin(offlinePlayer.getFirstPlayed()));
         timePlayed = 0;
-        userName = p.getName();
-        if (p.isOnline()) {
-            Player pl = p.getPlayer();
-            nickName = pl.getDisplayName();
+        username = offlinePlayer.getName();
+        if (offlinePlayer.isOnline()) {
+            Player onlinePlayer = offlinePlayer.getPlayer();
+            displayname = onlinePlayer.getDisplayName();
             online = true;
         } else {
-            nickName = p.getName();
+            displayname = offlinePlayer.getName();
             online = false;
-            logOuts.add(p.getLastPlayed());
+            logOuts.add(offlinePlayer.getLastPlayed());
         }
-        initialChecks();
+        currentSession = System.currentTimeMillis();
+        sortTimes();
+        checkBukkitForTimes();
     }
 
     /**
      * This creates a PData from data loaded from a file. This should never be
-     * called except from within FileParser!
+     * called except from within a FileParser!
      *
      * @param userName The Full UserName of this player
      * @param nickName The Last DisplayName this player had that was not the
@@ -97,13 +99,11 @@ public final class PData implements Comparable<PData> {
      * @param timePlayed The time this player has played on this server.
      * @param data A List of custom data entries.
      */
-    protected PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
-        this.userName = userName;
-        this.nickName = nickName;
-        if (this.nickName == null) {
-            this.nickName = this.userName;
-        } else if (this.nickName.length() == 0) {
-            this.nickName = this.userName;
+    public PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
+        this.username = userName;
+        this.displayname = nickName;
+        if (this.displayname == null || this.displayname.length() == 0) {
+            this.displayname = this.username;
         }
         this.logIns.addAll(logIns);
         this.logOuts.addAll(logOuts);
@@ -112,17 +112,8 @@ public final class PData implements Comparable<PData> {
         for (Data d : data) {
             d.setOwner(this);
         }
-        initialChecks();
-    }
-
-    /**
-     * This should ONLY be called from a constructor. And ALWAYS be called from
-     * EVERY constructor.
-     */
-    private void initialChecks() {
         currentSession = System.currentTimeMillis();
-        updateStatus(true, false);
-        checkBukkitForTimes();
+        sortTimes();
     }
 
     /**
@@ -133,42 +124,46 @@ public final class PData implements Comparable<PData> {
      * @return Will return true if the player's username equals the players
      * display name, or if the player is offline. false otherwise.
      */
-    protected boolean updateStatus(boolean saveIfOnline, boolean saveIfOffline) {
-        Player p = Bukkit.getPlayer(this.userName);
+    protected void updateStatus(boolean saveIfOnline, boolean saveIfOffline) {
+        Player p = online ? Bukkit.getPlayer(this.username) : null;
         if (p != null) {
             updateNick(p);
-            online = true;
-            timePlayed += (System.currentTimeMillis() - currentSession);
-            currentSession = System.currentTimeMillis();
-            updateGroup();
             if (saveIfOnline) {
                 saveStatus();
             }
-            return (p.getName().equalsIgnoreCase(p.getDisplayName()));
+            if (online) {
+                timePlayed += (System.currentTimeMillis() - currentSession);
+                currentSession = System.currentTimeMillis();
+            }
         } else {
-            online = false;
             if (saveIfOffline) {
                 saveStatus();
             }
-            return true;
-        }
-    }
-
-    private void updateNick(Player p) {
-        if (p.getName().equalsIgnoreCase(this.userName)) {
-            this.nickName = p.getDisplayName();
-        }
-    }
-
-    private void updateNick() {
-        Player p = Bukkit.getPlayer(this.userName);
-        if (p != null) {
-            this.nickName = p.getDisplayName();
         }
     }
 
     /**
-     * This saves this PData's Status to files. Does this by calling the
+     * @return if the Player's username equals their nickname. | true if the
+     * player is null or it isn't this PData's player.
+     */
+    private boolean updateNick(Player p) {
+        if (online && (p != null && p.getName().equalsIgnoreCase(this.username))) {
+            this.displayname = p.getDisplayName();
+            return p.getName().equalsIgnoreCase(p.getDisplayName());
+        }
+        return true;
+    }
+
+    /**
+     * @return if the Player's username equals their nickname. | true if the
+     * player isn't online
+     */
+    private boolean updateNick() {
+        return online ? updateNick(Bukkit.getPlayer(this.username)) : true;
+    }
+
+    /**
+     * This saves this PData's Status to file. Does this by calling the
      * PDataHandler's function to do this.
      */
     private void saveStatus() {
@@ -195,13 +190,17 @@ public final class PData implements Comparable<PData> {
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PlayerData.getCurrentInstance(), new Runnable() {
                 @Override
                 public void run() {
-                    if (!updateStatus(true, false)) {
-                        makeExtraThread();
+                    if (!updateNick(Bukkit.getPlayer(username))) {
+                        if (updateTimes < 10) {
+                            makeExtraThread();
+                            updateTimes++;
+                        }
                     }
                 }
-            }, 20L);
+            }, 20l);
         }
     }
+    private int updateTimes = 0;
 
     /**
      * This function tells this PData that the player who this PData is
@@ -210,11 +209,14 @@ public final class PData implements Comparable<PData> {
      * to file.
      */
     protected void loggedOut() {
-        timePlayed += (System.currentTimeMillis() - currentSession);
-        currentSession = System.currentTimeMillis();
-        logOuts.add(System.currentTimeMillis());
-        updateStatus(true, true);
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", userName);
+        if (online) {
+            timePlayed += (System.currentTimeMillis() - currentSession);
+            currentSession = System.currentTimeMillis();
+            logOuts.add(System.currentTimeMillis());
+            online = false;
+            saveStatus();
+            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", username);
+        }
     }
 
     /**
@@ -224,11 +226,16 @@ public final class PData implements Comparable<PData> {
      * to file.
      */
     protected void loggedIn(Player p) {
-        logIns.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
-        currentSession = System.currentTimeMillis();
-        makeExtraThread();
-        PlayerData.getCurrentInstance().getPDataHandler().loggedIn(this);
-        PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", userName);
+        if (!online) {
+            logIns.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
+            currentSession = System.currentTimeMillis();
+            online = true;
+            if (!updateNick(p)) {
+                makeExtraThread();
+            }
+            PlayerData.getCurrentInstance().getPDataHandler().loggedIn(this);
+            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", username);
+        }
     }
 
     /**
@@ -237,7 +244,7 @@ public final class PData implements Comparable<PData> {
      * @return The username of the player represented by this PData.
      */
     public String userName() {
-        return userName;
+        return username;
     }
 
     /**
@@ -254,7 +261,7 @@ public final class PData implements Comparable<PData> {
      */
     public String nickName() {
         updateNick();
-        return nickName;
+        return displayname;
     }
 
     /**
@@ -316,10 +323,7 @@ public final class PData implements Comparable<PData> {
         }
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, -days);
-        if (lastSeen() > cal.getTimeInMillis()) {
-            return true;
-        }
-        return false;
+        return lastSeen() > cal.getTimeInMillis();
     }
 
     /**
@@ -338,7 +342,7 @@ public final class PData implements Comparable<PData> {
         }
         data.add(d);
         d.setOwner(this);
-        updateStatus(true, true);
+        saveStatus();
     }
 
     /**
@@ -392,7 +396,7 @@ public final class PData implements Comparable<PData> {
      * player that this PData represents.
      */
     public OfflinePlayer getOfflinePlayer() {
-        OfflinePlayer ofp = Bukkit.getOfflinePlayer(userName);
+        OfflinePlayer ofp = Bukkit.getOfflinePlayer(username);
         return ofp;
     }
 
@@ -433,7 +437,7 @@ public final class PData implements Comparable<PData> {
 
     public boolean hasPermission(String perm) {
         if (PlayerData.isPEX()) {
-            getPermUser();
+            findPermUser();
             return permUser.has(perm);
         }
         return false;
@@ -456,23 +460,21 @@ public final class PData implements Comparable<PData> {
 
     private void findPermUser() {
         if (PlayerData.isPEX()) {
-            permUser = PermissionsEx.getUser(userName);
+            permUser = PermissionsEx.getUser(username);
         }
+    }
+
+    private void sortTimes() {
+        Collections.sort(logIns);
+        Collections.sort(logOuts);
     }
 
     /**
      * This function will check the first time this player has played and the
      * last time this player has played with Bukkit's records.
      */
-    protected void checkBukkitForTimes() {
-        for (int i = 0; i < logIns.size(); i++) {
-            if (logIns.get(i) == null) {
-                logIns.remove(i);
-            }
-        }
-        Collections.sort(logIns);
-        Collections.sort(logOuts);
-        OfflinePlayer offP = Bukkit.getOfflinePlayer(userName);
+    public void checkBukkitForTimes() {
+        OfflinePlayer offP = Bukkit.getOfflinePlayer(username);
         long bukkitFirstPlayed = offP.getFirstPlayed();
         long bukkitLastPlayed = offP.getLastPlayed();
         if (offP.hasPlayedBefore()) {

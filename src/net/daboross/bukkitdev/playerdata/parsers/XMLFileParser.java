@@ -3,7 +3,6 @@ package net.daboross.bukkitdev.playerdata.parsers;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import net.daboross.bukkitdev.playerdata.BeforeLoadPlayerData;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
@@ -59,7 +58,7 @@ public class XMLFileParser {
         DXMLHelper.writeXML(document, fileResult);
     }
 
-    public static BeforeLoadPlayerData readFromFile(File fl) throws DXMLException {
+    public static PData readFromFile(File fl) throws DXMLException {
         Document d = DXMLHelper.readDocument(fl);
         Node root = d.getFirstChild();
         if (!root.getNodeName().equals("playerdata")) {
@@ -142,6 +141,6 @@ public class XMLFileParser {
         } catch (NumberFormatException nfe) {
             PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
-        return new BeforeLoadPlayerData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
+        return new PData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
     }
 }

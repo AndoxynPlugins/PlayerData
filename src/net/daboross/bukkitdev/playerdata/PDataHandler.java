@@ -1,7 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
 import net.daboross.bukkitdev.playerdata.parsers.XMLFileParser;
-import net.daboross.bukkitdev.playerdata.parsers.BPDFileParser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,22 +34,18 @@ import org.bukkit.entity.Player;
  */
 public final class PDataHandler {
 
-    private static final boolean xml = true;
-    private final Object beforeLoadListLock = new Object();
     private final Object playerDataListLock = new Object();
     /**
      * This is a list of all the PDatas loaded. This list should contain one
      * PData for EVERY player who has EVER joined the server.
      */
-    private ArrayList<PData> playerDataList = new ArrayList<PData>();
-    private ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
-    private PlayerData playerDataMain;
-    private final File playerDataFolder;
+    private final ArrayList<PData> playerDataList = new ArrayList<PData>();
+    private final ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
+    private final PlayerData playerDataMain;
     private final File xmlDataFolder;
-    private Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
+    private final Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
     private boolean isLoaded = false;
     private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
-    private ArrayList<BeforeLoadPlayerData> beforeLoadList = new ArrayList<BeforeLoadPlayerData>();
 
     /**
      * Use this to create a new PDataHandler when PlayerData is loaded. There
@@ -61,22 +56,12 @@ public final class PDataHandler {
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
             xmlDataFolder = new File(pluginFolder, "xml");
-            playerDataFolder = new File(pluginFolder, "playerData");
-            if (xml) {
-                if (xmlDataFolder != null) {
-                    if (!xmlDataFolder.isDirectory()) {
-                        xmlDataFolder.mkdirs();
-                    }
-                }
-            } else {
-                if (playerDataFolder != null) {
-                    if (!playerDataFolder.isDirectory()) {
-                        playerDataFolder.mkdirs();
-                    }
+            if (xmlDataFolder != null) {
+                if (!xmlDataFolder.isDirectory()) {
+                    xmlDataFolder.mkdirs();
                 }
             }
         } else {
-            playerDataFolder = null;
             xmlDataFolder = null;
             playerDataMain.getLogger().severe("Plugin Data Folder Is Null!");
         }
@@ -107,6 +92,7 @@ public final class PDataHandler {
     protected int createEmptyPlayerDataFiles(OfflinePlayer[] players) {
         int returnValue = 0;
         synchronized (playerDataListLock) {
+            playerDataList.clear();
             for (int i = 0; i < players.length; i++) {
                 if (players[i].hasPlayedBefore()) {
                     PData pData = new PData(players[i]);
@@ -120,8 +106,8 @@ public final class PDataHandler {
                 }
             }
         }
-        saveAllData();
-        reReadData(null);
+        saveAllData(false, null);
+        loadDataFromFiles(null);
         return returnValue;
     }
 
@@ -135,7 +121,7 @@ public final class PDataHandler {
      * running.
      */
     protected void endServer() {
-        Player[] ls = Bukkit.getServer().getOnlinePlayers();
+        Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
             pData.loggedOut();
@@ -149,66 +135,41 @@ public final class PDataHandler {
      * running and there are players online.
      */
     private void startServer() {
-        Player[] ls = Bukkit.getServer().getOnlinePlayers();
+        Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
             pData.loggedIn(p);
         }
     }
 
-    /**
-     * This function goes through ALL loaded PDatas and forces each of them to
-     * save.
-     */
-    protected void saveAllData() {
-        synchronized (playerDataListLock) {
+    public void saveAllData(final boolean executeAsync, final Callable<Void> callAfter) {
+        if (executeAsync) {
+            Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+                public void run() {
+                    synchronized (playerDataListLock) {
+                        for (PData pData : playerDataList) {
+                            pData.updateStatus(false, false);
+                            savePDataXML(pData);
+                        }
+                        if (callAfter != null) {
+                            Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
+                        }
+                    }
+                }
+            });
+        } else {
             for (PData pData : playerDataList) {
                 pData.updateStatus(false, false);
-                if (xml) {
-                    savePDataXML(pData);
-                } else {
-                    savePDataBPD(pData);
+                savePDataXML(pData);
+            }
+            if (callAfter != null) {
+                try {
+                    callAfter.call();
+                } catch (Exception ex) {
+                    Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
-    }
-
-    public void saveAllXML(final Callable<Void> callAfter) {
-        if (xmlDataFolder != null) {
-            if (!xmlDataFolder.isDirectory()) {
-                xmlDataFolder.mkdirs();
-            }
-        }
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
-            public void run() {
-                synchronized (playerDataListLock) {
-                    for (PData pData : playerDataList) {
-                        pData.updateStatus(false, false);
-                        savePDataXML(pData);
-                    }
-                    Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
-                }
-            }
-        });
-    }
-
-    public void saveAllBPD(final Callable<Void> callAfter) {
-        if (playerDataFolder != null) {
-            if (!playerDataFolder.isDirectory()) {
-                playerDataFolder.mkdirs();
-            }
-        }
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
-            public void run() {
-                synchronized (playerDataListLock) {
-                    for (PData pData : playerDataList) {
-                        pData.updateStatus(false, false);
-                        savePDataBPD(pData);
-                    }
-                    Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
-                }
-            }
-        });
     }
 
     /**
@@ -229,11 +190,7 @@ public final class PDataHandler {
                 playerDataListFirstJoin.add(pData);
             }
         }
-        if (xml) {
-            savePDataXML(pData);
-        } else {
-            savePDataBPD(pData);
-        }
+        savePDataXML(pData);
     }
 
     private void savePDataXML(PData pd) {
@@ -248,16 +205,6 @@ public final class PDataHandler {
         } catch (DXMLException ex) {
             playerDataMain.getLogger().log(Level.SEVERE, "Exception Writing To File", ex);
         }
-    }
-
-    private void savePDataBPD(PData pd) {
-        File file = new File(playerDataFolder, pd.userName() + ".bpd");
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            playerDataMain.getLogger().log(Level.SEVERE, "Exception Creating New File", ex);
-        }
-        BPDFileParser.writeToFile(pd, file);
     }
 
     /**
@@ -551,7 +498,7 @@ public final class PDataHandler {
     /**
      * This will log in a given player's PData.
      *
-     * @return Whether or not this player has joined before.
+     * @return true if this isn't the player's first join.
      */
     public boolean logIn(Player p) {
         if (p == null) {
@@ -652,18 +599,10 @@ public final class PDataHandler {
     }
 
     /**
-     * This returns the REAL ARRAY. So Don't mess with it!
+     * This returns the REAL LIST, NOT A COPY. So Don't mess with it!
      */
     public List<PData> getAllPDatasFirstJoin() {
         return playerDataListFirstJoin;
-    }
-
-    /**
-     * This will Sort the PData lists depending on how long it has been since
-     * each played last joined. IN A SEPERATE THREAD.
-     */
-    protected void sortData(Runnable afterLoad) {
-        sortList(afterLoad);
     }
 
     /**
@@ -679,50 +618,33 @@ public final class PDataHandler {
         }
     }
 
-    private void sortList(Runnable afterLoad) {
+    /**
+     * This will Sort the PData lists depending on how long it has been since
+     * each played last joined. IN A SEPERATE THREAD.
+     */
+    public void sortData(Runnable afterLoad) {
         final Logger l = playerDataMain.getLogger();
-        Runnable sorter = new Sorter(l, afterLoad);
+        Runnable sorter = new Sorter(afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
 
     }
 
-    class Sorter implements Runnable {
+    private class Sorter implements Runnable {
 
-        private Logger l;
-        private Runnable afterLoad;
+        private final Runnable afterLoad;
 
-        public Sorter(Logger l, Runnable afterLoad) {
-            this.l = l;
+        public Sorter(Runnable afterLoad) {
             this.afterLoad = afterLoad;
         }
 
         public void run() {
-            while (true) {
-                synchronized (playerDataListLock) {
-                    ArrayList<PData> tempList = new ArrayList<PData>();
-                    ArrayList<PData> tempList2 = new ArrayList<PData>();
-                    for (PData pd : playerDataList) {
-                        if (!tempList.contains(pd)) {
-                            tempList.add(pd);
-                        }
-                        if (!tempList2.contains(pd)) {
-                            tempList2.add(pd);
-                        }
+            synchronized (playerDataListLock) {
+                Collections.sort(playerDataList);
+                Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
+                    public int compare(PData o1, PData o2) {
+                        return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
                     }
-                    Collections.sort(tempList);
-                    Collections.sort(tempList2, new Comparator<PData>() {
-                        public int compare(PData o1, PData o2) {
-                            return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
-                        }
-                    });
-                    if (tempList.containsAll(playerDataList) && playerDataList.containsAll(tempList)) {
-                        playerDataList = tempList;
-                        playerDataListFirstJoin = tempList2;
-                        break;
-                    } else {
-                        l.log(Level.INFO, "Repeating Sort");
-                    }
-                }
+                });
             }
             if (afterLoad != null) {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, afterLoad);
@@ -730,58 +652,19 @@ public final class PDataHandler {
         }
     }
 
-    private void reReadData(final Runnable runAfter) {
+    private void loadDataFromFiles(final Runnable runAfter) {
         final Logger l = playerDataMain.getLogger();
         Runnable run = new Runnable() {
             public void run() {
-                asyncRead(l, runAfter);
+                readData(l, runAfter);
             }
         };
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
     }
 
-    public void reReadData(final Runnable runAfter, final boolean useXML) {
-        final Logger l = playerDataMain.getLogger();
-        Runnable run = new Runnable() {
-            public void run() {
-                asyncRead(l, new Runnable() {
-                    public void run() {
-                        sortData(runAfter);
-                    }
-                }, useXML);
-            }
-        };
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
-    }
-
-    private void asyncRead(final Logger l, final Runnable runAfter) {
-        readDataBeforeLoad(l);
-        Runnable run = new Runnable() {
-            public void run() {
-                turnBeforeLoadIntoLoadedSync(l);
-                if (runAfter != null) {
-                    runAfter.run();
-                }
-            }
-        };
-        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
-    }
-
-    private void asyncRead(final Logger l, final Runnable runAfter, boolean useXML) {
-        int i = readDataToBeforeLoadList(l, useXML);
-        if (i > 0) {
-            Runnable run = new Runnable() {
-                public void run() {
-                    turnBeforeLoadIntoLoadedSync(l);
-                    if (runAfter != null) {
-                        runAfter.run();
-                    }
-                }
-            };
-            Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
-        } else {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, runAfter);
-        }
+    private void readData(final Logger l, final Runnable runAfter) {
+        readData(l);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, runAfter);
     }
 
     /**
@@ -792,77 +675,27 @@ public final class PDataHandler {
      */
     protected void init() {
         final Logger l = playerDataMain.getLogger();
-        l.log(Level.INFO, "Starting First Load Section (Sync)");
-        if ((xml ? xmlDataFolder : playerDataFolder).listFiles().length == 0) {
+        if (xmlDataFolder.listFiles().length == 0) {
             createEmptyPlayerDataFilesFromBukkit();
         }
-        l.log(Level.INFO, "Finished First Load Section (Sync)");
-        Runnable run = new Runnable() {
-            public void run() {
-                secondLoadSectionAsync(l);
-            }
-        };
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
-    }
-
-    private void secondLoadSectionAsync(final Logger l) {
-        l.log(Level.INFO, "Starting Second Load Section (Async)");
-        readDataBeforeLoad(l);
-        l.log(Level.INFO, "Finished Second Load Section (Async)");
-        Runnable run = new Runnable() {
-            public void run() {
-                lastLoadSectionSync(l);
-            }
-        };
-        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, run);
-    }
-
-    private void lastLoadSectionSync(final Logger l) {
-        l.log(Level.INFO, "Starting Third Load Section (Sync)");
-        turnBeforeLoadIntoLoadedSync(l);
-        l.log(Level.INFO, "Finished Third Load Section (Sync)");
-        l.log(Level.INFO, "Starting Fourth Load Section (Async)");
-        sortData(new Runnable() {
-            public void run() {
-                l.log(Level.INFO, "Finished Fourth Load Section (Async)");
-                l.log(Level.INFO, "Starting Fifth Load Section (Sync)");
-                startServer();
-                l.log(Level.INFO, "Finished Fifth Load Section (Sync)");
-                synchronized (afterLoadRuns) {
-                    if (!afterLoadRuns.isEmpty()) {
-                        l.log(Level.INFO, "Starting AfterLoad Tasks");
-                        while (!afterLoadRuns.isEmpty()) {
-                            Bukkit.getScheduler().runTask(playerDataMain, afterLoadRuns.get(0));
-                            afterLoadRuns.remove(0);
-                        }
-                        isLoaded = true;
-                    }
-                }
-                l.log(Level.INFO, "Fully Loaded and Enabled");
-            }
-        });
-    }
-
-    private void turnBeforeLoadIntoLoadedSync(Logger l) {
+        readData(l);
         synchronized (playerDataListLock) {
-            synchronized (beforeLoadListLock) {
-                if (beforeLoadList.size() > 1) {
-                    playerDataList.clear();
-                    playerDataListFirstJoin.clear();
-                    for (BeforeLoadPlayerData bl : beforeLoadList) {
-                        PData pd = bl.getPData();
-                        if (pd != null) {
-                            if (!playerDataList.contains(pd)) {
-                                playerDataList.add(pd);
-                            }
-                            if (!playerDataListFirstJoin.contains(pd)) {
-                                playerDataListFirstJoin.add(pd);
-                            }
-                        }
-                    }
+            Collections.sort(playerDataList);
+            Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
+                public int compare(PData o1, PData o2) {
+                    return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
+                }
+            });
+        }
+        isLoaded = true;
+        synchronized (afterLoadRuns) {
+            if (!afterLoadRuns.isEmpty()) {
+                l.log(Level.INFO, "Starting AfterLoad Tasks");
+                while (!afterLoadRuns.isEmpty()) {
+                    Bukkit.getScheduler().runTask(playerDataMain, afterLoadRuns.get(0));
+                    afterLoadRuns.remove(0);
                 }
             }
-            l.log(Level.INFO, "Loaded {0} Player Data Files", playerDataList.size());
         }
     }
 
@@ -871,86 +704,59 @@ public final class PDataHandler {
      * from the files in the playerdata folder. This function should only be
      * used on startup.
      */
-    private void readDataBeforeLoad(Logger l) {
-        int count = xml ? loadAllPDataXMLToBeforeLoadList() : loadAllPDataBPDToBeforeLoadList();
+    private void readData(Logger l) {
+        int count = loadAllPDataToList();
         l.log(Level.INFO, "Read {0} Player Data Files", count);
     }
 
-    /**
-     * This function removes all the current PDatas loaded, and loads new ones
-     * from the files in the playerdata folder. This function should only be
-     * used on startup.
-     */
-    private int readDataToBeforeLoadList(Logger l, boolean useXML) {
-        int count = useXML ? loadAllPDataXMLToBeforeLoadList() : loadAllPDataBPDToBeforeLoadList();
-        l.log(Level.INFO, "Read {0} Player Data Files from " + (useXML ? "XML" : "BPD"), count);
-        return count;
-    }
-
-    private int loadAllPDataXMLToBeforeLoadList() {
-        synchronized (beforeLoadListLock) {
-            beforeLoadList.clear();
+    private int loadAllPDataToList() {
+        synchronized (playerDataListLock) {
+            playerDataList.clear();
+            playerDataListFirstJoin.clear();
             if (xmlDataFolder != null && xmlDataFolder.exists()) {
                 File[] playerFiles = xmlDataFolder.listFiles();
                 for (File fl : playerFiles) {
                     if (fl != null) {
                         if (fl.canRead()) {
                             if (fl.isFile()) {
-                                String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
+                                String type = fl.getName().substring(fl.getName().lastIndexOf('.') + 1, fl.getName().length());
                                 if (type.equals("xml")) {
-                                    BeforeLoadPlayerData beforeLoad = null;
+                                    PData pData = null;
                                     try {
-                                        beforeLoad = XMLFileParser.readFromFile(fl);
+                                        pData = XMLFileParser.readFromFile(fl);
                                     } catch (DXMLException dxmle) {
                                         playerDataMain.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
                                     }
-                                    if (beforeLoad != null) {
-                                        beforeLoadList.add(beforeLoad);
+                                    if (pData != null) {
+                                        if (!playerDataList.contains(pData)) {
+                                            playerDataList.add(pData);
+                                        }
+                                        if (!playerDataListFirstJoin.contains(pData)) {
+                                            playerDataListFirstJoin.add(pData);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                return beforeLoadList.size();
+                return playerDataList.size();
             } else {
                 return 0;
             }
         }
     }
 
-    private int loadAllPDataBPDToBeforeLoadList() {
-        synchronized (beforeLoadListLock) {
-            beforeLoadList.clear();
-            if (playerDataFolder != null && playerDataFolder.exists()) {
-                File[] playerFiles = playerDataFolder.listFiles();
-                for (File fl : playerFiles) {
-                    if (fl != null) {
-                        if (fl.canRead()) {
-                            if (fl.isFile()) {
-                                String type = fl.getName().substring(fl.getName().indexOf('.') + 1, fl.getName().length());
-                                if (type.equals("bpd")) {
-                                    BeforeLoadPlayerData beforeLoad = BPDFileParser.readFromFile(fl);
-                                    if (beforeLoad != null) {
-                                        beforeLoadList.add(beforeLoad);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return beforeLoadList.size();
-            } else {
-                return 0;
-            }
-        }
-    }
-
+    /**
+     * This will run a given task after PlayerData has loaded. If PlayerData is
+     * already fully loaded, it will just call r.run(). Otherwise, r will be
+     * executed as a task on the main thread after loading finishes.
+     */
     protected void runAfterLoad(Runnable r) {
-        synchronized (afterLoadRuns) {
-            if (isLoaded) {
-                Bukkit.getScheduler().runTask(playerDataMain, r);
-            } else {
+        if (isLoaded) {
+            r.run();
+        } else {
+            synchronized (afterLoadRuns) {
                 afterLoadRuns.add(r);
             }
         }
