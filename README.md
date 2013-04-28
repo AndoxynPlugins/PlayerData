@@ -1,5 +1,5 @@
 PlayerData is a plugin that gathers data on Players on **your** server!
-== Feature List
+== Feature List ==
 * Records Every login time and IP
 * Allows you to view the first time that each player was seen
 * Allows you to view when a player was last seen
@@ -10,7 +10,7 @@ PlayerData is a plugin that gathers data on Players on **your** server!
 * Has an API that allows other plugins to store user-specific data through PlayerData's storage (Also allows for other plugins to easily auto-complete a username/display name)
 * Optionally find the Player's Rank, and displays that on User-Info. (Because I am looking for Ranks, currently this only works in PEX)
 
-== Installation
+== Installation ==
 To install PlayerData, simply download the PlayerData.jar file and put it into your plugin folder!
 If you want to grab data from Bukkit (recommended), restart your server then run the command "/pd recreateall"\\
 That command will erase any current database, so only use it if you are just installing PlayerData.
@@ -18,7 +18,7 @@ It will grab a list of players who have joined your server, when they were first
 
 Java source is compiled for Java version 1.5 or 5. I think you need to have at least java 1.5 to run Bukkit, so you should be good on that account.
 
-== Commands
+== Commands ==
 * Note: You can substitute **/pd** with **/playerdata**, **/pdata** or **/playerd**.
 * Note: Many of these sub commands also have aliases, for instance '/pd list|lp|pl|l' means that you can do '/pd' and then either list, lp, pl, or l in order to do that sub command.
 * Note: When using the <Player> Argument, it isn't necessary to have the full username. EG: saying 'dab' will pull the last player seen who has 'dab' in their username or displayname.
@@ -61,7 +61,7 @@ Java source is compiled for Java version 1.5 or 5. I think you need to have at l
 ;--/pd bpd--
 : Save all data into the BPD backend! This command was created because some people might find it helpful? It will be removed in the future.
 
-== Permissions
+== Permissions ==
 
 ;playerdata.*:
 : Gives access to all PlayerData commands
@@ -113,15 +113,15 @@ Java source is compiled for Java version 1.5 or 5. I think you need to have at l
 : children:
 : playerdata.help: true
 
-== Source
+== Source ==
 PlayerData's source is avaible on GitHub: [[https://github.com/daboross/PlayerData|https://github.com/daboross/PlayerData]]
 
-== TODO
+== TODO ==
 * Add Command Examples to this page.
 * Allow for looking through login/logout logs
 * Command to see the last IP a player used
 * Add mode JavaDoc to the source of PlayerData
-== Problems or Comments?
+== Problems or Comments? ==
 * Report Problems and Submit future Ideas at the Github Repo: https://github.com/daboross/PlayerData/issues
 * Submit an issue there, and I will try to get to it, whether it be a question or a bug in my code.
 * Also I will try to read comments posted below, but please don't post bugs in the comments section.

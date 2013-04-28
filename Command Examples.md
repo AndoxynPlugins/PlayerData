@@ -1,4 +1,4 @@
-== Command Examples:
+== Command Examples: ==
 * Note: You can substitue **/pd** with **/playerdata**, **/pdata** or **/playerd**.
 * Note: Many of these sub commands also have aliases, for instance '/pd list|lp|pl|l' means that you can do '/pd' and then either list, lp, pl, or l in order to do that sub command.
 * Note: When using the <Player> Argument, it isn't necessary to have the full username. EG: saying 'dab' will pull the last player seen who has 'dab' in their username or displayname.
