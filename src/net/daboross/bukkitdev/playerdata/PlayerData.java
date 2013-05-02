@@ -43,7 +43,7 @@ public final class PlayerData extends JavaPlugin {
         pm.registerEvents(eventListener, this);
         handler = new PlayerDataHandler(this);
         playerDataHandler.init();
-        getLogger().info("PlayerData Fully Enabled");
+        getLogger().info("PlayerData Load Completed");
     }
 
     /**
@@ -54,7 +54,7 @@ public final class PlayerData extends JavaPlugin {
         playerDataHandler.endServer();
         playerDataHandler.saveAllData(false, null);
         currentInstance = null;
-        getLogger().info("PlayerData Fully Disabled");
+        getLogger().info("PlayerData Unload Completed");
     }
 
     /**
