@@ -1,6 +1,8 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import net.daboross.bukkitdev.playerdata.metrics.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +19,8 @@ public final class PlayerData extends JavaPlugin {
     private PDataHandler playerDataHandler;
     private PlayerDataHandler handler;
     private PlayerDataEventListener eventListener;
+    private Metrics metrics;
+    private PlayerDataCustomMetrics pdcm;
 
     /**
      *
@@ -24,6 +28,15 @@ public final class PlayerData extends JavaPlugin {
     @Override
     public void onEnable() {
         currentInstance = this;
+        try {
+            metrics = new Metrics(this);
+        } catch (IOException ioe) {
+            getLogger().warning("Unable to create Metrics");
+        }
+        if (metrics != null) {
+            metrics.start();
+            pdcm = new PlayerDataCustomMetrics(this, metrics);
+        }
         PluginManager pm = this.getServer().getPluginManager();
         isPermissionsExLoaded = pm.isPluginEnabled("PermissionsEx");
         playerDataHandler = new PDataHandler(this);
@@ -32,17 +45,20 @@ public final class PlayerData extends JavaPlugin {
         if (pd != null) {
             pd.setExecutor(new PlayerDataCommandExecutor(this));
         } else {
-            getLogger().severe("Command PD is null");
+            getLogger().severe("Plugin Command PD Not Hooked!");
         }
         if (gu != null) {
             gu.setExecutor(new PossibleUserNames(this));
         } else {
-            getLogger().severe("Command GU is null");
+            getLogger().severe("Plugin Command GU Not Hooked!");
         }
         eventListener = new PlayerDataEventListener(this);
         pm.registerEvents(eventListener, this);
         handler = new PlayerDataHandler(this);
         playerDataHandler.init();
+        if (pdcm != null) {
+            pdcm.addCustom();
+        }
         getLogger().info("PlayerData Load Completed");
     }
 

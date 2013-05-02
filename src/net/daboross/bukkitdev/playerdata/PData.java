@@ -338,10 +338,21 @@ public final class PData implements Comparable<PData> {
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getName().equalsIgnoreCase(d.getName())) {
                 data.remove(i);
+                i -= 1;
             }
         }
         data.add(d);
         d.setOwner(this);
+        saveStatus();
+    }
+
+    public void removeData(String name) {
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getName().equalsIgnoreCase(name)) {
+                data.remove(i);
+                i -= 1;
+            }
+        }
         saveStatus();
     }
 

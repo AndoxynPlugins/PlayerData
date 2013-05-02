@@ -249,7 +249,7 @@ public class Metrics {
                         firstPost = false;
                     } catch (IOException e) {
                         if (debug) {
-                            Bukkit.getLogger().log(Level.INFO, "[Metrics] " + e.getMessage());
+                            Bukkit.getLogger().log(Level.INFO, "[Metrics] {0}", e.getMessage());
                         }
                     }
                 }
@@ -271,12 +271,12 @@ public class Metrics {
                 configuration.load(getConfigFile());
             } catch (IOException ex) {
                 if (debug) {
-                    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
+                    Bukkit.getLogger().log(Level.INFO, "[Metrics] {0}", ex.getMessage());
                 }
                 return true;
             } catch (InvalidConfigurationException ex) {
                 if (debug) {
-                    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
+                    Bukkit.getLogger().log(Level.INFO, "[Metrics] {0}", ex.getMessage());
                 }
                 return true;
             }

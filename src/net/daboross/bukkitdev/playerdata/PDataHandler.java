@@ -752,7 +752,7 @@ public final class PDataHandler {
      * already fully loaded, it will just call r.run(). Otherwise, r will be
      * executed as a task on the main thread after loading finishes.
      */
-    protected void runAfterLoad(Runnable r) {
+    public void runAfterLoad(Runnable r) {
         if (isLoaded) {
             r.run();
         } else {
@@ -760,5 +760,9 @@ public final class PDataHandler {
                 afterLoadRuns.add(r);
             }
         }
+    }
+
+    public int numPlayersLoaded() {
+        return playerDataList.size();
     }
 }
