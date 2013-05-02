@@ -18,7 +18,7 @@ public class PlayerDataCustomMetrics {
     }
 
     /**
-     * Adds the custom Plotters/Graphcs to Metrics
+     * Adds the custom Plotters/Graphics to Metrics
      */
     public void addCustom() {
         Metrics.Plotter plotter = new Metrics.Plotter("#PlayerDatas Loaded") {
@@ -30,6 +30,6 @@ public class PlayerDataCustomMetrics {
         };
         Metrics.Graph graph = metrics.createGraph("#PlayerDatas Loaded");
         graph.addPlotter(plotter);
-        metrics.addGraph(null);
+        metrics.addGraph(graph);
     }
 }
