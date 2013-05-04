@@ -53,7 +53,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 /**
- * <p> The metrics class obtains data about a plugin and submits statistics about it to the metrics backend. </p> <p>
+ * <p> The metrics class obtains data about a plugin and submits statistics
+ * about it to the metrics backend. </p> <p>
  * Public methods provided by this class: </p>
  * <code>
  * Graph createGraph(String name); <br/>
@@ -76,8 +77,8 @@ public class Metrics {
      */
     private static final String REPORT_URL = "/report/%s";
     /**
-     * The separator to use for custom data. This MUST NOT change unless you are hosting your own version of metrics and
-     * want to change it.
+     * The separator to use for custom data. This MUST NOT change unless you are
+     * hosting your own version of metrics and want to change it.
      */
     private static final String CUSTOM_DATA_SEPARATOR = "~~";
     /**
@@ -93,7 +94,8 @@ public class Metrics {
      */
     private final Set<Graph> graphs = Collections.synchronizedSet(new HashSet<Graph>());
     /**
-     * The default graph, used for addCustomData when you don't want a specific graph
+     * The default graph, used for addCustomData when you don't want a specific
+     * graph
      */
     private final Graph defaultGraph = new Graph("Default");
     /**
@@ -149,11 +151,13 @@ public class Metrics {
     }
 
     /**
-     * Construct and create a Graph that can be used to separate specific plotters to their own graphs on the metrics
-     * website. Plotters can be added to the graph object returned.
+     * Construct and create a Graph that can be used to separate specific
+     * plotters to their own graphs on the metrics website. Plotters can be
+     * added to the graph object returned.
      *
      * @param name The name of the graph
-     * @return Graph object created. Will never return NULL under normal circumstances unless bad parameters are given
+     * @return Graph object created. Will never return NULL under normal
+     * circumstances unless bad parameters are given
      */
     public Graph createGraph(final String name) {
         if (name == null) {
@@ -171,7 +175,8 @@ public class Metrics {
     }
 
     /**
-     * Add a Graph object to BukkitMetrics that represents data for the plugin that should be sent to the backend
+     * Add a Graph object to BukkitMetrics that represents data for the plugin
+     * that should be sent to the backend
      *
      * @param graph The name of the graph
      */
@@ -201,9 +206,10 @@ public class Metrics {
     }
 
     /**
-     * Start measuring statistics. This will immediately create an async repeating task as the plugin and send the
-     * initial data to the metrics backend, and then after that it will post in increments of PING_INTERVAL * 1200
-     * ticks.
+     * Start measuring statistics. This will immediately create an async
+     * repeating task as the plugin and send the initial data to the metrics
+     * backend, and then after that it will post in increments of PING_INTERVAL
+     * * 1200 ticks.
      *
      * @return True if statistics measuring is running, otherwise false.
      */
@@ -285,7 +291,8 @@ public class Metrics {
     }
 
     /**
-     * Enables metrics for the server by setting "opt-out" to false in the config file and starting the metrics task.
+     * Enables metrics for the server by setting "opt-out" to false in the
+     * config file and starting the metrics task.
      *
      * @throws java.io.IOException
      */
@@ -306,7 +313,8 @@ public class Metrics {
     }
 
     /**
-     * Disables metrics for the server by setting "opt-out" to true in the config file and canceling the metrics task.
+     * Disables metrics for the server by setting "opt-out" to true in the
+     * config file and canceling the metrics task.
      *
      * @throws java.io.IOException
      */
@@ -328,11 +336,12 @@ public class Metrics {
     }
 
     /**
-     * Gets the File object of the config file that should be used to store data such as the GUID and opt-out status
+     * Gets the File object of the config file that should be used to store data
+     * such as the GUID and opt-out status
      *
      * @return the File object for the config file
      */
-    public File getConfigFile() {
+    private File getConfigFile() {
         // I believe the easiest way to get the base folder (e.g craftbukkit set via -P) for plugins to use
         // is to abuse the plugin object we already have
         // plugin.getDataFolder() => base/plugins/PluginA/
@@ -357,7 +366,6 @@ public class Metrics {
         int playersOnline = Bukkit.getServer().getOnlinePlayers().length;
 
         // END server software specific section -- all code below does not use any code outside of this class / Java
-
         // Construct the post data
         final StringBuilder data = new StringBuilder();
 
@@ -395,11 +403,7 @@ public class Metrics {
         // Acquire a lock on the graphs, which lets us make the assumption we also lock everything
         // inside of the graph (e.g plotters)
         synchronized (graphs) {
-            final Iterator<Graph> iter = graphs.iterator();
-
-            while (iter.hasNext()) {
-                final Graph graph = iter.next();
-
+            for (Graph graph : graphs) {
                 for (Plotter plotter : graph.getPlotters()) {
                     // The key name to send to the metrics server
                     // The format is C-GRAPHNAME-PLOTTERNAME where separator - is defined at the top
@@ -466,7 +470,8 @@ public class Metrics {
     }
 
     /**
-     * Check if mineshafter is present. If it is, we need to bypass it to send POST requests
+     * Check if mineshafter is present. If it is, we need to bypass it to send
+     * POST requests
      *
      * @return true if mineshafter is installed on the server
      */
@@ -474,14 +479,15 @@ public class Metrics {
         try {
             Class.forName("mineshafter.MineServer");
             return true;
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             return false;
         }
     }
 
     /**
-     * <p>Encode a key/value data pair to be used in a HTTP post request. This INCLUDES a & so the first key/value pair
-     * MUST be included manually, e.g:</p>
+     * <p>Encode a key/value data pair to be used in a HTTP post request. This
+     * INCLUDES a & so the first key/value pair MUST be included manually,
+     * e.g:</p>
      * <code>
      * StringBuffer data = new StringBuffer();
      * data.append(encode("guid")).append('=').append(encode(guid));
@@ -512,10 +518,10 @@ public class Metrics {
     public static class Graph {
 
         /**
-         * The graph's name, alphanumeric and spaces only :) If it does not comply to the above when submitted, it is
-         * rejected
+         * The graph's name, alphanumeric and spaces only :) If it does not
+         * comply to the above when submitted, it is rejected
          */
-        private final String name;
+        public final String name;
         /**
          * The set of plotters that are contained within this graph
          */
@@ -577,7 +583,8 @@ public class Metrics {
         }
 
         /**
-         * Called when the server owner decides to opt-out of BukkitMetrics while the server is running.
+         * Called when the server owner decides to opt-out of BukkitMetrics
+         * while the server is running.
          */
         protected void onOptOut() {
         }
@@ -591,7 +598,7 @@ public class Metrics {
         /**
          * The plot's name
          */
-        private final String name;
+        public final String name;
 
         /**
          * Construct a plotter with the default plot name
@@ -603,16 +610,19 @@ public class Metrics {
         /**
          * Construct a plotter with a specific plot name
          *
-         * @param name the name of the plotter to use, which will show up on the website
+         * @param name the name of the plotter to use, which will show up on the
+         * website
          */
         public Plotter(final String name) {
             this.name = name;
         }
 
         /**
-         * Get the current value for the plotted point. Since this function defers to an external function it may or may
-         * not return immediately thus cannot be guaranteed to be thread friendly or safe. This function can be called
-         * from any thread so care should be taken when accessing resources that need to be synchronized.
+         * Get the current value for the plotted point. Since this function
+         * defers to an external function it may or may not return immediately
+         * thus cannot be guaranteed to be thread friendly or safe. This
+         * function can be called from any thread so care should be taken when
+         * accessing resources that need to be synchronized.
          *
          * @return the current value for the point to be plotted.
          */
