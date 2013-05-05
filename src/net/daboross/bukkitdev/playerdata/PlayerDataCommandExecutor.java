@@ -19,9 +19,6 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
 
     private final PlayerData playerDataMain;
 
-    /**
-     *
-     */
     protected PlayerDataCommandExecutor(final PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
         initCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},
@@ -34,7 +31,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
                 "Gets all different IPs used by a Player", new IPLookupCommandReactor(playerDataMain));
         initCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
                 "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain));
-        initCommand("xml", true, "playerdata.admin", "Save All Data As XML", new CommandReactor() {
+        initCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new CommandReactor() {
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runXMLCommand(sender);
             }
@@ -47,10 +44,10 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
     }
 
     private void runXMLCommand(final CommandSender sender) {
-        sender.sendMessage(ColorList.MAIN + "Creating XML Files");
+        sender.sendMessage(ColorList.MAIN + "Saving PlayerDatas");
         playerDataMain.getPDataHandler().saveAllData(true, new Callable<Void>() {
             public Void call() {
-                sender.sendMessage(ColorList.MAIN + "XML File Creation Done");
+                sender.sendMessage(ColorList.MAIN + "PlayerData Saving Done");
                 return null;
             }
         });

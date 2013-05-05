@@ -42,7 +42,7 @@ public final class PDataHandler {
     private final ArrayList<PData> playerDataList = new ArrayList<PData>();
     private final ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
     private final PlayerData playerDataMain;
-    private final File xmlDataFolder;
+    private final File dataFolder;
     private final Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
     private boolean isLoaded = false;
     private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
@@ -55,14 +55,14 @@ public final class PDataHandler {
         this.playerDataMain = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
-            xmlDataFolder = new File(pluginFolder, "xml");
-            if (xmlDataFolder != null) {
-                if (!xmlDataFolder.isDirectory()) {
-                    xmlDataFolder.mkdirs();
+            dataFolder = new File(pluginFolder, "xml");
+            if (dataFolder != null) {
+                if (!dataFolder.isDirectory()) {
+                    dataFolder.mkdirs();
                 }
             }
         } else {
-            xmlDataFolder = null;
+            dataFolder = null;
             playerDataMain.getLogger().severe("Plugin Data Folder Is Null!");
         }
     }
@@ -194,7 +194,7 @@ public final class PDataHandler {
     }
 
     private void savePDataXML(PData pd) {
-        File file = new File(xmlDataFolder, pd.userName() + ".xml");
+        File file = new File(dataFolder, pd.userName() + ".xml");
         try {
             file.createNewFile();
         } catch (IOException ex) {
@@ -235,13 +235,13 @@ public final class PDataHandler {
      * offline. And people who have joined within the last 2 months have
      * priority of people who haven't.
      */
-    protected String getFullUsername(String userName) {
-        if (userName == null) {
-            throw new NullArgumentException("UserName Can't Be Null");
+    protected String getFullUsername(String username) {
+        if (username == null) {
+            throw new NullArgumentException("Username Can't Be Null");
         }
         //This is a list of usernames to return, in order from first choice to last choise
         String[] returnUserNames = new String[12];
-        String user = ChatColor.stripColor(userName).toLowerCase();
+        String user = ChatColor.stripColor(username).toLowerCase();
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PData pD = playerDataList.get(i);
@@ -675,7 +675,7 @@ public final class PDataHandler {
      */
     protected void init() {
         final Logger l = playerDataMain.getLogger();
-        if (xmlDataFolder.listFiles().length == 0) {
+        if (dataFolder.listFiles().length == 0) {
             createEmptyPlayerDataFilesFromBukkit();
         }
         readData(l);
@@ -713,8 +713,8 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             playerDataList.clear();
             playerDataListFirstJoin.clear();
-            if (xmlDataFolder != null && xmlDataFolder.exists()) {
-                File[] playerFiles = xmlDataFolder.listFiles();
+            if (dataFolder != null && dataFolder.exists()) {
+                File[] playerFiles = dataFolder.listFiles();
                 for (File fl : playerFiles) {
                     if (fl != null) {
                         if (fl.canRead()) {
