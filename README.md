@@ -1,5 +1,4 @@
 PlayerData is a plugin that gathers data on Players on **your** server!
-== Feature List ==
 * Records Every login time and IP
 * Allows you to view the first time that each player was seen
 * Allows you to view when a player was last seen
@@ -10,7 +9,6 @@ PlayerData is a plugin that gathers data on Players on **your** server!
 * Has an API that allows other plugins to store user-specific data through PlayerData's storage (Also allows for other plugins to easily auto-complete a username/display name)
 * Optionally find the Player's Rank, and displays that on User-Info. (Because I am looking for Ranks, currently this only works in PEX)
 
-== Installation ==
 To install PlayerData, simply download the PlayerData.jar file and put it into your plugin folder!
 If you want to grab data from Bukkit (recommended), restart your server then run the command "/pd recreateall"\\
 That command will erase any current database, so only use it if you are just installing PlayerData.
@@ -18,5 +16,4 @@ It will grab a list of players who have joined your server, when they were first
 
 Java source is compiled for Java version 1.5 or 5. I think you need to have at least java 1.5 to run Bukkit, so you should be good on that account.
 
-== More Documentation ==
 Go To http://dev.bukkit.org/server-mods/playerdata/ for more info!
