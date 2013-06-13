@@ -1,4 +1,3 @@
-
 package net.daboross.bukkitdev.playerdata;
 
 import net.daboross.bukkitdev.playerdata.metrics.Metrics;
@@ -22,7 +21,6 @@ public class PlayerDataCustomMetrics {
      */
     public void addCustom() {
         Metrics.Plotter plotter = new Metrics.Plotter("#PlayerDatas Loaded") {
-
             @Override
             public int getValue() {
                 return playerdata.getPDataHandler().numPlayersLoaded();
