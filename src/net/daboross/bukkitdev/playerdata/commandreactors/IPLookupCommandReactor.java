@@ -1,7 +1,7 @@
 package net.daboross.bukkitdev.playerdata.commandreactors;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
 import net.daboross.bukkitdev.playerdata.IPLogin;
@@ -29,15 +29,15 @@ public class IPLookupCommandReactor implements CommandExecutorBase.CommandReacto
             sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
             return;
         }
-        PData pData = playerDataMain.getHandler().getPData(subCommandArgs[0]);
+        String playerNameGiven = PlayerData.getCombinedString(subCommandArgs, 0);
+        PData pData = playerDataMain.getHandler().getPData(playerNameGiven);
         if (pData == null) {
-            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " not found!");
+            sender.sendMessage(ColorList.ERROR + "Player '" + ColorList.ERROR_ARGS + playerNameGiven + ColorList.ERROR + "' not found!");
             return;
         }
         sender.sendMessage(ColorList.MAIN + "Different IP's used by " + pData.userName());
-        List<String> ipList = new ArrayList<String>();
-        IPLogin[] ipLoginList = pData.logIns();
-        for (IPLogin ipl : ipLoginList) {
+        Set<String> ipList = new HashSet<String>();
+        for (IPLogin ipl : pData.logIns()) {
             String ip = ipl.ip();
             String[] ipSplit = ip.split(":")[0].split("/");
             ip = ipSplit[ipSplit.length - 1];

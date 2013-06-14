@@ -35,11 +35,12 @@ public class PossibleUserNames implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("gu")) {
             if (args.length > 0) {
-                String[] users = instance.getPDataHandler().getPossibleUsernames(args[0]);
+                String givenPlayerName = PlayerData.getCombinedString(args, 0);
+                String[] users = instance.getPDataHandler().getPossibleUsernames(givenPlayerName);
                 if (users.length > 10) {
-                    sender.sendMessage(ColorList.MAIN + "First Ten Possible Auto Completes for " + ColorList.NAME + args[0] + ColorList.MAIN + ":");
+                    sender.sendMessage(ColorList.MAIN + "First Ten Possible Auto Completes for " + ColorList.NAME + givenPlayerName + ColorList.MAIN + ":");
                 } else {
-                    sender.sendMessage(ColorList.MAIN + "Possible Auto Completes for " + ColorList.NAME + args[0] + ColorList.MAIN + ":");
+                    sender.sendMessage(ColorList.MAIN + "Possible Auto Completes for " + ColorList.NAME + givenPlayerName + ColorList.MAIN + ":");
                 }
                 for (int i = 0; i < users.length && i < 10; i++) {
                     sender.sendMessage(users[i]);

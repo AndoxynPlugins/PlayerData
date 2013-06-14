@@ -34,9 +34,10 @@ public class ViewInfoCommandReactor implements CommandReactor {
             sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
             return;
         }
-        PData pData = playerDataMain.getHandler().getPData(subCommandArgs[0]);
+        String givenPlayerName = PlayerData.getCombinedString(subCommandArgs, 0);
+        PData pData = playerDataMain.getHandler().getPData(givenPlayerName);
         if (pData == null) {
-            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " not found!");
+            sender.sendMessage(ColorList.ERROR + "Player: " + ColorList.ERROR_ARGS + givenPlayerName + ColorList.ERROR + " not found!");
             return;
         }
         sender.sendMessage(ColorList.MAIN + "Info Avalible For " + ColorList.NAME + pData.userName() + ColorList.MAIN + ":");
