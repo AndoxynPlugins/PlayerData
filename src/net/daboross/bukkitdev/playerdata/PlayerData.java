@@ -199,6 +199,20 @@ public final class PlayerData extends JavaPlugin {
         return returnS;
     }
 
+    public static String getCombinedString(String[] array, int start) {
+        if (array == null || start >= array.length || start < 0) {
+            throw new IllegalArgumentException();
+        } else if (start + 1 == array.length) {
+            return array[start];
+        } else {
+            StringBuilder sb = new StringBuilder(array[start]);
+            for (int i = start + 1; i < array.length; i++) {
+                sb.append(" ").append(array[i]);
+            }
+            return sb.toString();
+        }
+    }
+
     public static boolean isPEX() {
         return isPermissionsExLoaded;
     }
