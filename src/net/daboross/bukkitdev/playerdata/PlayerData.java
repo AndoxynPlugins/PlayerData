@@ -43,7 +43,7 @@ public final class PlayerData extends JavaPlugin {
             pdcm = new PlayerDataCustomMetrics(this, metrics);
         }
         PluginManager pm = this.getServer().getPluginManager();
-        isVaultLoaded = pm.isPluginEnabled("Vault");
+        setupVault(pm);
         playerDataHandler = new PDataHandler(this);
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
