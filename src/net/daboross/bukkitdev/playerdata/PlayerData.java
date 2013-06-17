@@ -2,9 +2,13 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.metrics.Metrics;
+import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -15,7 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class PlayerData extends JavaPlugin {
 
     private static PlayerData currentInstance;
-    private static boolean isPermissionsExLoaded;
+    private static boolean isVaultLoaded;
+    private static Permission permissionHandler;
     private PDataHandler playerDataHandler;
     private PlayerDataHandler handler;
     private PlayerDataEventListener eventListener;
@@ -38,7 +43,7 @@ public final class PlayerData extends JavaPlugin {
             pdcm = new PlayerDataCustomMetrics(this, metrics);
         }
         PluginManager pm = this.getServer().getPluginManager();
-        isPermissionsExLoaded = pm.isPluginEnabled("PermissionsEx");
+        isVaultLoaded = pm.isPluginEnabled("Vault");
         playerDataHandler = new PDataHandler(this);
         PluginCommand pd = getCommand("pd");
         PluginCommand gu = getCommand("gu");
@@ -70,6 +75,8 @@ public final class PlayerData extends JavaPlugin {
         playerDataHandler.endServer();
         playerDataHandler.saveAllData(false, null);
         currentInstance = null;
+        permissionHandler = null;
+        isVaultLoaded = false;
         getLogger().info("PlayerData Unload Completed");
     }
 
@@ -213,8 +220,28 @@ public final class PlayerData extends JavaPlugin {
         }
     }
 
-    public static boolean isPEX() {
-        return isPermissionsExLoaded;
+    private void setupVault(PluginManager pm) {
+        isVaultLoaded = pm.isPluginEnabled("Vault");
+        if (isVaultLoaded) {
+            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
+            permissionHandler = rsp.getProvider();
+            if (permissionHandler == null) {
+                isVaultLoaded = false;
+                getLogger().log(Level.INFO, "Vault found, but Permission handler not found.");
+            } else {
+                getLogger().log(Level.INFO, "Vault and Permission handler found.");
+            }
+        } else {
+            getLogger().log(Level.INFO, "Vault not found.");
+        }
+    }
+
+    public static boolean isVaultLoaded() {
+        return isVaultLoaded;
+    }
+
+    public static Permission getPermissionHandler() {
+        return permissionHandler;
     }
 
     public PlayerDataEventListener getEventListener() {

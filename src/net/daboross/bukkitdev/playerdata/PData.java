@@ -7,9 +7,8 @@ import java.util.Collections;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import ru.tehkode.permissions.PermissionUser;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
  * This is an object that holds all the information PlayerData has stored on one
@@ -32,8 +31,6 @@ public final class PData implements Comparable<PData> {
     private final ArrayList<Long> logOuts = new ArrayList<Long>();
     private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online = false;
-    private String[] groups;
-    private PermissionUser permUser;
 
     /**
      * Use This to create a NEW Player who has never joined before This should
@@ -410,69 +407,32 @@ public final class PData implements Comparable<PData> {
         OfflinePlayer ofp = Bukkit.getOfflinePlayer(username);
         return ofp;
     }
+    private static String[] EMPTY_STRING_LIST = {};
 
     /**
-     * This function gets the permissions group that this player is in. This
-     * will get the main group, EG the first group which has the "basic"
-     * permission. This will return "basic" if there are no groups which have
-     * the "basic" permission.
+     * This function gets the permissions groups that this player is in. This is
+     * retrieved from Vault Permissions. If PlayerData hasn't found a permission
+     * handler, then this will return an empty list.
      *
      * @return
      */
     public String[] getGroups() {
-        updateGroup();
-        return groups;
+        if (PlayerData.isVaultLoaded()) {
+            return PlayerData.getPermissionHandler().getPlayerGroups((String) null, username);
+        }
+        return EMPTY_STRING_LIST;
     }
 
     public boolean isGroup(String group) {
-        updateGroup();
-        for (String gr : groups) {
-            if (group.equalsIgnoreCase(gr)) {
-                return true;
+        if (PlayerData.isVaultLoaded()) {
+            for (World world : Bukkit.getWorlds()) {
+                boolean inGroup = PlayerData.getPermissionHandler().playerInGroup(world, username, group);
+                if (inGroup) {
+                    return true;
+                }
             }
         }
         return false;
-    }
-
-    /**
-     * This function gets the Permissions User which represents the same player
-     * that this PData represents.
-     *
-     * @return The Permissions User which represents the same player that this
-     * PData represents. null if PermissionEx is not loaded
-     */
-    public PermissionUser getPermUser() {
-        findPermUser();
-        return permUser;
-    }
-
-    public boolean hasPermission(String perm) {
-        if (PlayerData.isPEX()) {
-            findPermUser();
-            return permUser.has(perm);
-        }
-        return false;
-    }
-
-    /**
-     * This function updates this PData's Permission Group. This function gets
-     * data from PermissionsEx on this user, and sets variables in this PData
-     * according to that.
-     */
-    private void updateGroup() {
-        if (PlayerData.isPEX()) {
-            findPermUser();
-            groups = permUser.getGroupsNames();
-        } else {
-            permUser = null;
-            groups = new String[]{"Unknown"};
-        }
-    }
-
-    private void findPermUser() {
-        if (PlayerData.isPEX()) {
-            permUser = PermissionsEx.getUser(username);
-        }
     }
 
     private void sortTimes() {
@@ -526,6 +486,7 @@ public final class PData implements Comparable<PData> {
         }
     }
 
+    @Override
     public int compareTo(PData other) {
         if (other == null) {
             throw new NullPointerException();

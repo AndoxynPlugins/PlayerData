@@ -56,7 +56,7 @@ public class ViewInfoCommandReactor implements CommandReactor {
         linesToSend.add(ColorList.MAIN + "Time Played On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + ": " + ColorList.NUMBER + PlayerData.getFormattedDDate(pData.timePlayed()));
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + PlayerData.getFormattedDDate(System.currentTimeMillis() - pData.getFirstLogIn().time()) + ColorList.MAIN + " ago");
         linesToSend.add(ColorList.MAIN + "First Time On " + ColorList.SERVERNAME + Bukkit.getServerName() + ColorList.MAIN + " was  " + ColorList.NUMBER + new Date(pData.getFirstLogIn().time()));
-        if (PlayerData.isPEX()) {
+        if (PlayerData.isVaultLoaded()) {
             linesToSend.add(ColorList.NAME + pData.userName() + ColorList.MAIN + " is currently " + ColorList.NUMBER + PlayerData.formatList(pData.getGroups()));
         }
         PDataHandler pdh = playerDataMain.getPDataHandler();
