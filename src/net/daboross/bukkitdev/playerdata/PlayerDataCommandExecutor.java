@@ -32,11 +32,13 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
         initCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
                 "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain));
         initCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new CommandReactor() {
+            @Override
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runXMLCommand(sender);
             }
         });
         initCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit", new CommandReactor() {
+            @Override
             public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBridge executorBridge) {
                 runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
             }
@@ -46,6 +48,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
     private void runXMLCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.MAIN + "Saving PlayerDatas");
         playerDataMain.getPDataHandler().saveAllData(true, new Callable<Void>() {
+            @Override
             public Void call() {
                 sender.sendMessage(ColorList.MAIN + "PlayerData Saving Done");
                 return null;
@@ -65,7 +68,7 @@ public final class PlayerDataCommandExecutor extends CommandExecutorBase {
 
     @Override
     public String getCommandName() {
-        return "pd";
+        return "playerdata:playerdata";
     }
 
     @Override

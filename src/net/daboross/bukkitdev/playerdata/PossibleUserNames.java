@@ -33,7 +33,7 @@ public class PossibleUserNames implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("gu")) {
+        if (cmd.getName().equalsIgnoreCase("playerdata:getusername")) {
             if (args.length > 0) {
                 String givenPlayerName = PlayerData.getCombinedString(args, 0);
                 String[] users = instance.getPDataHandler().getPossibleUsernames(givenPlayerName);
