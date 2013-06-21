@@ -38,14 +38,14 @@ public final class PlayerDataCommandExecutor {
                 "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new SubCommandHandler() {
             @Override
-            public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+            public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
                 runXMLCommand(sender);
             }
         }));
         commandExecutorBase.addSubCommand(new SubCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit", new SubCommandHandler() {
             @Override
-            public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
-                runReCreateAllCommand(sender, mainCommandLabel, subCommandLabel, subCommandArgs);
+            public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+                runReCreateAllCommand(sender, baseCommandLabel, subCommandLabel, subCommandArgs);
             }
         }));
     }
@@ -65,9 +65,9 @@ public final class PlayerDataCommandExecutor {
         });
     }
 
-    private void runReCreateAllCommand(CommandSender sender, String commandLabel, String subCommandLabel, String[] args) {
+    private void runReCreateAllCommand(CommandSender sender, String baseCommandLabel, String subCommandLabel, String[] args) {
         if (args.length > 0) {
-            sender.sendMessage(ColorList.MAIN + "Arguments aren't needed after " + ColorList.CMD + "/" + commandLabel + " " + ColorList.SUBCMD + subCommandLabel);
+            sender.sendMessage(ColorList.MAIN + "Arguments aren't needed after " + ColorList.CMD + "/" + baseCommandLabel + " " + ColorList.SUBCMD + subCommandLabel);
             return;
         }
         sender.sendMessage(ColorList.MAIN + "Now Recreating All Player Data!");

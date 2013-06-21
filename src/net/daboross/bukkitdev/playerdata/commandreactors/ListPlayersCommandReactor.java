@@ -24,9 +24,9 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel,SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
+            sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
         }
         int pageNumber;
         if (subCommandArgs.length == 0) {
@@ -36,7 +36,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
                 pageNumber = Integer.valueOf(subCommandArgs[0]);
             } catch (NumberFormatException nfe) {
                 sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not an integer.");
-                sender.sendMessage(subCommand.getHelpMessage(mainCommandLabel, subCommandLabel));
+                sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
                 return;
             }
             if (pageNumber == 0) {
@@ -58,7 +58,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
         }
 
         if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {
-            messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
+            messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
         }
         sender.sendMessage(messagesToSend.toArray(new String[0]));
     }
