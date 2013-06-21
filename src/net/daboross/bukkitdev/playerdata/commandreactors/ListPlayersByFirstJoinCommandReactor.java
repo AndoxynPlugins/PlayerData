@@ -46,7 +46,7 @@ public class ListPlayersByFirstJoinCommandReactor implements CommandExecutorBase
         List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatasFirstJoin();
         ArrayList<String> messagesToSend = new ArrayList<String>();
         messagesToSend.add("");
-        messagesToSend.add(ColorList.MAIN + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN + "out of " + ColorList.NUMBER + pDataList.size() / 6 + ColorList.MAIN + ":");
+        messagesToSend.add(ColorList.MAIN + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN + " out of " + ColorList.NUMBER + (pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1) + ColorList.MAIN + ":");
         for (int i = ((pageNumber - 1) * 6); i < ((pageNumber - 1) * 6) + 6 & i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was first seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(System.currentTimeMillis() - current.getFirstLogIn().time()) + ColorList.MAIN + " ago.");
