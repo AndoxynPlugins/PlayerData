@@ -33,25 +33,31 @@ public class ListPlayersCommandReactor implements CommandReactor {
             pageNumber = 1;
         } else {
             try {
-                pageNumber = Integer.valueOf(subCommandArgs[0]) - 1;
+                pageNumber = Integer.valueOf(subCommandArgs[0]);
             } catch (NumberFormatException nfe) {
-                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a number.");
+                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not an integer.");
                 sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
                 return;
             }
-            if (pageNumber < 0) {
-                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a non-0 positive number.");
+            if (pageNumber == 0) {
+                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a non-0 integer.");
+                return;
+            } else if (pageNumber < 0) {
+                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a positive integer.");
                 return;
             }
         }
+        int pageNumberReal = pageNumber - 1;
         List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatas();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add(ColorList.TOP_OF_LIST_SEPERATOR + "--" + ColorList.TOP_OF_LIST + " Player List" + ColorList.TOP_OF_LIST_SEPERATOR + " -- " + ColorList.NUMBER + (pageNumber + 1) + ColorList.TOP_OF_LIST + "/" + ColorList.NUMBER + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_OF_LIST_SEPERATOR + " --");
-        for (int i = pageNumber * 6; i < (pageNumber + 1) * 6 && i < pDataList.size(); i++) {
+        messagesToSend.add(ColorList.TOP_OF_LIST_SEPERATOR + " --" + ColorList.TOP_OF_LIST + " Player List " + ColorList.TOP_OF_LIST_SEPERATOR + "--" + ColorList.TOP_OF_LIST + " Page " + ColorList.NUMBER + pageNumber + ColorList.TOP_OF_LIST + "/" + ColorList.NUMBER + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_OF_LIST_SEPERATOR + " --");
+
+        for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.MAIN + " ago.");
         }
-        if (pageNumber < (pDataList.size() / 6.0)) {
+
+        if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {
             messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
         }
         sender.sendMessage(messagesToSend.toArray(new String[0]));
