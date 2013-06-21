@@ -151,11 +151,7 @@ public final class PlayerData extends JavaPlugin {
             if (days <= 0) {
                 if (minutes > 0) {
                     resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
-                    if (seconds > 0 && hours <= 0) {
-                        resultBuilder.append(" and ");
-                    }
-                }
-                if (seconds > 0 && hours <= 0) {
+                } else if (seconds > 0 && hours <= 0) {
                     resultBuilder.append(seconds).append(seconds == 1 ? " second" : " seconds");
                 }
             }
