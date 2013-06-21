@@ -54,7 +54,7 @@ public class ListPlayersCommandReactor implements CommandReactor {
 
         for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
-            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.MAIN + " ago.");
+            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.MAIN + " ago.");
         }
 
         if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {
