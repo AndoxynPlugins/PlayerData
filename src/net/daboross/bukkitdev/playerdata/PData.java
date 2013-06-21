@@ -113,8 +113,8 @@ public final class PData implements Comparable<PData> {
         this.logIns.addAll(logIns);
         this.logOuts.addAll(logOuts);
         this.timePlayed = timePlayed;
-        setDataOwners();
         this.data.addAll(Arrays.asList(data));
+        setDataOwners();
         currentSession = System.currentTimeMillis();
         sortTimes();
     }
