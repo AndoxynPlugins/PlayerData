@@ -114,7 +114,7 @@ public final class PlayerData extends JavaPlugin {
      * @param millis the millisecond value to turn into a date string
      * @return A visually nice date. "Not That Long" if millis == 0;
      */
-    public static String getFormattedDDate(long millis) {
+    public static String getFormattedDate(long millis) {
         if (millis == 0) {
             return "Not That Long";
         }
