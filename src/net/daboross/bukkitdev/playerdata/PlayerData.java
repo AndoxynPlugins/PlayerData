@@ -118,18 +118,16 @@ public final class PlayerData extends JavaPlugin {
         if (millis == 0) {
             return "Not That Long";
         }
-        long years;
-        long days;
-        long hours;
-        long minutes;
-        long seconds;
-        years = 0;
+        long years, days, hours, minutes, seconds;
+
+        years = TimeUnit.MILLISECONDS.toDays(millis) / 365;
         days = TimeUnit.MILLISECONDS.toDays(millis);
-        hours = TimeUnit.MILLISECONDS.toHours(millis) - TimeUnit.DAYS.toHours(days);
-        minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours) - TimeUnit.DAYS.toMinutes(days);
-        seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes) - TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days);
-        days = days % 365;
-        years = days / 365;
+        hours = TimeUnit.MILLISECONDS.toHours(millis);
+        minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
+        minutes -= TimeUnit.HOURS.toMinutes(hours);
+        hours -= TimeUnit.DAYS.toHours(days);
+        days %= 365;
         StringBuilder resultBuilder = new StringBuilder();
         if (years > 0) {
             resultBuilder.append(years).append(years == 1 ? " year" : " years");
