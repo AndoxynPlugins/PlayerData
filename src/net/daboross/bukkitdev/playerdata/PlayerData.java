@@ -134,25 +134,25 @@ public final class PlayerData extends JavaPlugin {
         if (years > 0) {
             resultBuilder.append(years).append(years == 1 ? " year" : " years");
             if (days > 0) {
-                resultBuilder.append(", and ");
+                resultBuilder.append(" and ");
             }
         }
         if (days > 0) {
             resultBuilder.append(days).append(days == 1 ? " day" : " days");
             if (hours > 0) {
-                resultBuilder.append(", and ");
+                resultBuilder.append(" and ");
             }
         }
         if (hours > 0 && years <= 0) {
             resultBuilder.append(hours).append(hours == 1 ? " hour" : " hours");
             if (minutes > 0 && days <= 0) {
-                resultBuilder.append(", and ");
+                resultBuilder.append(" and ");
             }
         }
         if (minutes > 0 && days <= 0 && years <= 0) {
             resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
             if (seconds > 0 && hours <= 0) {
-                resultBuilder.append(", and ");
+                resultBuilder.append(" and ");
             }
         }
         if (seconds > 0 && hours <= 0 && days <= 0 && years <= 0) {
