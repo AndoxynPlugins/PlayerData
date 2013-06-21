@@ -1,6 +1,7 @@
 package net.daboross.bukkitdev.playerdata.commandreactors;
 
 import java.util.ArrayList;
+import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
 import static net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase.CommandReactor;
@@ -22,6 +23,7 @@ public class ListPlayersCommandReactor implements CommandReactor {
         this.playerDataMain = playerDataMain;
     }
 
+    @Override
     public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
         if (subCommandArgs.length > 1) {
             sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
@@ -31,27 +33,26 @@ public class ListPlayersCommandReactor implements CommandReactor {
             pageNumber = 1;
         } else {
             try {
-                pageNumber = Integer.valueOf(subCommandArgs[0]);
-            } catch (Exception e) {
+                pageNumber = Integer.valueOf(subCommandArgs[0]) - 1;
+            } catch (NumberFormatException nfe) {
                 sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a number.");
                 sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
                 return;
             }
-            if (pageNumber < 1) {
+            if (pageNumber < 0) {
                 sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a non-0 positive number.");
                 return;
             }
         }
-        PData[] pDataList = playerDataMain.getPDataHandler().getAllPDatas();
+        List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatas();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add("");
-        messagesToSend.add(ColorList.MAIN_DARK + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN_DARK + ":");
-        for (int i = ((pageNumber - 1) * 6); i < ((pageNumber - 1) * 6) + 6 & i < pDataList.length; i++) {
-            PData current = pDataList[i];
+        messagesToSend.add(ColorList.MAIN + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN + "out of " + ColorList.NUMBER + pDataList.size() / 6 + ColorList.MAIN + ":");
+        for (int i = pageNumber * 6; i < (pageNumber + 1) * 6 && i < pDataList.size(); i++) {
+            PData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.MAIN + " ago.");
         }
-        if (pageNumber < (pDataList.length / 6.0)) {
-            messagesToSend.add(ColorList.MAIN_DARK + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
+        if (pageNumber < (pDataList.size() / 6.0)) {
+            messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
         }
         sender.sendMessage(messagesToSend.toArray(new String[0]));
     }

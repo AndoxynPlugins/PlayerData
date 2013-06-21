@@ -21,6 +21,7 @@ public class ListPlayersByFirstJoinCommandReactor implements CommandExecutorBase
         this.playerDataMain = playerDataMain;
     }
 
+    @Override
     public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel,
             String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
         if (subCommandArgs.length > 1) {
@@ -45,13 +46,13 @@ public class ListPlayersByFirstJoinCommandReactor implements CommandExecutorBase
         List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatasFirstJoin();
         ArrayList<String> messagesToSend = new ArrayList<String>();
         messagesToSend.add("");
-        messagesToSend.add(ColorList.MAIN_DARK + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN_DARK + ":");
+        messagesToSend.add(ColorList.MAIN + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN + "out of " + ColorList.NUMBER + pDataList.size() / 6 + ColorList.MAIN + ":");
         for (int i = ((pageNumber - 1) * 6); i < ((pageNumber - 1) * 6) + 6 & i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was first seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(System.currentTimeMillis() - current.getFirstLogIn().time()) + ColorList.MAIN + " ago.");
         }
         if (pageNumber < (pDataList.size() / 6.0)) {
-            messagesToSend.add(ColorList.MAIN_DARK + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
+            messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
         }
         sender.sendMessage(messagesToSend.toArray(new String[0]));
     }

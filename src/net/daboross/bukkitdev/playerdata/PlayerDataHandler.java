@@ -1,5 +1,7 @@
 package net.daboross.bukkitdev.playerdata;
 
+import java.util.List;
+
 /**
  * This is the main API function for PlayerData.
  *
@@ -110,25 +112,24 @@ public class PlayerDataHandler {
 
     /**
      * This function searches through all loaded players and compiles a list of
-     * all the data's of the type given.
+     * all the data's of the type given. This list is created inside this
+     * command and no references are kept.
      *
      * @param dataType This is the data type to search for.
      * @return A list of all data's of that type which are loaded.
      */
-    public Data[] getAllDatas(String dataType) {
+    public List<Data> getAllDatas(String dataType) {
         return pDataHandler.getAllData(dataType);
     }
 
     /**
      * This function returns a list of all PData's loaded, or one PData for
-     * every single player who has ever joined this server. This IS a copy of
-     * the original array, so you can do whatever you want with it. HOWEVER each
-     * of the PData's in it is the same one PDataHandler has, so any changes to
-     * them are changes to PDataHandler's copy.
+     * every single player who has ever joined this server. This list is an
+     * UNMODIFIABLE version of PlayerData's Internal list.
      *
      * @return A list of PData's Loaded.
      */
-    public PData[] getAllPDatas() {
+    public List<PData> getAllPDatas() {
         return pDataHandler.getAllPDatas();
     }
 

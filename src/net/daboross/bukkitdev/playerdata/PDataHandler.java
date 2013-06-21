@@ -145,6 +145,7 @@ public final class PDataHandler {
     public void saveAllData(final boolean executeAsync, final Callable<Void> callAfter) {
         if (executeAsync) {
             Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+                @Override
                 public void run() {
                     synchronized (playerDataListLock) {
                         for (PData pData : playerDataList) {
@@ -568,41 +569,40 @@ public final class PDataHandler {
     /**
      * This function gives all custom data loaded of a given data Type. This
      * function goes through ALL loaded PDatas and checks each one if they have
-     * data of the given type.
+     * data of the given type. The returned list is created in this command and
+     * no references are kept. You can do whatever you want to to the list.
      *
      * @param dataName The type of the data.
      */
-    protected Data[] getAllData(String dataName) {
+    protected List<Data> getAllData(String dataName) {
         synchronized (playerDataListLock) {
-            ArrayList<Data> returnArrayList = new ArrayList<Data>();
+            List<Data> returnArrayList = new ArrayList<Data>();
             for (PData pData : playerDataList) {
                 if (pData.hasData(dataName)) {
                     returnArrayList.add(pData.getData(dataName));
                 }
             }
-            return returnArrayList.toArray(new Data[0]);
+            return returnArrayList;
         }
     }
 
     /**
      * This function gets all PDatas loaded, which should be one for each Player
-     * who has ever joined the server. This function returns a copy of the list
-     * that PDataHandler keeps, but each of the PDatas in that list is the same
-     * PData that is loaded in PDataHandler.
+     * who has ever joined the server. This returns an unmodifiable list.
      *
      * @return A copy of the list of PDatas that PDataHandler keeps.
      */
-    public PData[] getAllPDatas() {
+    public List<PData> getAllPDatas() {
         synchronized (playerDataListLock) {
-            return playerDataList.toArray(new PData[playerDataList.size()]);
+            return Collections.unmodifiableList(playerDataList);
         }
     }
 
     /**
-     * This returns the REAL LIST, NOT A COPY. So Don't mess with it!
+     * This returns an unmodifiable list!
      */
     public List<PData> getAllPDatasFirstJoin() {
-        return playerDataListFirstJoin;
+        return Collections.unmodifiableList(playerDataListFirstJoin);
     }
 
     /**
@@ -637,10 +637,12 @@ public final class PDataHandler {
             this.afterLoad = afterLoad;
         }
 
+        @Override
         public void run() {
             synchronized (playerDataListLock) {
                 Collections.sort(playerDataList);
                 Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
+                    @Override
                     public int compare(PData o1, PData o2) {
                         return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
                     }
@@ -655,6 +657,7 @@ public final class PDataHandler {
     private void loadDataFromFiles(final Runnable runAfter) {
         final Logger l = playerDataMain.getLogger();
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 readData(l, runAfter);
             }
@@ -682,6 +685,7 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             Collections.sort(playerDataList);
             Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
+                @Override
                 public int compare(PData o1, PData o2) {
                     return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
                 }
