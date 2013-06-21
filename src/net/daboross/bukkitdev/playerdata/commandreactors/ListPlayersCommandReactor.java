@@ -3,8 +3,8 @@ package net.daboross.bukkitdev.playerdata.commandreactors;
 import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
-import static net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase.CommandReactor;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerData;
 
@@ -15,7 +15,7 @@ import org.bukkit.command.CommandSender;
  *
  * @author daboross
  */
-public class ListPlayersCommandReactor implements CommandReactor {
+public class ListPlayersCommandReactor implements SubCommandHandler {
 
     private final PlayerData playerDataMain;
 
@@ -24,7 +24,7 @@ public class ListPlayersCommandReactor implements CommandReactor {
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel, String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
+    public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel,SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length > 1) {
             sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + mainCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
         }
@@ -36,7 +36,7 @@ public class ListPlayersCommandReactor implements CommandReactor {
                 pageNumber = Integer.valueOf(subCommandArgs[0]);
             } catch (NumberFormatException nfe) {
                 sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not an integer.");
-                sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
+                sender.sendMessage(subCommand.getHelpMessage(mainCommandLabel, subCommandLabel));
                 return;
             }
             if (pageNumber == 0) {

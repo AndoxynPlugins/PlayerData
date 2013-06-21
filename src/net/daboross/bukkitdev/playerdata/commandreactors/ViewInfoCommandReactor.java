@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import static net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase.CommandReactor;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
@@ -19,7 +19,7 @@ import org.bukkit.Bukkit;
  *
  * @author daboross
  */
-public class ViewInfoCommandReactor implements CommandReactor {
+public class ViewInfoCommandReactor implements SubCommandHandler {
 
     private final PlayerData playerDataMain;
 
@@ -27,11 +27,11 @@ public class ViewInfoCommandReactor implements CommandReactor {
         this.playerDataMain = playerDataMain;
     }
 
-    public void runCommand(CommandSender sender, Command mainCommand, String mainCommandLabel, String subCommand, String subCommandLabel,
-            String[] subCommandArgs, CommandExecutorBase.CommandExecutorBridge executorBridge) {
+    @Override
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
             sender.sendMessage(ColorList.ILLEGALARGUMENT + "Must Provide A Player!");
-            sender.sendMessage(executorBridge.getHelpMessage(subCommandLabel, mainCommandLabel));
+            sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
         String givenPlayerName = PlayerData.getCombinedString(subCommandArgs, 0);

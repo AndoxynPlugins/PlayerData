@@ -47,7 +47,7 @@ public final class PlayerData extends JavaPlugin {
         playerDataHandler = new PDataHandler(this);
         PluginCommand playerdata = getCommand("playerdata:playerdata");
         if (playerdata != null) {
-            playerdata.setExecutor(new PlayerDataCommandExecutor(this));
+            new PlayerDataCommandExecutor(this).registerCommand(playerdata);
         } else {
             getLogger().log(Level.WARNING, "Command /playerdata:playerdata not found! Is another plugin using it?");
         }
