@@ -132,67 +132,35 @@ public final class PlayerData extends JavaPlugin {
             years += 1;
             days -= 365;
         }
-        String returnValue = "";
+        StringBuilder resultBuilder = new StringBuilder();
         if (years > 0) {
-            if (years == 1) {
-                returnValue += "1 year";
-            } else {
-                returnValue += years + " years";
-            }
-            if (days > 0 || hours > 0 || minutes > 0 || seconds > 0) {
-                if ((days == 0 && ((hours == 0 && minutes == 0) || (minutes == 0 && seconds == 0) || (hours == 0 && seconds == 0))) || (hours == 0 && minutes == 0 && seconds == 0)) {
-                    returnValue += ", and ";
-                } else {
-                    returnValue += ", ";
-                }
+            resultBuilder.append(years).append(years == 1 ? " year" : " years");
+            if (days > 0) {
+                resultBuilder.append(", and ");
             }
         }
         if (days > 0) {
-            if (days == 1) {
-                returnValue += "1 day";
-            } else {
-                returnValue += days + " days";
-            }
-            if (hours > 0 || minutes > 0 || seconds > 0) {
-                if ((hours == 0 && minutes == 0) || (minutes == 0 && seconds == 0) || (hours == 0 && seconds == 0)) {
-                    returnValue += ", and ";
-                } else {
-                    returnValue += ", ";
-                }
+            resultBuilder.append(years).append(days == 1 ? " day" : " days");
+            if (hours > 0) {
+                resultBuilder.append(", and ");
             }
         }
-        if (hours > 0) {
-            if (hours == 1) {
-                returnValue += "1 hour";
-            } else {
-                returnValue += hours + " hours";
-            }
-            if (minutes > 0 || seconds > 0) {
-                if (minutes == 0 || seconds == 0) {
-                    returnValue += ", and ";
-                } else {
-                    returnValue += ", ";
-                }
+        if (hours > 0 && years <= 0) {
+            resultBuilder.append(hours).append(hours == 1 ? " hour" : " hours");
+            if (minutes > 0 && days <= 0) {
+                resultBuilder.append(", and ");
             }
         }
-        if (minutes > 0) {
-            if (minutes == 1) {
-                returnValue += "1 minute";
-            } else {
-                returnValue += minutes + " minutes";
-            }
-            if (seconds > 0) {
-                returnValue += ", and ";
+        if (minutes > 0 && days <= 0 && years <= 0) {
+            resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
+            if (seconds > 0 && hours <= 0) {
+                resultBuilder.append(", and ");
             }
         }
-        if (seconds > 0) {
-            if (seconds == 1) {
-                returnValue += "1 second";
-            } else {
-                returnValue += seconds + " seconds";
-            }
+        if (seconds > 0 && hours <= 0 && days <= 0 && years <= 0) {
+            resultBuilder.append(seconds).append(seconds == 1 ? " second" : " seconds");
         }
-        return returnValue;
+        return resultBuilder.toString();
     }
 
     public static String formatList(String[] str) {
