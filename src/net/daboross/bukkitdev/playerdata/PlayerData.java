@@ -137,24 +137,28 @@ public final class PlayerData extends JavaPlugin {
         }
         if (days > 0) {
             resultBuilder.append(days).append(days == 1 ? " day" : " days");
+            if (hours > 0 && years <= 0) {
+                resultBuilder.append(" and ");
+            }
+        }
+        if (years <= 0) {
             if (hours > 0) {
-                resultBuilder.append(" and ");
+                resultBuilder.append(hours).append(hours == 1 ? " hour" : " hours");
+                if (minutes > 0 && days <= 0) {
+                    resultBuilder.append(" and ");
+                }
             }
-        }
-        if (hours > 0 && years <= 0) {
-            resultBuilder.append(hours).append(hours == 1 ? " hour" : " hours");
-            if (minutes > 0 && days <= 0) {
-                resultBuilder.append(" and ");
+            if (days <= 0) {
+                if (minutes > 0) {
+                    resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
+                    if (seconds > 0 && hours <= 0) {
+                        resultBuilder.append(" and ");
+                    }
+                }
+                if (seconds > 0 && hours <= 0) {
+                    resultBuilder.append(seconds).append(seconds == 1 ? " second" : " seconds");
+                }
             }
-        }
-        if (minutes > 0 && days <= 0 && years <= 0) {
-            resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
-            if (seconds > 0 && hours <= 0) {
-                resultBuilder.append(" and ");
-            }
-        }
-        if (seconds > 0 && hours <= 0 && days <= 0 && years <= 0) {
-            resultBuilder.append(seconds).append(seconds == 1 ? " second" : " seconds");
         }
         return resultBuilder.toString();
     }
