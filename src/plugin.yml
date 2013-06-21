@@ -1,6 +1,6 @@
 name: PlayerData
 main: net.daboross.bukkitdev.playerdata.PlayerData
-version: 3.2
+version: 3.2.1
 author: Dabo Ross
 prefix: PD
 description: |
@@ -60,4 +60,3 @@ permissions:
     default: false
     children:
       playerdata.help: true
-    
