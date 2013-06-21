@@ -691,6 +691,7 @@ public final class PDataHandler {
                 }
             });
         }
+        startServer();
         isLoaded = true;
         synchronized (afterLoadRuns) {
             if (!afterLoadRuns.isEmpty()) {
