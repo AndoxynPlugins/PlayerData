@@ -128,10 +128,8 @@ public final class PlayerData extends JavaPlugin {
         hours = TimeUnit.MILLISECONDS.toHours(millis) - TimeUnit.DAYS.toHours(days);
         minutes = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(hours) - TimeUnit.DAYS.toMinutes(days);
         seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes) - TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days);
-        while (days > 365) {
-            years += 1;
-            days -= 365;
-        }
+        days = days % 365;
+        years = days / 365;
         StringBuilder resultBuilder = new StringBuilder();
         if (years > 0) {
             resultBuilder.append(years).append(years == 1 ? " year" : " years");
@@ -140,7 +138,7 @@ public final class PlayerData extends JavaPlugin {
             }
         }
         if (days > 0) {
-            resultBuilder.append(years).append(days == 1 ? " day" : " days");
+            resultBuilder.append(days).append(days == 1 ? " day" : " days");
             if (hours > 0) {
                 resultBuilder.append(", and ");
             }
