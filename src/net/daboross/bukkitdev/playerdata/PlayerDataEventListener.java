@@ -1,7 +1,7 @@
 package net.daboross.bukkitdev.playerdata;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,8 +16,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerDataEventListener implements Listener {
 
     private final PlayerData pDataMain;
-    private final List<PDPlayerJoinListener> joinListeners = new ArrayList<PDPlayerJoinListener>();
-    private final List<PDPlayerLeaveListener> leaveListeners = new ArrayList<PDPlayerLeaveListener>();
+    private final Set<PDPlayerJoinListener> joinListeners = new HashSet<PDPlayerJoinListener>();
+    private final Set<PDPlayerLeaveListener> leaveListeners = new HashSet<PDPlayerLeaveListener>();
 
     protected void addJoinListener(PDPlayerJoinListener pdpjl) {
         joinListeners.add(pdpjl);
@@ -46,10 +46,10 @@ public class PlayerDataEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(final PlayerJoinEvent evt) {
         Runnable logInRunnable = new Runnable() {
+            @Override
             public void run() {
                 if (!pDataMain.getPDataHandler().logIn(evt.getPlayer())) {
-                    pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", new Object[]{evt.getPlayer().getName()});
-                    //evt.getPlayer().performCommand("spawn");
+                    pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", evt.getPlayer().getName());
                 }
                 for (PDPlayerJoinListener pdpjl : joinListeners) {
                     pdpjl.playerJoinNotify(evt);
@@ -66,8 +66,9 @@ public class PlayerDataEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(final PlayerQuitEvent evt) {
         Runnable logOutRunnable = new Runnable() {
+            @Override
             public void run() {
-                pDataMain.getPDataHandler().getPData(evt.getPlayer()).loggedOut();
+                pDataMain.getPDataHandler().logOut(evt.getPlayer());
                 for (PDPlayerLeaveListener pdpll : leaveListeners) {
                     pdpll.playerLeaveNotify(evt);
                 }

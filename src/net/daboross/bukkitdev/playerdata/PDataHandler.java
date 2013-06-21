@@ -93,6 +93,7 @@ public final class PDataHandler {
         int returnValue = 0;
         synchronized (playerDataListLock) {
             playerDataList.clear();
+            playerDataListFirstJoin.clear();
             for (int i = 0; i < players.length; i++) {
                 if (players[i].hasPlayedBefore()) {
                     PData pData = new PData(players[i]);
@@ -124,7 +125,7 @@ public final class PDataHandler {
         Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
-            pData.loggedOut();
+            pData.loggedOut(p, this);
         }
     }
 
@@ -138,7 +139,7 @@ public final class PDataHandler {
         Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
             PData pData = getPData(p);
-            pData.loggedIn(p);
+            pData.loggedIn(p, this);
         }
     }
 
@@ -149,7 +150,7 @@ public final class PDataHandler {
                 public void run() {
                     synchronized (playerDataListLock) {
                         for (PData pData : playerDataList) {
-                            pData.updateStatus(false, false);
+                            pData.updateStatus();
                             savePDataXML(pData);
                         }
                         if (callAfter != null) {
@@ -160,7 +161,7 @@ public final class PDataHandler {
             });
         } else {
             for (PData pData : playerDataList) {
-                pData.updateStatus(false, false);
+                pData.updateStatus();
                 savePDataXML(pData);
             }
             if (callAfter != null) {
@@ -333,14 +334,14 @@ public final class PDataHandler {
         String user = ChatColor.stripColor(userName).toLowerCase();
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                PData pD = playerDataList.get(i);
-                boolean online = pD.isOnline();
-                String checkUserName = pD.userName().toLowerCase();
-                String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
-                String pUserName = pD.userName();
-                String pNickName = pD.nickName();
+                final PData pData = playerDataList.get(i);
+                final boolean online = pData.isOnline();
+                final String pUserName = pData.userName();
+                final String pNickName = pData.nickName();
+                final String checkUserName = pUserName.toLowerCase();
+                final String checkNickName = ChatColor.stripColor(pNickName).toLowerCase();
                 if (checkUserName != null) {
-                    if (checkNickName == null || checkUserName.equalsIgnoreCase(checkNickName)) {
+                    if (checkUserName.equalsIgnoreCase(pNickName)) {
                         if (checkUserName.equalsIgnoreCase(user)) {
                             if (online) {
                                 onlineUserNames.add(pUserName);
@@ -499,7 +500,7 @@ public final class PDataHandler {
     /**
      * This will log in a given player's PData.
      *
-     * @return true if this isn't the player's first join.
+     * @return true if this player has joined before.
      */
     public boolean logIn(Player p) {
         if (p == null) {
@@ -508,21 +509,25 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PData pData = playerDataList.get(i);
-                if (pData.userName().equalsIgnoreCase(p.getName())) {
-                    pData.loggedIn(p);
+                if (pData.userName().equals(p.getName())) {
+                    pData.loggedIn(p, this);
                     return true;
                 }
             }
             PData pData = new PData(p);
-            pData.loggedIn(p);
+            pData.loggedIn(p, this);
             if (!playerDataList.contains(pData)) {
-                playerDataList.add(pData);
+                playerDataList.add(0, pData);
             }
             if (!playerDataListFirstJoin.contains(pData)) {
                 playerDataListFirstJoin.add(pData);
             }
             return false;
         }
+    }
+
+    public void logOut(Player p) {
+        getPData(p).loggedOut(p, this);
     }
 
     /**
@@ -609,12 +614,29 @@ public final class PDataHandler {
      * This Function moves the PData given to the top of the list. Should be
      * only called BY THE PDATA when the player has logged in.
      */
-    protected void loggedIn(PData pd) {
+    void loggedIn(PData pd) {
         synchronized (playerDataListLock) {
             while (playerDataList.contains(pd)) {
                 playerDataList.remove(pd);
             }
             playerDataList.add(0, pd);
+        }
+    }
+
+    /**
+     * This Function moves the PData down the list. Should be only called BY THE
+     * PDATA when the player has logged in.
+     */
+    void loggedOut(PData pd) {
+        synchronized (playerDataListLock) {
+            int pos = playerDataList.indexOf(pd);
+            while (playerDataList.contains(pd)) {
+                playerDataList.remove(pd);
+            }
+            while (pos < playerDataList.size() && playerDataList.get(pos).isOnline()) {
+                pos++;
+            }
+            playerDataList.add(pos, pd);
         }
     }
 
