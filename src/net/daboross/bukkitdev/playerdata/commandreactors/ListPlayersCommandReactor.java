@@ -46,7 +46,7 @@ public class ListPlayersCommandReactor implements CommandReactor {
         }
         List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatas();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add(ColorList.MAIN + "Player List, Page " + ColorList.NUMBER + pageNumber + ColorList.MAIN + " out of " + ColorList.NUMBER + (pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1) + ColorList.MAIN + ":");
+        messagesToSend.add(ColorList.TOP_OF_LIST_SEPERATOR + "--" + ColorList.TOP_OF_LIST + " Player List" + ColorList.TOP_OF_LIST_SEPERATOR + " -- " + ColorList.NUMBER + pageNumber + ColorList.TOP_OF_LIST + " / " + ColorList.NUMBER + (pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1) + ColorList.TOP_OF_LIST_SEPERATOR + " --");
         for (int i = pageNumber * 6; i < (pageNumber + 1) * 6 && i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was last seen " + ColorList.NUMBER + PlayerData.getFormattedDDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.MAIN + " ago.");
