@@ -25,17 +25,17 @@ public class IPLookupCommandReactor implements SubCommandHandler {
 
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ILLEGALARGUMENT + "Must Provide A Player!");
+            sender.sendMessage(ColorList.ERR+ "Must specify a player!");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
         String playerNameGiven = PlayerData.getCombinedString(subCommandArgs, 0);
         PData pData = playerDataMain.getHandler().getPData(playerNameGiven);
         if (pData == null) {
-            sender.sendMessage(ColorList.ERROR + "Player '" + ColorList.ERROR_ARGS + playerNameGiven + ColorList.ERROR + "' not found!");
+            sender.sendMessage(ColorList.ERR + "Player '" + ColorList.ERR_ARGS + playerNameGiven + ColorList.ERR + "' not found");
             return;
         }
-        sender.sendMessage(ColorList.MAIN + "Different IP's used by " + pData.userName());
+        sender.sendMessage(ColorList.REG + "Different IPs used by " + pData.userName());
         Set<String> ipList = new HashSet<String>();
         for (IPLogin ipl : pData.logIns()) {
             String ip = ipl.ip();
@@ -44,12 +44,12 @@ public class IPLookupCommandReactor implements SubCommandHandler {
             if (!ip.equals("Unknown")) {
                 if (!ipList.contains(ip)) {
                     ipList.add(ip);
-                    sender.sendMessage(ColorList.NUMBER + ip);
+                    sender.sendMessage(ColorList.DATA + ip);
                 }
             }
         }
         if (ipList.isEmpty()) {
-            sender.sendMessage(ColorList.ERROR + "No Known IPs");
+            sender.sendMessage(ColorList.ERR + "No known IPs");
         }
     }
 }

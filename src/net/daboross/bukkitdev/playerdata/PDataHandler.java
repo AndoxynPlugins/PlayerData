@@ -434,11 +434,11 @@ public final class PDataHandler {
             if (onlineNickNames.get(i) == null) {
                 returnList[i] = onlineUserNames.get(i);
             } else {
-                returnList[i] = onlineUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + onlineNickNames.get(i);
+                returnList[i] = onlineUserNames.get(i) + ColorList.DIVIDER + "/" + onlineNickNames.get(i);
             }
         }
         for (int i = 0, k = onlineNumberFound; i < offlineNumberFound && k < returnList.length; i++, k++) {
-            returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DATA_HANDLE_SLASH + "/" + pNickNames.get(i);
+            returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DIVIDER + "/" + pNickNames.get(i);
 
         }
         return returnList;

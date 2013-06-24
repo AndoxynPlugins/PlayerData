@@ -26,7 +26,7 @@ public class ListPlayersByFirstJoinCommandReactor implements SubCommandHandler {
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.MAIN + "Please Use Only 1 Number After " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
+            sender.sendMessage(ColorList.ERR + "Please use only one number after '" + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ERR + "'");
         }
         int pageNumber;
         if (subCommandArgs.length == 0) {
@@ -35,28 +35,28 @@ public class ListPlayersByFirstJoinCommandReactor implements SubCommandHandler {
             try {
                 pageNumber = Integer.valueOf(subCommandArgs[0]);
             } catch (Exception e) {
-                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not an integer.");
+                sender.sendMessage(ColorList.ERR_ARGS + subCommandArgs[0] + ColorList.ERR + " is not an integer.");
                 sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
                 return;
             }
             if (pageNumber == 0) {
-                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a non-0 integer.");
+                sender.sendMessage(ColorList.ERR_ARGS + subCommandArgs[0] + ColorList.ERR + " is not a non-0 integer.");
                 return;
             } else if (pageNumber < 0) {
-                sender.sendMessage(ColorList.ERROR_ARGS + subCommandArgs[0] + ColorList.ERROR + " is not a positive integer.");
+                sender.sendMessage(ColorList.ERR_ARGS + subCommandArgs[0] + ColorList.ERR + " is not a positive integer.");
                 return;
             }
         }
         int pageNumberReal = pageNumber - 1;
         List<PData> pDataList = playerDataMain.getPDataHandler().getAllPDatasFirstJoin();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add(ColorList.TOP_OF_LIST_SEPERATOR + " --" + ColorList.TOP_OF_LIST + " Player List " + ColorList.TOP_OF_LIST_SEPERATOR + "--" + ColorList.TOP_OF_LIST + " Page " + ColorList.NUMBER + pageNumber + ColorList.TOP_OF_LIST + "/" + ColorList.NUMBER + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_OF_LIST_SEPERATOR + " --");
+        messagesToSend.add(ColorList.TOP_SEPERATOR + " --" + ColorList.TOP + " Player List " + ColorList.TOP_SEPERATOR + "--" + ColorList.TOP + " Page " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_SEPERATOR + " --");
         for (int i = (pageNumberReal * 6); i < ((pageNumberReal + 1) * 6) && i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
-            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.MAIN + " was first seen " + ColorList.NUMBER + PlayerData.getFormattedDate(System.currentTimeMillis() - current.getFirstLogIn().time()) + ColorList.MAIN + " ago.");
+            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.REG + " was first seen " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - current.getFirstLogIn().time()) + ColorList.REG + " ago.");
         }
-        if (pageNumberReal+1 < (pDataList.size() / 6.0)) {
-            messagesToSend.add(ColorList.MAIN + "To View The Next Page, Type: " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1));
+        if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {
+            messagesToSend.add(ColorList.REG + "To view the next page type '" + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1) + ColorList.REG + "'");
         }
         sender.sendMessage(messagesToSend.toArray(new String[0]));
     }

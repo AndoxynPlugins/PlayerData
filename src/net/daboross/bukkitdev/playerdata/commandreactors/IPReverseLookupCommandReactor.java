@@ -3,7 +3,6 @@ package net.daboross.bukkitdev.playerdata.commandreactors;
 import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.IPLogin;
@@ -25,17 +24,17 @@ public class IPReverseLookupCommandReactor implements SubCommandHandler {
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel,SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ILLEGALARGUMENT + "Must Provide an IP!");
+            sender.sendMessage(ColorList.ERR + "Please specify an IP");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
         if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.ILLEGALARGUMENT + "To Many Arguments!");
+            sender.sendMessage(ColorList.ERR + "To many arguments");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
         }
-        sender.sendMessage(ColorList.MAIN + "Looking for users who have used the IP: " + subCommandArgs[0]);
+        sender.sendMessage(ColorList.REG + "Users who have used the IP: " + subCommandArgs[0]);
         List<String> usersList = new ArrayList<String>();
         for (PData pData : playerDataMain.getHandler().getAllPDatas()) {
             for (IPLogin login : pData.logIns()) {
@@ -49,13 +48,13 @@ public class IPReverseLookupCommandReactor implements SubCommandHandler {
             }
         }
         if (usersList.isEmpty()) {
-            sender.sendMessage(ColorList.ERROR + "No Players found who have used the IP: " + subCommandArgs[0]);
+            sender.sendMessage(ColorList.ERR + "No players found who have used the IP: " + subCommandArgs[0]);
         } else {
             StringBuilder builder = new StringBuilder(usersList.get(0));
             for (int i = 1; i < usersList.size(); i++) {
                 builder.append(", ").append(usersList.get(i));
             }
-            sender.sendMessage(ColorList.MAIN + "Different Player's who have used the IP: " + subCommandArgs[0]);
+            sender.sendMessage(ColorList.TOP + "Different players who have used the IP '" + ColorList.DATA + subCommandArgs[0] + ColorList.TOP + "'");
             sender.sendMessage(builder.toString());
 
         }

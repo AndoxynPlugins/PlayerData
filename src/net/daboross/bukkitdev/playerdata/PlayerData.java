@@ -159,17 +159,6 @@ public final class PlayerData extends JavaPlugin {
         return resultBuilder.toString();
     }
 
-    public static String formatList(String[] str) {
-        String returnS = "";
-        for (int i = 0; i < str.length; i++) {
-            if (!returnS.equals("")) {
-                returnS += ", ";
-            }
-            returnS += str[i];
-        }
-        return returnS;
-    }
-
     public static String getCombinedString(String[] array, int start) {
         if (array == null || start >= array.length || start < 0) {
             throw new IllegalArgumentException();

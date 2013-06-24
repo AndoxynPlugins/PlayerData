@@ -55,11 +55,11 @@ public final class PlayerDataCommandExecutor {
     }
 
     private void runXMLCommand(final CommandSender sender) {
-        sender.sendMessage(ColorList.MAIN + "Saving PlayerDatas");
+        sender.sendMessage(ColorList.REG + "Saving data");
         playerDataMain.getPDataHandler().saveAllData(true, new Callable<Void>() {
             @Override
             public Void call() {
-                sender.sendMessage(ColorList.MAIN + "PlayerData Saving Done");
+                sender.sendMessage(ColorList.REG + "Data saving done");
                 return null;
             }
         });
@@ -67,11 +67,11 @@ public final class PlayerDataCommandExecutor {
 
     private void runReCreateAllCommand(CommandSender sender, String baseCommandLabel, String subCommandLabel, String[] args) {
         if (args.length > 0) {
-            sender.sendMessage(ColorList.MAIN + "Arguments aren't needed after " + ColorList.CMD + "/" + baseCommandLabel + " " + ColorList.SUBCMD + subCommandLabel);
+            sender.sendMessage(ColorList.REG + "Arguments aren't needed after " + ColorList.CMD + "/" + baseCommandLabel + " " + ColorList.SUBCMD + subCommandLabel);
             return;
         }
-        sender.sendMessage(ColorList.MAIN + "Now Recreating All Player Data!");
+        sender.sendMessage(ColorList.REG + "Now recreating all Data!");
         int numberLoaded = playerDataMain.getPDataHandler().createEmptyPlayerDataFilesFromBukkit();
-        sender.sendMessage(ColorList.MAIN + "Player Data has loaded " + ColorList.NUMBER + numberLoaded + ColorList.MAIN + " new data files");
+        sender.sendMessage(ColorList.REG + "PlayerData has loaded " + ColorList.DATA + numberLoaded + ColorList.REG + " new data files");
     }
 }
