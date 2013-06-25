@@ -1,8 +1,7 @@
 package net.daboross.bukkitdev.playerdata;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,8 +15,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerDataEventListener implements Listener {
 
     private final PlayerData pDataMain;
-    private final Set<PDPlayerJoinListener> joinListeners = new HashSet<PDPlayerJoinListener>();
-    private final Set<PDPlayerLeaveListener> leaveListeners = new HashSet<PDPlayerLeaveListener>();
+    private final List<PDPlayerJoinListener> joinListeners = new ArrayList<PDPlayerJoinListener>();
+    private final List<PDPlayerLeaveListener> leaveListeners = new ArrayList<PDPlayerLeaveListener>();
 
     protected void addJoinListener(PDPlayerJoinListener pdpjl) {
         joinListeners.add(pdpjl);
@@ -48,11 +47,9 @@ public class PlayerDataEventListener implements Listener {
         Runnable logInRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!pDataMain.getPDataHandler().logIn(evt.getPlayer())) {
-                    pDataMain.getLogger().log(Level.INFO, "{0} Logged In For First Time", evt.getPlayer().getName());
-                }
+                PData pData = pDataMain.getPDataHandler().logIn(evt.getPlayer());
                 for (PDPlayerJoinListener pdpjl : joinListeners) {
-                    pdpjl.playerJoinNotify(evt);
+                    pdpjl.playerJoinNotify(evt, pData);
                 }
             }
         };
@@ -68,9 +65,9 @@ public class PlayerDataEventListener implements Listener {
         Runnable logOutRunnable = new Runnable() {
             @Override
             public void run() {
-                pDataMain.getPDataHandler().logOut(evt.getPlayer());
+                PData pData = pDataMain.getPDataHandler().logOut(evt.getPlayer());
                 for (PDPlayerLeaveListener pdpll : leaveListeners) {
-                    pdpll.playerLeaveNotify(evt);
+                    pdpll.playerLeaveNotify(evt, pData);
                 }
             }
         };

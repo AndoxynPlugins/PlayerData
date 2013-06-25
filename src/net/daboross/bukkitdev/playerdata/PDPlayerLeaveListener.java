@@ -8,5 +8,5 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public interface PDPlayerLeaveListener {
 
-    public void playerLeaveNotify(PlayerQuitEvent pqe);
+    public void playerLeaveNotify(PlayerQuitEvent pqe, PData pData);
 }

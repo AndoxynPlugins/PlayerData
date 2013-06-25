@@ -8,5 +8,5 @@ import org.bukkit.event.player.PlayerJoinEvent;
  */
 public interface PDPlayerJoinListener {
 
-    public void playerJoinNotify(PlayerJoinEvent pje);
+    public void playerJoinNotify(PlayerJoinEvent pje, PData pData);
 }
