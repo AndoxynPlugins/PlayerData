@@ -146,8 +146,16 @@ public class PlayerDataHandler {
         playerDataMain.getEventListener().addJoinListener(pdpjl);
     }
 
+    public void removeJoinListener(PDPlayerJoinListener pdpjl) {
+        playerDataMain.getEventListener().removeJoinListener(pdpjl);
+    }
+
     public void addLeaveListener(PDPlayerLeaveListener pdpll) {
         playerDataMain.getEventListener().addLeaveListener(pdpll);
+    }
+
+    public void removeLeaveListener(PDPlayerLeaveListener pdpll) {
+        playerDataMain.getEventListener().removeLeaveListeners(pdpll);
     }
 
     /**
