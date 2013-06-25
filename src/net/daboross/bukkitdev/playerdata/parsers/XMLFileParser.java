@@ -2,6 +2,7 @@ package net.daboross.bukkitdev.playerdata.parsers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
@@ -29,20 +30,20 @@ public class XMLFileParser {
         root.appendChild(createElement(document, "displayname", pData.nickName()));
         root.appendChild(createElement(document, "timeplayed", String.valueOf(pData.timePlayed())));
         {
-            IPLogin[] logIns = pData.logIns();
+            List<IPLogin> logins = pData.logIns();
             Element logInsElement = document.createElement("logins");
-            for (int i = 0; i < logIns.length; i++) {
+            for (int i = 0; i < logins.size(); i++) {
                 Element e = document.createElement("login" + i);
-                logIns[i].putDataOnXML(e);
+                logins.get(i).putDataOnXML(e);
                 logInsElement.appendChild(e);
             }
             root.appendChild(logInsElement);
         }
         {
-            Long[] logOuts = pData.logOuts();
+            List<Long> logouts = pData.logOuts();
             Element logOutsElement = document.createElement("logouts");
-            for (int i = 0; i < logOuts.length; i++) {
-                logOutsElement.appendChild(createElement(document, String.valueOf("logout" + i), logOuts[i].toString()));
+            for (int i = 0; i < logouts.size(); i++) {
+                logOutsElement.appendChild(createElement(document, String.valueOf("logout" + i), logouts.get(i).toString()));
             }
             root.appendChild(logOutsElement);
         }

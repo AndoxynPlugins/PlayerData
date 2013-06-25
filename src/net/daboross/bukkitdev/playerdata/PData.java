@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -34,8 +35,10 @@ public final class PData implements Comparable<PData> {
     private String displayname;
     private long timePlayed = 0;
     private long currentSession;
-    private final ArrayList<IPLogin> logIns = new ArrayList<IPLogin>();
-    private final ArrayList<Long> logOuts = new ArrayList<Long>();
+    private final ArrayList<IPLogin> logins = new ArrayList<IPLogin>();
+    private final List<IPLogin> loginsUnmodifiable = Collections.unmodifiableList(logins);
+    private final ArrayList<Long> logouts = new ArrayList<Long>();
+    private final List<Long> logoutsUnmodifiable = Collections.unmodifiableList(logouts);
     private final ArrayList<Data> data = new ArrayList<Data>();
     private boolean online = false;
     private int nickUpdateExtraThreadUpdateTimes = 0;
@@ -50,7 +53,7 @@ public final class PData implements Comparable<PData> {
         if (p == null) {
             throw new IllegalArgumentException("Player Can't Be Null");
         }
-        logIns.add(new IPLogin(p.getFirstPlayed(), p.getAddress().toString()));
+        logins.add(new IPLogin(p.getFirstPlayed(), p.getAddress().toString()));
         timePlayed = 0;
         username = p.getName();
         updateDisplayName(p);
@@ -74,7 +77,7 @@ public final class PData implements Comparable<PData> {
         if (!offlinePlayer.hasPlayedBefore()) {
             throw new IllegalArgumentException("Player Has Never Been Online!");
         }
-        logIns.add(new IPLogin(offlinePlayer.getFirstPlayed()));
+        logins.add(new IPLogin(offlinePlayer.getFirstPlayed()));
         timePlayed = 0;
         username = offlinePlayer.getName();
         if (offlinePlayer.isOnline()) {
@@ -84,7 +87,7 @@ public final class PData implements Comparable<PData> {
         } else {
             displayname = offlinePlayer.getName();
             online = false;
-            logOuts.add(offlinePlayer.getLastPlayed());
+            logouts.add(offlinePlayer.getLastPlayed());
         }
         currentSession = System.currentTimeMillis();
         sortTimes();
@@ -110,8 +113,8 @@ public final class PData implements Comparable<PData> {
         if (this.displayname == null || this.displayname.length() == 0) {
             this.displayname = this.username;
         }
-        this.logIns.addAll(logIns);
-        this.logOuts.addAll(logOuts);
+        this.logins.addAll(logIns);
+        this.logouts.addAll(logOuts);
         this.timePlayed = timePlayed;
         this.data.addAll(Arrays.asList(data));
         setDataOwners();
@@ -220,7 +223,7 @@ public final class PData implements Comparable<PData> {
         if (online) {
             timePlayed += (System.currentTimeMillis() - currentSession);
             currentSession = System.currentTimeMillis();
-            logOuts.add(System.currentTimeMillis());
+            logouts.add(System.currentTimeMillis());
             online = false;
             updateDisplayName(p);
             saveStatus();
@@ -237,7 +240,7 @@ public final class PData implements Comparable<PData> {
      */
     void loggedIn(Player p, PDataHandler pdh) {
         if (!online) {
-            logIns.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
+            logins.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
             currentSession = System.currentTimeMillis();
             online = true;
             nickUpdateExtraThreadUpdateTimes = 0;
@@ -285,7 +288,7 @@ public final class PData implements Comparable<PData> {
      * @return
      */
     public IPLogin getFirstLogIn() {
-        return logIns.get(0);
+        return logins.get(0);
     }
 
     /**
@@ -300,21 +303,21 @@ public final class PData implements Comparable<PData> {
     /**
      * This function gets a list of times this player has logged in.
      *
-     * @return A list of timestamps when this player has logged in. Each In
-     * milliseconds.
+     * @return An unmodifiable list of timestamps when this player has logged
+     * in. Each In milliseconds.
      */
-    public IPLogin[] logIns() {
-        return logIns.toArray(new IPLogin[logIns.size()]);
+    public List<IPLogin> logIns() {
+        return loginsUnmodifiable;
     }
 
     /**
      * This function gets a list of times this player has logged out.
      *
-     * @return A list of timestamps when this player has logged out. Each In
-     * milliseconds.
+     * @return An unmodifiable list of timestamps when this player has logged
+     * out. Each In milliseconds.
      */
-    public Long[] logOuts() {
-        return logOuts.toArray(new Long[logOuts.size()]);
+    public List<Long> logOuts() {
+        return logoutsUnmodifiable;
     }
 
     /**
@@ -443,8 +446,8 @@ public final class PData implements Comparable<PData> {
     }
 
     private void sortTimes() {
-        Collections.sort(logIns);
-        Collections.sort(logOuts);
+        Collections.sort(logins);
+        Collections.sort(logouts);
     }
 
     /**
@@ -456,27 +459,27 @@ public final class PData implements Comparable<PData> {
         long bukkitFirstPlayed = offP.getFirstPlayed();
         long bukkitLastPlayed = offP.getLastPlayed();
         if (offP.hasPlayedBefore()) {
-            if (logIns.isEmpty()) {
-                logIns.add(new IPLogin(bukkitFirstPlayed));
-            } else if (bukkitFirstPlayed < logIns.get(0).time()) {
-                logIns.add(0, new IPLogin(bukkitFirstPlayed));
+            if (logins.isEmpty()) {
+                logins.add(new IPLogin(bukkitFirstPlayed));
+            } else if (bukkitFirstPlayed < logins.get(0).time()) {
+                logins.add(0, new IPLogin(bukkitFirstPlayed));
             }
             if (!online) {
-                if (logOuts.isEmpty()) {
-                    logOuts.add(bukkitLastPlayed);
-                } else if (bukkitLastPlayed > logOuts.get(logOuts.size() - 1)) {
-                    logOuts.add(bukkitLastPlayed);
+                if (logouts.isEmpty()) {
+                    logouts.add(bukkitLastPlayed);
+                } else if (bukkitLastPlayed > logouts.get(logouts.size() - 1)) {
+                    logouts.add(bukkitLastPlayed);
                 }
             }
         }
         ArrayList<Long> logOutsNewList = new ArrayList<Long>();
-        for (Long l : logOuts) {
+        for (Long l : logouts) {
             if (!logOutsNewList.contains(l)) {
                 logOutsNewList.add(l);
             }
         }
-        logOuts.clear();
-        logOuts.addAll(logOutsNewList);
+        logouts.clear();
+        logouts.addAll(logOutsNewList);
     }
 
     /**
@@ -486,8 +489,8 @@ public final class PData implements Comparable<PData> {
         if (online) {
             return System.currentTimeMillis();
         }
-        if (logOuts.size() > 0) {
-            return logOuts.get(logOuts.size() - 1);
+        if (logouts.size() > 0) {
+            return logouts.get(logouts.size() - 1);
         } else {
             return 0;
         }

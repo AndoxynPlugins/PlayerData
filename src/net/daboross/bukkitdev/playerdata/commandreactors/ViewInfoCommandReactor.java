@@ -3,6 +3,7 @@ package net.daboross.bukkitdev.playerdata.commandreactors;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
@@ -46,14 +47,14 @@ public class ViewInfoCommandReactor implements SubCommandHandler {
         linesToSend.add(ColorList.REG + "DisplayName: " + ColorList.NAME + pData.nickName());
         if (pData.isOnline()) {
             linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " is online");
-            IPLogin[] logIns = pData.logIns();
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " has been online " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - logIns[logIns.length - 1].time()));
+            List<IPLogin> logIns = pData.logIns();
+            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " has been online " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - logIns.get(logIns.size() - 1).time()));
         } else {
             linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " is not online");
             linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " was last seen " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - pData.lastSeen()) + ColorList.REG + " ago");
         }
-        linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logIns().length);
-        linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logOuts().length);
+        linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logIns().size());
+        linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logOuts().size());
         linesToSend.add(ColorList.REG + "Time played on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + PlayerData.getFormattedDate(pData.timePlayed()));
         linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - pData.getFirstLogIn().time()) + ColorList.REG + " ago");
         linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pData.getFirstLogIn().time()));
