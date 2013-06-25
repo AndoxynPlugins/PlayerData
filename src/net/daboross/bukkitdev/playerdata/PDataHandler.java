@@ -500,9 +500,9 @@ public final class PDataHandler {
     /**
      * This will log in a given player's PData.
      *
-     * @return true if this player has joined before.
+     * @return a PData for the player
      */
-    public boolean logIn(Player p) {
+    public PData logIn(Player p) {
         if (p == null) {
             throw new IllegalArgumentException("Null Argument");
         }
@@ -511,7 +511,7 @@ public final class PDataHandler {
                 PData pData = playerDataList.get(i);
                 if (pData.userName().equals(p.getName())) {
                     pData.loggedIn(p, this);
-                    return true;
+                    return pData;
                 }
             }
             PData pData = new PData(p);
@@ -522,12 +522,14 @@ public final class PDataHandler {
             if (!playerDataListFirstJoin.contains(pData)) {
                 playerDataListFirstJoin.add(pData);
             }
-            return false;
+            return pData;
         }
     }
 
-    public void logOut(Player p) {
-        getPData(p).loggedOut(p, this);
+    public PData logOut(Player p) {
+        PData pData = getPData(p);
+        pData.loggedOut(p, this);
+        return pData;
     }
 
     /**
