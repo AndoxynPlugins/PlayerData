@@ -41,7 +41,7 @@ public class PossibleUserNames implements CommandExecutor {
                 for (int i = 0; i < users.length && i < 10; i++) {
                     sender.sendMessage(users[i]);
                 }
-                sender.sendMessage(ColorList.REG + "Found a total of " + ColorList.DATA + users.length+ColorList.REG+" AutoCompletes");
+                sender.sendMessage(ColorList.REG + "Found a total of " + ColorList.DATA + users.length + ColorList.REG + " AutoCompletes");
             } else {
                 sender.sendMessage(ColorList.ERR + "Please specify a player");
                 sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <PartialUsername>");
