@@ -1,6 +1,7 @@
 package net.daboross.bukkitdev.playerdata.commandreactors;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
@@ -23,9 +24,10 @@ public class IPLookupCommandReactor implements SubCommandHandler {
         this.playerDataMain = playerDataMain;
     }
 
+    @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR+ "Must specify a player!");
+            sender.sendMessage(ColorList.ERR + "Must specify a player!");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
@@ -36,20 +38,24 @@ public class IPLookupCommandReactor implements SubCommandHandler {
             return;
         }
         sender.sendMessage(ColorList.REG + "Different IPs used by " + pData.userName());
-        Set<String> ipList = new HashSet<String>();
-        for (IPLogin ipl : pData.logIns()) {
-            String ip = ipl.ip();
-            String[] ipSplit = ip.split(":")[0].split("/");
-            ip = ipSplit[ipSplit.length - 1];
-            if (!ip.equals("Unknown")) {
-                if (!ipList.contains(ip)) {
-                    ipList.add(ip);
-                    sender.sendMessage(ColorList.DATA + ip);
+        List<IPLogin> ipLogins = pData.logIns();
+        if (ipLogins.isEmpty()) {
+            sender.sendMessage(ColorList.ERR + "No known IPs");
+        } else if (ipLogins.size() == 1) {
+            sender.sendMessage(ColorList.DATA + ipLogins.get(0).ip());
+        } else {
+            Set<String> ipList = new HashSet<String>();
+            for (IPLogin ipl : ipLogins) {
+                String ip = ipl.ip();
+                String[] ipSplit = ip.split(":")[0].split("/");
+                ip = ipSplit[ipSplit.length - 1];
+                if (!ip.equals("Unknown")) {
+                    if (!ipList.contains(ip)) {
+                        ipList.add(ip);
+                        sender.sendMessage(ColorList.DATA + ip);
+                    }
                 }
             }
-        }
-        if (ipList.isEmpty()) {
-            sender.sendMessage(ColorList.ERR + "No known IPs");
         }
     }
 }
