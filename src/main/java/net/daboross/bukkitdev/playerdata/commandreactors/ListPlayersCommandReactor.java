@@ -26,7 +26,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.ERR + "Please use only one number after '" + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ERR + "'");
+            sender.sendMessage(ColorList.ERR + "Please use only one number after " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
         }
         int pageNumber;
         if (subCommandArgs.length == 0) {

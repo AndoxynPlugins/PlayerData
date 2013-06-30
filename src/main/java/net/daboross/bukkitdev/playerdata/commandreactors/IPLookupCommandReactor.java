@@ -27,7 +27,7 @@ public class IPLookupCommandReactor implements SubCommandHandler {
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR + "Must specify a player!");
+            sender.sendMessage(ColorList.ERR + "Please specify a player");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
@@ -37,11 +37,11 @@ public class IPLookupCommandReactor implements SubCommandHandler {
             sender.sendMessage(ColorList.ERR + "Player '" + ColorList.ERR_ARGS + playerNameGiven + ColorList.ERR + "' not found");
             return;
         }
-        sender.sendMessage(ColorList.REG + "Different IPs used by " + pData.userName());
         List<IPLogin> ipLogins = pData.logIns();
         if (ipLogins.isEmpty()) {
-            sender.sendMessage(ColorList.ERR + "No known IPs");
+            sender.sendMessage(ColorList.ERR + "No know IPs for " + ColorList.ERR_ARGS + pData.userName());
         } else if (ipLogins.size() == 1) {
+            sender.sendMessage(ColorList.REG + "Different IPs used by " + pData.userName());
             sender.sendMessage(ColorList.DATA + ipLogins.get(0).ip());
         } else {
             Set<String> ipList = new HashSet<String>();

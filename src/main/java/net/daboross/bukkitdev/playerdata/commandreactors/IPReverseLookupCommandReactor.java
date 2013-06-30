@@ -34,7 +34,6 @@ public class IPReverseLookupCommandReactor implements SubCommandHandler {
             sender.sendMessage(ColorList.ERR + "To many arguments");
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
         }
-        sender.sendMessage(ColorList.REG + "Users who have used the IP: " + subCommandArgs[0]);
         List<String> usersList = new ArrayList<String>();
         for (PData pData : playerDataMain.getHandler().getAllPDatas()) {
             for (IPLogin login : pData.logIns()) {
@@ -48,15 +47,14 @@ public class IPReverseLookupCommandReactor implements SubCommandHandler {
             }
         }
         if (usersList.isEmpty()) {
-            sender.sendMessage(ColorList.ERR + "No players found who have used the IP: " + subCommandArgs[0]);
+            sender.sendMessage(ColorList.ERR + "No players found who have used the IP " + ColorList.ERR_ARGS + subCommandArgs[0]);
         } else {
             StringBuilder builder = new StringBuilder(usersList.get(0));
             for (int i = 1; i < usersList.size(); i++) {
                 builder.append(", ").append(usersList.get(i));
             }
-            sender.sendMessage(ColorList.TOP + "Different players who have used the IP '" + ColorList.DATA + subCommandArgs[0] + ColorList.TOP + "'");
+            sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "players who have used the IP '" + ColorList.DATA + subCommandArgs[0] + ColorList.TOP + "'" + ColorList.TOP_SEPERATOR + " --");
             sender.sendMessage(builder.toString());
-
         }
     }
 }
