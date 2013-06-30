@@ -1,4 +1,4 @@
-package net.daboross.bukkitdev.playerdata.commandreactors;
+package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +15,11 @@ import org.bukkit.command.CommandSender;
  *
  * @author daboross
  */
-public class IPReverseLookupCommandReactor implements SubCommandHandler {
+public class IPReverseLookupCommandHandler implements SubCommandHandler {
 
     private final PlayerData playerDataMain;
 
-    public IPReverseLookupCommandReactor(PlayerData playerDataMain) {
+    public IPReverseLookupCommandHandler(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 

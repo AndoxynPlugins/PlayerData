@@ -1,4 +1,4 @@
-package net.daboross.bukkitdev.playerdata.commandreactors;
+package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,11 +21,11 @@ import org.bukkit.Bukkit;
  *
  * @author daboross
  */
-public class ViewInfoCommandReactor implements SubCommandHandler {
+public class ViewInfoCommandHandler implements SubCommandHandler {
 
     private final PlayerData playerDataMain;
 
-    public ViewInfoCommandReactor(PlayerData playerDataMain) {
+    public ViewInfoCommandHandler(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 

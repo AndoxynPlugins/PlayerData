@@ -5,11 +5,11 @@ import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.commandreactors.IPLookupCommandReactor;
-import net.daboross.bukkitdev.playerdata.commandreactors.IPReverseLookupCommandReactor;
-import net.daboross.bukkitdev.playerdata.commandreactors.ListPlayersByFirstJoinCommandReactor;
-import net.daboross.bukkitdev.playerdata.commandreactors.ListPlayersCommandReactor;
-import net.daboross.bukkitdev.playerdata.commandreactors.ViewInfoCommandReactor;
+import net.daboross.bukkitdev.playerdata.subcommandhandlers.IPLookupCommandHandler;
+import net.daboross.bukkitdev.playerdata.subcommandhandlers.IPReverseLookupCommandHandler;
+import net.daboross.bukkitdev.playerdata.subcommandhandlers.ListPlayersFirstJoinCommandHandler;
+import net.daboross.bukkitdev.playerdata.subcommandhandlers.ListPlayersCommandReactor;
+import net.daboross.bukkitdev.playerdata.subcommandhandlers.ViewInfoCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -27,15 +27,15 @@ public final class PlayerDataCommandExecutor {
         this.playerDataMain = playerDataMain;
         this.commandExecutorBase = new CommandExecutorBase("playerdata.help");
         commandExecutorBase.addSubCommand(new SubCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},
-                "Get info on a player", new ViewInfoCommandReactor(playerDataMain)));
+                "Get info on a player", new ViewInfoCommandHandler(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", new String[]{"PageNumber"},
                 "Lists all players who have ever joined this server in order of last seen", new ListPlayersCommandReactor(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", new String[]{"PageNumber"},
-                "List allplayers who have have ever joined this server in order of first join", new ListPlayersByFirstJoinCommandReactor(playerDataMain)));
+                "List allplayers who have have ever joined this server in order of first join", new ListPlayersFirstJoinCommandHandler(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("iplookup", new String[]{"ipl", "ip"}, true, "playerdata.iplookup", new String[]{"Player"},
-                "Gets all different IPs used by a Player", new IPLookupCommandReactor(playerDataMain)));
+                "Gets all different IPs used by a Player", new IPLookupCommandHandler(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
-                "Gets all different Players using an IP", new IPReverseLookupCommandReactor(playerDataMain)));
+                "Gets all different Players using an IP", new IPReverseLookupCommandHandler(playerDataMain)));
         commandExecutorBase.addSubCommand(new SubCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new SubCommandHandler() {
             @Override
             public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {

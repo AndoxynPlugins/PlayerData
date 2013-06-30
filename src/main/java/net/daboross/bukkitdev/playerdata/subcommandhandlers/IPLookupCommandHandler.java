@@ -1,4 +1,4 @@
-package net.daboross.bukkitdev.playerdata.commandreactors;
+package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.HashSet;
 import java.util.List;
@@ -16,11 +16,11 @@ import org.bukkit.command.CommandSender;
  *
  * @author daboross
  */
-public class IPLookupCommandReactor implements SubCommandHandler {
+public class IPLookupCommandHandler implements SubCommandHandler {
 
     private final PlayerData playerDataMain;
 
-    public IPLookupCommandReactor(PlayerData playerDataMain) {
+    public IPLookupCommandHandler(PlayerData playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 
