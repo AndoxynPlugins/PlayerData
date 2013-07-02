@@ -58,12 +58,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.daboross.bukkitdev.commandexecutorbase</groupId>
-            <artifactId>CommandExecutorBase</artifactId>
-            <version>1.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>net.daboross.dxml</groupId>
             <artifactId>DXMLLibrary</artifactId>
             <version>1.0</version>
