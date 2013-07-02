@@ -33,21 +33,18 @@ public class PossibleUserNames implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("playerdata:getusername")) {
-            if (args.length > 0) {
-                String givenPlayerName = PlayerData.getCombinedString(args, 0);
-                String[] users = instance.getPDataHandler().getPossibleUsernames(givenPlayerName);
-                sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + givenPlayerName + ColorList.TOP_SEPERATOR + " --");
-                for (int i = 0; i < users.length && i < 10; i++) {
-                    sender.sendMessage(users[i]);
-                }
-                sender.sendMessage(ColorList.REG + "Found a total of " + ColorList.DATA + users.length + ColorList.REG + " AutoCompletes");
-            } else {
-                sender.sendMessage(ColorList.ERR + "Please specify a player");
-                sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <PartialUsername>");
+        if (args.length > 0) {
+            String givenPlayerName = PlayerData.getCombinedString(args, 0);
+            String[] users = instance.getPDataHandler().getPossibleUsernames(givenPlayerName);
+            sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + givenPlayerName + ColorList.TOP_SEPERATOR + " --");
+            for (int i = 0; i < users.length && i < 10; i++) {
+                sender.sendMessage(users[i]);
             }
-            return true;
+            sender.sendMessage(ColorList.REG + "Found a total of " + ColorList.DATA + users.length + ColorList.REG + " AutoCompletes");
+        } else {
+            sender.sendMessage(ColorList.ERR + "Please specify a player");
+            sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <PartialUsername>");
         }
-        return false;
+        return true;
     }
 }

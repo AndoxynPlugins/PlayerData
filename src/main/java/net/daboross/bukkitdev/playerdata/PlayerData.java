@@ -45,17 +45,17 @@ public final class PlayerData extends JavaPlugin {
         PluginManager pm = this.getServer().getPluginManager();
         setupVault(pm);
         playerDataHandler = new PDataHandler(this);
-        PluginCommand playerdata = getCommand("playerdata:playerdata");
+        PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
             new PlayerDataCommandExecutor(this).registerCommand(playerdata);
         } else {
-            getLogger().log(Level.WARNING, "Command /playerdata:playerdata not found! Is another plugin using it?");
+            getLogger().log(Level.WARNING, "Command /pd not found! Is another plugin using it?");
         }
-        PluginCommand getusername = getCommand("playerdata:getusername");
+        PluginCommand getusername = getCommand("gu");
         if (getusername != null) {
             getusername.setExecutor(new PossibleUserNames(this));
         } else {
-            getLogger().log(Level.WARNING, "Command /playerdata:getusername not found! Is another plugin using it?");
+            getLogger().log(Level.WARNING, "Command /gu not found! Is another plugin using it?");
         }
         eventListener = new PlayerDataEventListener(this);
         pm.registerEvents(eventListener, this);

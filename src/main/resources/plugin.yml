@@ -9,14 +9,18 @@ description: |
 softdepend: [Vault]
 dev-url: http://dev.bukkit.org/server-mods/playerdata/
 commands:
-  playerdata:playerdata:
+  pd:
     description: This is the base command for Player Data.
-    usage: /<command> [subcommand] (You can use /<command> ? for list of sub commands)
-    aliases: [playerdata, pdata, playerd, pd]
-  playerdata:getusername:
+    usage: |
+      /<command> [subcommand] 
+      For help: /<command> help
+    aliases: [playerdata, pdata, playerd]
+  gu:
     description: This command gets possible full usernames for a partial username or nickname
-    usage: /<command> [PartialUserNameOrNickName]
-    aliases: [getusername, gusername,getu, gu]
+    usage: |
+      /<command> [Partial Name]
+      Example: /<command> bob
+    aliases: [getusername, gusername, getu]
 permissions:
   playerdata.*:
     description: Gives access to all PlayerData commands
