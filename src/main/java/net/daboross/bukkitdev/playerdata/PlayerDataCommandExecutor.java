@@ -1,10 +1,10 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.concurrent.Callable;
-import net.daboross.bukkitdev.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.commandexecutorbase.CommandExecutorBase;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.CommandExecutorBase;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.IPLookupCommandHandler;
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.IPReverseLookupCommandHandler;
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.ListPlayersFirstJoinCommandHandler;

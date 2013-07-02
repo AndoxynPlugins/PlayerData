@@ -2,9 +2,9 @@ package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.daboross.bukkitdev.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerData;
 

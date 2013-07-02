@@ -3,7 +3,7 @@
  * Website: www.daboross.net
  * Email: daboross@daboross.net
  */
-package net.daboross.bukkitdev.commandexecutorbase;
+package net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

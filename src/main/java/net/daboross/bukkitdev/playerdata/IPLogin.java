@@ -1,6 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
-import net.daboross.dxml.DXMLException;
+import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

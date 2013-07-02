@@ -1,4 +1,4 @@
-package net.daboross.bukkitdev.commandexecutorbase;
+package net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase;
 
 import org.bukkit.ChatColor;
 

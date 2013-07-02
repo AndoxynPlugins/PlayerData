@@ -8,11 +8,11 @@ import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerData;
-import net.daboross.dxml.DXMLException;
-import net.daboross.dxml.DXMLHelper;
+import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
+import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import static net.daboross.dxml.DXMLHelper.createElement;
+import static net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper.createElement;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
