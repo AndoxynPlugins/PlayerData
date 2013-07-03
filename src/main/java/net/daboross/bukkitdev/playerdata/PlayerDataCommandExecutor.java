@@ -21,9 +21,9 @@ import org.bukkit.command.PluginCommand;
 public final class PlayerDataCommandExecutor {
 
     private final CommandExecutorBase commandExecutorBase;
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
 
-    protected PlayerDataCommandExecutor(final PlayerData playerDataMain) {
+    protected PlayerDataCommandExecutor(final PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
         this.commandExecutorBase = new CommandExecutorBase("playerdata.help");
         commandExecutorBase.addSubCommand(new SubCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},

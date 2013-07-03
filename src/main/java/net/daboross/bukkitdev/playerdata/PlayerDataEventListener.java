@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class PlayerDataEventListener implements Listener {
 
-    private final PlayerData pDataMain;
+    private final PlayerDataBukkit pDataMain;
     private final List<PDPlayerJoinListener> joinListeners = new ArrayList<PDPlayerJoinListener>();
     private final List<PDPlayerLeaveListener> leaveListeners = new ArrayList<PDPlayerLeaveListener>();
 
@@ -34,7 +34,7 @@ public class PlayerDataEventListener implements Listener {
         leaveListeners.remove(pdpll);
     }
 
-    protected PlayerDataEventListener(PlayerData main) {
+    protected PlayerDataEventListener(PlayerDataBukkit main) {
         pDataMain = main;
     }
 
@@ -42,35 +42,23 @@ public class PlayerDataEventListener implements Listener {
      *
      * @param evt
      */
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(final PlayerJoinEvent evt) {
-        Runnable logInRunnable = new Runnable() {
-            @Override
-            public void run() {
-                PData pData = pDataMain.getPDataHandler().logIn(evt.getPlayer());
-                for (PDPlayerJoinListener pdpjl : joinListeners) {
-                    pdpjl.playerJoinNotify(evt, pData);
-                }
-            }
-        };
-        pDataMain.getPDataHandler().runAfterLoad(logInRunnable);
+        PData pData = pDataMain.getPDataHandler().logIn(evt.getPlayer());
+        for (PDPlayerJoinListener pdpjl : joinListeners) {
+            pdpjl.playerJoinNotify(evt, pData);
+        }
     }
 
     /**
      *
      * @param evt
      */
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerQuit(final PlayerQuitEvent evt) {
-        Runnable logOutRunnable = new Runnable() {
-            @Override
-            public void run() {
-                PData pData = pDataMain.getPDataHandler().logOut(evt.getPlayer());
-                for (PDPlayerLeaveListener pdpll : leaveListeners) {
-                    pdpll.playerLeaveNotify(evt, pData);
-                }
-            }
-        };
-        pDataMain.getPDataHandler().runAfterLoad(logOutRunnable);
+        PData pData = pDataMain.getPDataHandler().logOut(evt.getPlayer());
+        for (PDPlayerLeaveListener pdpll : leaveListeners) {
+            pdpll.playerLeaveNotify(evt, pData);
+        }
     }
 }

@@ -15,7 +15,7 @@ public class ExtraDataHandler {
 
     protected ExtraDataHandler() {
         extraThread = new ExtraDataSaveThread(this);
-        Bukkit.getScheduler().runTaskAsynchronously(PlayerData.getCurrentInstance(), extraThread);
+        Bukkit.getScheduler().runTaskAsynchronously(PlayerDataBukkit.getCurrentInstance(), extraThread);
     }
 
     /**

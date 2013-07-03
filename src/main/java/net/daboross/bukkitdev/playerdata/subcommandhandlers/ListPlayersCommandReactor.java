@@ -6,7 +6,7 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.PData;
-import net.daboross.bukkitdev.playerdata.PlayerData;
+import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,9 +17,9 @@ import org.bukkit.command.CommandSender;
  */
 public class ListPlayersCommandReactor implements SubCommandHandler {
 
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
 
-    public ListPlayersCommandReactor(PlayerData playerDataMain) {
+    public ListPlayersCommandReactor(PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 
@@ -54,7 +54,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
 
         for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
             PData current = pDataList.get(i);
-            messagesToSend.add(ColorList.NAME + current.userName() + ColorList.REG + " was last seen " + ColorList.DATA + PlayerData.getFormattedDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.lastSeen()) + ColorList.REG + " ago.");
+            messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.getLastSeen()) + ColorList.REG + " ago.");
         }
 
         if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {

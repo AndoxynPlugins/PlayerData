@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -9,7 +10,7 @@ import org.w3c.dom.Node;
  *
  * @author daboross
  */
-public class IPLogin implements Comparable<IPLogin> {
+public class IPLogin implements LoginData, Comparable<IPLogin> {
 
     private long time;
     private String ip;
@@ -28,11 +29,12 @@ public class IPLogin implements Comparable<IPLogin> {
         this.ip = "Unknown";
     }
 
-    public String ip() {
+    @Override
+    public String getIP() {
         return ip;
     }
 
-    public long time() {
+    public long getDate() {
         return time;
     }
 
@@ -87,8 +89,8 @@ public class IPLogin implements Comparable<IPLogin> {
     }
 
     /**
-     * This returns a coded version of the IPLogin. It is in the form of time +
-     * " : " + ip.
+     * This returns a coded version of the IPLogin. It is in the form of getDate +
+     * " : " + getIP.
      */
     @Override
     public String toString() {
@@ -116,7 +118,7 @@ public class IPLogin implements Comparable<IPLogin> {
 
     public int compareTo(IPLogin other) {
         Long l1 = this.time;
-        Long l2 = other.time();
+        Long l2 = other.getDate();
         return l1.compareTo(l2);
     }
 }

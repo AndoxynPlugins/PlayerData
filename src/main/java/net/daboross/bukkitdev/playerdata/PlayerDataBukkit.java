@@ -12,13 +12,13 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * PlayerData Plugin Made By DaboRoss
+ * PlayerDataBukkit Plugin Made By DaboRoss
  *
  * @author daboross
  */
-public final class PlayerData extends JavaPlugin {
+public final class PlayerDataBukkit extends JavaPlugin {
 
-    private static PlayerData currentInstance;
+    private static PlayerDataBukkit currentInstance;
     private static boolean isVaultLoaded;
     private static Permission permissionHandler;
     private PDataHandler playerDataHandler;
@@ -82,7 +82,7 @@ public final class PlayerData extends JavaPlugin {
 
     /**
      * This is the internal PDataHandler. Use getHandler() instead if you are
-     * outside of the PlayerData project.
+     * outside of the PlayerDataBukkit project.
      *
      * @return
      */
@@ -94,7 +94,7 @@ public final class PlayerData extends JavaPlugin {
      *
      * @return
      */
-    public static PlayerData getCurrentInstance() {
+    public static PlayerDataBukkit getCurrentInstance() {
         return currentInstance;
     }
 

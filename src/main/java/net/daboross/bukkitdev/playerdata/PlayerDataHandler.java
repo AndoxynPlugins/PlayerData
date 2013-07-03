@@ -1,21 +1,23 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.List;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerDataDataHandler;
 
 /**
- * This is the main API function for PlayerData.
+ * This is the main API function for PlayerDataBukkit.
  *
  * @author daboross
  */
-public class PlayerDataHandler {
+public class PlayerDataHandler implements PlayerDataDataHandler {
 
     private final PDataHandler pDataHandler;
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
 
     /**
-     * Creates A Player Data Handler given a PlayerData
+     * Creates A Player Data Handler given a PlayerDataBukkit
      */
-    public PlayerDataHandler(PlayerData playerDataMain) {
+    public PlayerDataHandler(PlayerDataBukkit playerDataMain) {
         this.pDataHandler = playerDataMain.getPDataHandler();
         this.playerDataMain = playerDataMain;
     }
@@ -60,12 +62,13 @@ public class PlayerDataHandler {
 
     /**
      * Adds a DataDisplayParser that you supply as a parser for a custom data
-     * type you specify. PlayerData will call the shortInfo() function from your
-     * display parser and include the lines your parser returns whenever someone
-     * uses /playerdata viewinfo for a player with this data type. You will need
-     * to run this function every time your Plugin is loaded because PlayerData
-     * will not keep the DataDisplayParser after unload. This will overwrite any
-     * previous DataDisplayParsers loaded with this function for this Data Type.
+     * type you specify. PlayerDataBukkit will call the shortInfo() function
+     * from your display parser and include the lines your parser returns
+     * whenever someone uses /playerdata viewinfo for a player with this data
+     * type. You will need to run this function every time your Plugin is loaded
+     * because PlayerDataBukkit will not keep the DataDisplayParser after
+     * unload. This will overwrite any previous DataDisplayParsers loaded with
+     * this function for this Data Type.
      *
      * @param dataName The Name of the data this parser will parse. If you have
      * multiple data types that this parser can parse, then you will need to run
@@ -88,7 +91,7 @@ public class PlayerDataHandler {
      *
      * @param playerName The Name of the player to get data for
      * @param dataName The Data Type to get
-     * @return The Data That PlayerData is holding for that player if this
+     * @return The Data That PlayerDataBukkit is holding for that player if this
      * dataType has been loaded onto this player. null otherwise
      */
     public Data getCustomData(String playerName, String dataName) {
@@ -103,8 +106,9 @@ public class PlayerDataHandler {
     /**
      * This function gets a PData corresponding to the username given.
      *
-     * @param userName This should be the full or partial username of a player
-     * @return the PData corresponding to that userName.
+     * @param getUsername This should be the full or partial username of a
+     * player
+     * @return the PData corresponding to that getUsername.
      */
     public PData getPData(String userName) {
         return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(userName));
@@ -125,21 +129,12 @@ public class PlayerDataHandler {
     /**
      * This function returns a list of all PData's loaded, or one PData for
      * every single player who has ever joined this server. This list is an
-     * UNMODIFIABLE version of PlayerData's Internal list.
+     * UNMODIFIABLE version of PlayerDataBukkit's Internal list.
      *
      * @return A list of PData's Loaded.
      */
-    public List<PData> getAllPDatas() {
+    public List<? extends PlayerData> getAllPDatas() {
         return pDataHandler.getAllPDatas();
-    }
-
-    /**
-     * Run this runnable after PlayerData has fully loaded. If PlayerData is
-     * fully loaded currently, then run it right now. This WILL run in the
-     * Bukkit Thread, not an async one.
-     */
-    public void runAfterLoad(Runnable r) {
-        pDataHandler.runAfterLoad(r);
     }
 
     public void addJoinListener(PDPlayerJoinListener pdpjl) {
@@ -167,7 +162,6 @@ public class PlayerDataHandler {
      * @param name The FULL username of a player in the database.
      * @return The PData that is loaded for that player, or null if not found.
      */
-    public PData getPDataFromUsername(String name) {
+    public PlayerData getPDataFromUsername(String name) {
         return pDataHandler.getPDataFromUsername(name);
     }
-}

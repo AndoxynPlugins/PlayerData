@@ -7,27 +7,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import net.daboross.bukkitdev.playerdata.api.LoginData;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 /**
- * This is an object that holds all the information PlayerData has stored on one
- * player. This holds one player's data. This includes the player's full
- * username, last display name, time played on this server, a list of times when
- * they have logged in, and a list of times they have logged out. Other
+ * This is an object that holds all the information PlayerDataBukkit has stored
+ * on one player. This holds one player's data. This includes the player's full
+ * username, last display name, getDate played on this server, a list of times
+ * when they have logged in, and a list of times they have logged out. Other
  * information which is loaded when needed, not from files, includes the user's
  * group, and whether or not they are online. All this is accessible through one
  * player's PData.
  *
  * @author daboross
  */
-public final class PData implements Comparable<PData> {
+public final class PData implements PlayerData {
 
     private long MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES = TimeUnit.SECONDS.toMillis(10);
     /**
-     * Stores the last time that the nickname was updated so that we don't
+     * Stores the last getDate that the nickname was updated so that we don't
      * updated it very very often.
      */
     private long minNextNicknameUpdate = System.currentTimeMillis();
@@ -65,8 +67,8 @@ public final class PData implements Comparable<PData> {
     /**
      * Use This to create a NEW Player who has never joined before This should
      * never called be any class besides the PDataHandler. This should only be
-     * used when PlayerData is creating empty player data files from another
-     * data storage, such as Bukkit's store.
+     * used when PlayerDataBukkit is creating empty player data files from
+     * another data storage, such as Bukkit's store.
      *
      * @param offlinePlayer The Offline Player to create a PData from.
      */
@@ -98,13 +100,13 @@ public final class PData implements Comparable<PData> {
      * This creates a PData from data loaded from a file. This should never be
      * called except from within a FileParser!
      *
-     * @param userName The Full UserName of this player
-     * @param nickName The Last DisplayName this player had that was not the
-     * same as this player's username. Or the player's username if the player's
-     * display name has never been recorded.
-     * @param logIns A list of times this player has logged in.
-     * @param logOuts A list of times this player has logged out.
-     * @param timePlayed The time this player has played on this server.
+     * @param getUsername The Full UserName of this player
+     * @param getDisplayname The Last DisplayName this player had that was not
+     * the same as this player's username. Or the player's username if the
+     * player's display name has never been recorded.
+     * @param getAllLogins A list of times this player has logged in.
+     * @param getAllLogouts A list of times this player has logged out.
+     * @param getTimePlayed The getDate this player has played on this server.
      * @param data A List of custom data entries.
      */
     public PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
@@ -178,7 +180,7 @@ public final class PData implements Comparable<PData> {
      * PDataHandler's function to do this.
      */
     private void saveStatus() {
-        PlayerData pd = PlayerData.getCurrentInstance();
+        PlayerDataBukkit pd = PlayerDataBukkit.getCurrentInstance();
         if (pd != null) {
             PDataHandler pDH = pd.getPDataHandler();
             if (pDH != null) {
@@ -200,7 +202,7 @@ public final class PData implements Comparable<PData> {
         if (p.isOnline() && !updateDisplayNameWithResult(p)) {
             if (nickUpdateExtraThreadUpdateTimes < 5) {
                 nickUpdateExtraThreadUpdateTimes++;
-                PlayerData instance = PlayerData.getCurrentInstance();
+                PlayerDataBukkit instance = PlayerDataBukkit.getCurrentInstance();
                 if (instance != null) {
                     Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new Runnable() {
                         @Override
@@ -228,7 +230,7 @@ public final class PData implements Comparable<PData> {
             updateDisplayName(p);
             saveStatus();
             pdh.loggedIn(this);
-            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", username);
+            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", username);
         }
     }
 
@@ -246,7 +248,7 @@ public final class PData implements Comparable<PData> {
             nickUpdateExtraThreadUpdateTimes = 0;
             makeExtraThread(p);
             pdh.loggedIn(this);
-            PlayerData.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", username);
+            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", username);
         }
     }
 
@@ -255,15 +257,17 @@ public final class PData implements Comparable<PData> {
      *
      * @return The username of the player represented by this PData.
      */
-    public String userName() {
+    @Override
+    public String getUsername() {
         return username;
     }
 
     /**
-     * This gets the last display name that this player had the last time they
-     * were online.
+     * This gets the last display name that this player had the last getDate
+     * they were online.
      */
-    public String nickName() {
+    @Override
+    public String getDisplayname() {
         if (System.currentTimeMillis() > minNextNicknameUpdate) {
             updateDisplayName();
             minNextNicknameUpdate = System.currentTimeMillis() + MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES;
@@ -276,14 +280,16 @@ public final class PData implements Comparable<PData> {
      *
      * @return Whether or not this player is online
      */
+    @Override
     public boolean isOnline() {
         return online;
     }
 
     /**
-     * This function gets the first time this player logged into this server. If
-     * Bukkit's the recorded first log in is earlier then this PData's recorded
-     * first log in, then this PData's information is updated with Bukkit's
+     * This function gets the first getDate this player logged into this server.
+     * If Bukkit's the recorded first log in is earlier then this PData's
+     * recorded first log in, then this PData's information is updated with
+     * Bukkit's
      *
      * @return
      */
@@ -296,7 +302,8 @@ public final class PData implements Comparable<PData> {
      *
      * @return The Time Played on this server in milliseconds.
      */
-    public long timePlayed() {
+    @Override
+    public long getTimePlayed() {
         return timePlayed;
     }
 
@@ -306,7 +313,12 @@ public final class PData implements Comparable<PData> {
      * @return An unmodifiable list of timestamps when this player has logged
      * in. Each In milliseconds.
      */
-    public List<IPLogin> logIns() {
+    @Override
+    public List<? extends LoginData> getAllLogins() {
+        return loginsUnmodifiable;
+    }
+
+    public List<IPLogin> getAllLoginsInternal() {
         return loginsUnmodifiable;
     }
 
@@ -316,13 +328,14 @@ public final class PData implements Comparable<PData> {
      * @return An unmodifiable list of timestamps when this player has logged
      * out. Each In milliseconds.
      */
-    public List<Long> logOuts() {
+    @Override
+    public List<Long> getAllLogouts() {
         return logoutsUnmodifiable;
     }
 
     /**
-     * This function checks whether the last time the player was seen is within
-     * the specified amount in days.
+     * This function checks whether the last getDate the player was seen is
+     * within the specified amount in days.
      */
     public boolean joinedLastWithinDays(int days) {
         if (isOnline()) {
@@ -330,14 +343,14 @@ public final class PData implements Comparable<PData> {
         }
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, -days);
-        return lastSeen() > cal.getTimeInMillis();
+        return getLastSeen() > cal.getTimeInMillis();
     }
 
     /**
      * Adds Data To This Player. If Data Is Already On With the given data's
      * Name, It will be Replaced! This PData will keep track of this data, and
-     * will save it on server shutdown, and will load it when PlayerData is
-     * loaded.
+     * will save it on server shutdown, and will load it when PlayerDataBukkit
+     * is loaded.
      *
      * @param d The Data To Add.
      */
@@ -421,22 +434,22 @@ public final class PData implements Comparable<PData> {
 
     /**
      * This function gets the permissions groups that this player is in. This is
-     * retrieved from Vault Permissions. If PlayerData hasn't found a permission
-     * handler, then this will return an empty list.
+     * retrieved from Vault Permissions. If PlayerDataBukkit hasn't found a
+     * permission handler, then this will return an empty list.
      *
      * @return
      */
     public String[] getGroups() {
-        if (PlayerData.isVaultLoaded()) {
-            return PlayerData.getPermissionHandler().getPlayerGroups((String) null, username);
+        if (PlayerDataBukkit.isVaultLoaded()) {
+            return PlayerDataBukkit.getPermissionHandler().getPlayerGroups((String) null, username);
         }
         return EMPTY_STRING_LIST;
     }
 
     public boolean isGroup(String group) {
-        if (PlayerData.isVaultLoaded()) {
+        if (PlayerDataBukkit.isVaultLoaded()) {
             for (World world : Bukkit.getWorlds()) {
-                boolean inGroup = PlayerData.getPermissionHandler().playerInGroup(world, username, group);
+                boolean inGroup = PlayerDataBukkit.getPermissionHandler().playerInGroup(world, username, group);
                 if (inGroup) {
                     return true;
                 }
@@ -451,8 +464,8 @@ public final class PData implements Comparable<PData> {
     }
 
     /**
-     * This function will check the first time this player has played and the
-     * last time this player has played with Bukkit's records.
+     * This function will check the first getDate this player has played and the
+     * last getDate this player has played with Bukkit's records.
      */
     public void checkBukkitForTimes() {
         OfflinePlayer offP = Bukkit.getOfflinePlayer(username);
@@ -461,7 +474,7 @@ public final class PData implements Comparable<PData> {
         if (offP.hasPlayedBefore()) {
             if (logins.isEmpty()) {
                 logins.add(new IPLogin(bukkitFirstPlayed));
-            } else if (bukkitFirstPlayed < logins.get(0).time()) {
+            } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
                 logins.add(0, new IPLogin(bukkitFirstPlayed));
             }
             if (!online) {
@@ -485,7 +498,8 @@ public final class PData implements Comparable<PData> {
     /**
      * This function checks when the player was last on the server.
      */
-    public long lastSeen() {
+    @Override
+    public long getLastSeen() {
         if (online) {
             return System.currentTimeMillis();
         }
@@ -496,7 +510,6 @@ public final class PData implements Comparable<PData> {
         }
     }
 
-    @Override
     public int compareTo(PData other) {
         if (other == null) {
             throw new NullPointerException();
@@ -506,12 +519,12 @@ public final class PData implements Comparable<PData> {
         if (online) {
             l1 = System.currentTimeMillis();
         } else {
-            l1 = lastSeen();
+            l1 = getLastSeen();
         }
         if (other.isOnline()) {
             l2 = System.currentTimeMillis();
         } else {
-            l2 = other.lastSeen();
+            l2 = other.getLastSeen();
         }
         return l2.compareTo(l1);
     }

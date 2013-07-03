@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
-import net.daboross.bukkitdev.playerdata.PlayerData;
+import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper;
 import org.w3c.dom.Document;
@@ -26,11 +26,11 @@ public class XMLFileParser {
         Document document = DXMLHelper.newDocument();
         Element root = document.createElement("playerdata");
         document.appendChild(root);
-        root.appendChild(createElement(document, "username", pData.userName()));
-        root.appendChild(createElement(document, "displayname", pData.nickName()));
-        root.appendChild(createElement(document, "timeplayed", String.valueOf(pData.timePlayed())));
+        root.appendChild(createElement(document, "username", pData.getUsername()));
+        root.appendChild(createElement(document, "displayname", pData.getDisplayname()));
+        root.appendChild(createElement(document, "timeplayed", String.valueOf(pData.getTimePlayed())));
         {
-            List<IPLogin> logins = pData.logIns();
+            List<IPLogin> logins = pData.getAllLoginsInternal();
             Element logInsElement = document.createElement("logins");
             for (int i = 0; i < logins.size(); i++) {
                 Element e = document.createElement("login" + i);
@@ -40,7 +40,7 @@ public class XMLFileParser {
             root.appendChild(logInsElement);
         }
         {
-            List<Long> logouts = pData.logOuts();
+            List<Long> logouts = pData.getAllLogouts();
             Element logOutsElement = document.createElement("logouts");
             for (int i = 0; i < logouts.size(); i++) {
                 logOutsElement.appendChild(createElement(document, String.valueOf("logout" + i), logouts.get(i).toString()));
@@ -107,13 +107,13 @@ public class XMLFileParser {
             }
             Node child = current.getFirstChild();
             if (child == null) {
-                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
                 continue;
             }
             try {
                 logOutsFinal.add(Long.valueOf(child.getNodeValue()));
             } catch (NumberFormatException nfe) {
-                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
             }
         }
         for (int i = 0; i < logInList.getLength(); i++) {
@@ -124,7 +124,7 @@ public class XMLFileParser {
             try {
                 logInsFinal.add(new IPLogin(current));
             } catch (DXMLException dxmle) {
-                PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
+                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
             }
         }
         NodeList dataList = data.getChildNodes();
@@ -140,7 +140,7 @@ public class XMLFileParser {
         try {
             timePlayedLong = Long.parseLong(timePlayed);
         } catch (NumberFormatException nfe) {
-            PlayerData.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
+            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
         return new PData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
     }

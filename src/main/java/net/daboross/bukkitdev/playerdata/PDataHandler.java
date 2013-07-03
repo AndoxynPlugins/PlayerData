@@ -5,13 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.daboross.bukkitdev.playerdata.helpers.FirstJoinComparator;
+import net.daboross.bukkitdev.playerdata.helpers.LastSeenComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import org.apache.commons.lang.NullArgumentException;
@@ -41,17 +42,15 @@ public final class PDataHandler {
      */
     private final ArrayList<PData> playerDataList = new ArrayList<PData>();
     private final ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
     private final File dataFolder;
     private final Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
-    private boolean isLoaded = false;
-    private final ArrayList<Runnable> afterLoadRuns = new ArrayList<Runnable>();
 
     /**
-     * Use this to create a new PDataHandler when PlayerData is loaded. There
-     * should only be one PDataHandler instance.
+     * Use this to create a new PDataHandler when PlayerDataBukkit is loaded.
+     * There should only be one PDataHandler instance.
      */
-    protected PDataHandler(PlayerData playerDataMain) {
+    protected PDataHandler(PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
@@ -70,9 +69,9 @@ public final class PDataHandler {
     /**
      * This function creates a PData for every player who has ever joined this
      * server. It uses Bukkit's store of players and their data. It will only
-     * load the first time a player has played and the last time they have
+     * load the first getDate a player has played and the last getDate they have
      * played from this function. This WILL erase all data currently stored by
-     * PlayerData. This WILL return before the data is loaded.
+     * PlayerDataBukkit. This WILL return before the data is loaded.
      *
      * @return The number of new PData Files created.
      */
@@ -118,8 +117,8 @@ public final class PDataHandler {
      * function doesn't save any offline player's PDatas, because there is no
      * way for their state to change after the player has logged out, and they
      * auto save when their player logs out. The only reason this function is
-     * helpful is if the PlayerData Plugin is unloaded while the server is still
-     * running.
+     * helpful is if the PlayerDataBukkit Plugin is unloaded while the server is
+     * still running.
      */
     protected void endServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
@@ -132,8 +131,8 @@ public final class PDataHandler {
     /**
      * This function goes through all online player's PDatas and tells each of
      * them that the Player has logged in. The only reason this function is
-     * helpful is if the PlayerData Plugin is loaded when the server is already
-     * running and there are players online.
+     * helpful is if the PlayerDataBukkit Plugin is loaded when the server is
+     * already running and there are players online.
      */
     private void startServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
@@ -196,7 +195,7 @@ public final class PDataHandler {
     }
 
     private void savePDataXML(PData pd) {
-        File file = new File(dataFolder, pd.userName() + ".xml");
+        File file = new File(dataFolder, pd.getUsername() + ".xml");
         try {
             file.createNewFile();
         } catch (IOException ex) {
@@ -247,9 +246,9 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PData pD = playerDataList.get(i);
-                String checkUserName = pD.userName().toLowerCase();
-                String checkNickName = ChatColor.stripColor(pD.nickName()).toLowerCase();
-                String pUserName = pD.userName();
+                String checkUserName = pD.getUsername().toLowerCase();
+                String checkNickName = ChatColor.stripColor(pD.getDisplayname()).toLowerCase();
+                String pUserName = pD.getUsername();
                 int add = pD.isOnline() ? 0 : 1;
                 if (checkUserName != null) {
                     if (checkUserName.equalsIgnoreCase(user)) {
@@ -336,8 +335,8 @@ public final class PDataHandler {
             for (int i = 0; i < playerDataList.size(); i++) {
                 final PData pData = playerDataList.get(i);
                 final boolean online = pData.isOnline();
-                final String pUserName = pData.userName();
-                final String pNickName = pData.nickName();
+                final String pUserName = pData.getUsername();
+                final String pNickName = pData.getDisplayname();
                 final String checkUserName = pUserName.toLowerCase();
                 final String checkNickName = ChatColor.stripColor(pNickName).toLowerCase();
                 if (checkUserName != null) {
@@ -459,7 +458,7 @@ public final class PDataHandler {
         }
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                if (playerDataList.get(i).userName().equalsIgnoreCase(name)) {
+                if (playerDataList.get(i).getUsername().equalsIgnoreCase(name)) {
                     return playerDataList.get(i);
                 }
             }
@@ -482,7 +481,7 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PData pData = playerDataList.get(i);
-                if (pData.userName().equalsIgnoreCase(p.getName())) {
+                if (pData.getUsername().equalsIgnoreCase(p.getName())) {
                     return pData;
                 }
             }
@@ -509,7 +508,7 @@ public final class PDataHandler {
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PData pData = playerDataList.get(i);
-                if (pData.userName().equals(p.getName())) {
+                if (pData.getUsername().equals(p.getName())) {
                     pData.loggedIn(p, this);
                     return pData;
                 }
@@ -534,12 +533,13 @@ public final class PDataHandler {
 
     /**
      * Adds a DataDisplayParser that you supply as a parser for a custom data
-     * type you specify. PlayerData will call the shortInfo() function from your
-     * display parser and include the lines your parser returns whenever someone
-     * uses /playerdata viewinfo for a player with this data type. You will need
-     * to run this function every time your Plugin is loaded because PlayerData
-     * will not keep the DataDisplayParser after unload. This will overwrite any
-     * previous DataDisplayParsers loaded with this function for this Data Type.
+     * type you specify. PlayerDataBukkit will call the shortInfo() function
+     * from your display parser and include the lines your parser returns
+     * whenever someone uses /playerdata viewinfo for a player with this data
+     * type. You will need to run this function every getDate your Plugin is
+     * loaded because PlayerDataBukkit will not keep the DataDisplayParser after
+     * unload. This will overwrite any previous DataDisplayParsers loaded with
+     * this function for this Data Type.
      *
      * @param dataName The Name of the data this parser will parse. If you have
      * multiple data types that this parser can parse, then you will need to run
@@ -664,13 +664,8 @@ public final class PDataHandler {
         @Override
         public void run() {
             synchronized (playerDataListLock) {
-                Collections.sort(playerDataList);
-                Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
-                    @Override
-                    public int compare(PData o1, PData o2) {
-                        return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
-                    }
-                });
+                Collections.sort(playerDataList, LastSeenComparator.getInstance());
+                Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
             }
             if (afterLoad != null) {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, afterLoad);
@@ -696,9 +691,10 @@ public final class PDataHandler {
 
     /**
      * This is the "initial" function that should be called directly after this
-     * PDataHandler is created. The PDataHandler instance variable in PlayerData
-     * needs to be set to this PDataHandler before this function is called. This
-     * will also create new PDatas from Bukkit if file folder is empty.
+     * PDataHandler is created. The PDataHandler instance variable in
+     * PlayerDataBukkit needs to be set to this PDataHandler before this
+     * function is called. This will also create new PDatas from Bukkit if file
+     * folder is empty.
      */
     protected void init() {
         final Logger l = playerDataMain.getLogger();
@@ -707,25 +703,10 @@ public final class PDataHandler {
         }
         readData(l);
         synchronized (playerDataListLock) {
-            Collections.sort(playerDataList);
-            Collections.sort(playerDataListFirstJoin, new Comparator<PData>() {
-                @Override
-                public int compare(PData o1, PData o2) {
-                    return Long.compare(o1.getFirstLogIn().time(), o2.getFirstLogIn().time());
-                }
-            });
+            Collections.sort(playerDataList, LastSeenComparator.getInstance());
+            Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
         }
         startServer();
-        isLoaded = true;
-        synchronized (afterLoadRuns) {
-            if (!afterLoadRuns.isEmpty()) {
-                l.log(Level.INFO, "Starting AfterLoad Tasks");
-                while (!afterLoadRuns.isEmpty()) {
-                    Bukkit.getScheduler().runTask(playerDataMain, afterLoadRuns.get(0));
-                    afterLoadRuns.remove(0);
-                }
-            }
-        }
     }
 
     /**
@@ -772,21 +753,6 @@ public final class PDataHandler {
                 return playerDataList.size();
             } else {
                 return 0;
-            }
-        }
-    }
-
-    /**
-     * This will run a given task after PlayerData has loaded. If PlayerData is
-     * already fully loaded, it will just call r.run(). Otherwise, r will be
-     * executed as a task on the main thread after loading finishes.
-     */
-    public void runAfterLoad(Runnable r) {
-        if (isLoaded) {
-            r.run();
-        } else {
-            synchronized (afterLoadRuns) {
-                afterLoadRuns.add(r);
             }
         }
     }

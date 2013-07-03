@@ -14,7 +14,8 @@ import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PDataHandler;
-import net.daboross.bukkitdev.playerdata.PlayerData;
+import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
+import net.daboross.bukkitdev.playerdata.api.LoginData;
 import org.bukkit.Bukkit;
 
 /**
@@ -23,9 +24,9 @@ import org.bukkit.Bukkit;
  */
 public class ViewInfoCommandHandler implements SubCommandHandler {
 
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
 
-    public ViewInfoCommandHandler(PlayerData playerDataMain) {
+    public ViewInfoCommandHandler(PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 
@@ -36,30 +37,30 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
-        String givenPlayerName = PlayerData.getCombinedString(subCommandArgs, 0);
+        String givenPlayerName = PlayerDataBukkit.getCombinedString(subCommandArgs, 0);
         PData pData = playerDataMain.getHandler().getPData(givenPlayerName);
         if (pData == null) {
             sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
             return;
         }
-        sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "Info for " + ColorList.NAME + pData.userName() + ColorList.TOP_SEPERATOR + " --");
+        sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "Info for " + ColorList.NAME + pData.getUsername() + ColorList.TOP_SEPERATOR + " --");
         ArrayList<String> linesToSend = new ArrayList<String>();
-        linesToSend.add(ColorList.REG + "DisplayName: " + ColorList.NAME + pData.nickName());
+        linesToSend.add(ColorList.REG + "DisplayName: " + ColorList.NAME + pData.getDisplayname());
         if (pData.isOnline()) {
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " is online");
-            List<IPLogin> logIns = pData.logIns();
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " has been online " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - logIns.get(logIns.size() - 1).time()));
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " is online");
+            List<? extends LoginData> logIns = pData.getAllLogins();
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " has been online " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(System.currentTimeMillis() - logIns.get(logIns.size() - 1).getDate()));
         } else {
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " is not online");
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " was last seen " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - pData.lastSeen()) + ColorList.REG + " ago");
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " is not online");
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(System.currentTimeMillis() - pData.getLastSeen()) + ColorList.REG + " ago");
         }
-        linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logIns().size());
-        linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.logOuts().size());
-        linesToSend.add(ColorList.REG + "Time played on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + PlayerData.getFormattedDate(pData.timePlayed()));
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + PlayerData.getFormattedDate(System.currentTimeMillis() - pData.getFirstLogIn().time()) + ColorList.REG + " ago");
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pData.getFirstLogIn().time()));
-        if (PlayerData.isVaultLoaded()) {
-            linesToSend.add(ColorList.NAME + pData.userName() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(pData.getGroups(), ", "));
+        linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.getAllLogins().size());
+        linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.getAllLogouts().size());
+        linesToSend.add(ColorList.REG + "Time played on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(pData.getTimePlayed()));
+        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(System.currentTimeMillis() - pData.getFirstLogIn().getDate()) + ColorList.REG + " ago");
+        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pData.getFirstLogIn().getDate()));
+        if (PlayerDataBukkit.isVaultLoaded()) {
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(pData.getGroups(), ", "));
         }
         PDataHandler pdh = playerDataMain.getPDataHandler();
         for (Data d : pData.getData()) {

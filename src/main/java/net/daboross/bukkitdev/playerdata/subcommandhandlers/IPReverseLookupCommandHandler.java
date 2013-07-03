@@ -7,7 +7,8 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
-import net.daboross.bukkitdev.playerdata.PlayerData;
+import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
+import net.daboross.bukkitdev.playerdata.api.LoginData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -17,9 +18,9 @@ import org.bukkit.command.CommandSender;
  */
 public class IPReverseLookupCommandHandler implements SubCommandHandler {
 
-    private final PlayerData playerDataMain;
+    private final PlayerDataBukkit playerDataMain;
 
-    public IPReverseLookupCommandHandler(PlayerData playerDataMain) {
+    public IPReverseLookupCommandHandler(PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
     }
 
@@ -36,12 +37,12 @@ public class IPReverseLookupCommandHandler implements SubCommandHandler {
         }
         List<String> usersList = new ArrayList<String>();
         for (PData pData : playerDataMain.getHandler().getAllPDatas()) {
-            for (IPLogin login : pData.logIns()) {
-                String ip = login.ip();
+            for (LoginData login : pData.getAllLogins()) {
+                String ip = login.getIP();
                 String[] ipSplit = ip.split(":")[0].split("/");
                 ip = ipSplit[ipSplit.length - 1];
                 if (ip.equalsIgnoreCase(subCommandArgs[0])) {
-                    usersList.add(pData.userName());
+                    usersList.add(pData.getUsername());
                     break;
                 }
             }

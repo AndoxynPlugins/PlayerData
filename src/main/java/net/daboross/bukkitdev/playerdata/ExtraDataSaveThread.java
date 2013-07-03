@@ -37,7 +37,7 @@ public class ExtraDataSaveThread implements Runnable {
                 try {
                     dataToSave.wait();
                 } catch (InterruptedException ex) {
-                    PlayerData.getCurrentInstance().getLogger().log(Level.SEVERE, "ExtraDataSaveThread had an InterruptedExeption! {0} : {1}", new Object[]{ex, ex.getMessage()});
+                    PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.SEVERE, "ExtraDataSaveThread had an InterruptedExeption! {0} : {1}", new Object[]{ex, ex.getMessage()});
                 }
             }
         }

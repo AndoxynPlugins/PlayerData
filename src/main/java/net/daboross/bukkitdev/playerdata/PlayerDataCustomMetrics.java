@@ -8,10 +8,10 @@ import net.daboross.bukkitdev.playerdata.metrics.Metrics;
  */
 public class PlayerDataCustomMetrics {
 
-    private final PlayerData playerdata;
+    private final PlayerDataBukkit playerdata;
     private final Metrics metrics;
 
-    public PlayerDataCustomMetrics(PlayerData playerdata, Metrics metrics) {
+    public PlayerDataCustomMetrics(PlayerDataBukkit playerdata, Metrics metrics) {
         this.playerdata = playerdata;
         this.metrics = metrics;
     }
