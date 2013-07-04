@@ -5,12 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.FirstJoinComparator;
 import net.daboross.bukkitdev.playerdata.helpers.LastSeenComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
@@ -22,35 +22,35 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 /**
- * This is the internal handler of all PData. This class is the network that
- * holds all the other functioning objects and classes together. When the server
- * starts up, it will go through all the files in the playerdata folder, and
- * read each one with the FileHandler. Then get a PData from the BPDFileParser,
- * and put that PData into its internal list. It stores all the PDatas in two
- * lists. All the PDatas are in the playerDataList. Then they are also either in
- * the aliveList or the deadList. When a PData is created, it will ask the
- * PDataHandler to put it in either the aliveList or the dead List.
+ * This is the internal handler of all PlayerDataImpl. This class is the network
+ * that holds all the other functioning objects and classes together. When the
+ * server starts up, it will go through all the files in the playerdata folder,
+ * and read each one with the FileHandler. Then get a PlayerDataImpl from the
+ * BPDFileParser, and put that PlayerDataImpl into its internal list. It stores
+ * all the PDatas in two lists. All the PDatas are in the playerDataList. Then
+ * they are also either in the aliveList or the deadList. When a PlayerDataImpl
+ * is created, it will ask the PlayerHandlerImpl to put it in either the
+ * aliveList or the dead List.
  *
  * @author daboross
  */
-public final class PDataHandler {
+public final class PlayerHandlerImpl implements PlayerHandler {
 
     private final Object playerDataListLock = new Object();
     /**
      * This is a list of all the PDatas loaded. This list should contain one
-     * PData for EVERY player who has EVER joined the server.
+     * PlayerDataImpl for EVERY player who has EVER joined the server.
      */
-    private final ArrayList<PData> playerDataList = new ArrayList<PData>();
-    private final ArrayList<PData> playerDataListFirstJoin = new ArrayList<PData>();
+    private final ArrayList<PlayerDataImpl> playerDataList = new ArrayList<PlayerDataImpl>();
+    private final ArrayList<PlayerDataImpl> playerDataListFirstJoin = new ArrayList<PlayerDataImpl>();
     private final PlayerDataBukkit playerDataMain;
     private final File dataFolder;
-    private final Map<String, DataDisplayParser> ddpMap = new HashMap<String, DataDisplayParser>();
 
     /**
-     * Use this to create a new PDataHandler when PlayerDataBukkit is loaded.
-     * There should only be one PDataHandler instance.
+     * Use this to create a new PlayerHandlerImpl when PlayerDataBukkit is
+     * loaded. There should only be one PlayerHandlerImpl instance.
      */
-    protected PDataHandler(PlayerDataBukkit playerDataMain) {
+    protected PlayerHandlerImpl(PlayerDataBukkit playerDataMain) {
         this.playerDataMain = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
@@ -67,13 +67,13 @@ public final class PDataHandler {
     }
 
     /**
-     * This function creates a PData for every player who has ever joined this
-     * server. It uses Bukkit's store of players and their data. It will only
-     * load the first getDate a player has played and the last getDate they have
-     * played from this function. This WILL erase all data currently stored by
-     * PlayerDataBukkit. This WILL return before the data is loaded.
+     * This function creates a PlayerDataImpl for every player who has ever
+     * joined this server. It uses Bukkit's store of players and their data. It
+     * will only load the first getDate a player has played and the last getDate
+     * they have played from this function. This WILL erase all data currently
+     * stored by PlayerDataBukkit. This WILL return before the data is loaded.
      *
-     * @return The number of new PData Files created.
+     * @return The number of new PlayerDataImpl Files created.
      */
     protected int createEmptyPlayerDataFilesFromBukkit() {
         OfflinePlayer[] pls = Bukkit.getServer().getOfflinePlayers();
@@ -81,10 +81,11 @@ public final class PDataHandler {
     }
 
     /**
-     * This creates an empty PData for every OfflinePlayer in this list. This
-     * WILL erase all data currently recorded on any players included in this
-     * list. If any of the players have not played on this server before, then
-     * they are not included. This WILL return before the data is loaded.
+     * This creates an empty PlayerDataImpl for every OfflinePlayer in this
+     * list. This WILL erase all data currently recorded on any players included
+     * in this list. If any of the players have not played on this server
+     * before, then they are not included. This WILL return before the data is
+     * loaded.
      *
      * @return The number of players loaded from this list.
      */
@@ -95,7 +96,7 @@ public final class PDataHandler {
             playerDataListFirstJoin.clear();
             for (int i = 0; i < players.length; i++) {
                 if (players[i].hasPlayedBefore()) {
-                    PData pData = new PData(players[i]);
+                    PlayerDataImpl pData = new PlayerDataImpl(players[i]);
                     if (!playerDataList.contains(pData)) {
                         playerDataList.add(pData);
                     }
@@ -123,7 +124,7 @@ public final class PDataHandler {
     protected void endServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
-            PData pData = getPData(p);
+            PlayerDataImpl pData = getPlayerData(p);
             pData.loggedOut(p, this);
         }
     }
@@ -137,7 +138,7 @@ public final class PDataHandler {
     private void startServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
-            PData pData = getPData(p);
+            PlayerDataImpl pData = getPlayerData(p);
             pData.loggedIn(p, this);
         }
     }
@@ -148,7 +149,7 @@ public final class PDataHandler {
                 @Override
                 public void run() {
                     synchronized (playerDataListLock) {
-                        for (PData pData : playerDataList) {
+                        for (PlayerDataImpl pData : playerDataList) {
                             pData.updateStatus();
                             savePDataXML(pData);
                         }
@@ -159,7 +160,7 @@ public final class PDataHandler {
                 }
             });
         } else {
-            for (PData pData : playerDataList) {
+            for (PlayerDataImpl pData : playerDataList) {
                 pData.updateStatus();
                 savePDataXML(pData);
             }
@@ -167,19 +168,19 @@ public final class PDataHandler {
                 try {
                     callAfter.call();
                 } catch (Exception ex) {
-                    Logger.getLogger(PDataHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PlayerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
 
     /**
-     * This function saves the given PData to file. This should ONLY be run from
-     * within the PData class. If you want to manually save a PData from outside
-     * that PData's object, then run that PData's update method, with parameters
-     * (true,true).
+     * This function saves the given PlayerDataImpl to file. This should ONLY be
+     * run from within the PlayerDataImpl class. If you want to manually save a
+     * PlayerDataImpl from outside that PlayerDataImpl's object, then run that
+     * PlayerDataImpl's update method, with parameters (true,true).
      */
-    protected void savePData(PData pData) {
+    protected void savePData(PlayerDataImpl pData) {
         if (pData == null) {
             return;
         }
@@ -194,7 +195,7 @@ public final class PDataHandler {
         savePDataXML(pData);
     }
 
-    private void savePDataXML(PData pd) {
+    private void savePDataXML(PlayerDataImpl pd) {
         File file = new File(dataFolder, pd.getUsername() + ".xml");
         try {
             file.createNewFile();
@@ -236,7 +237,8 @@ public final class PDataHandler {
      * offline. And people who have joined within the last 2 months have
      * priority of people who haven't.
      */
-    protected String getFullUsername(String username) {
+    @Override
+    public String getFullUsername(String username) {
         if (username == null) {
             throw new NullArgumentException("Username Can't Be Null");
         }
@@ -245,7 +247,7 @@ public final class PDataHandler {
         String user = ChatColor.stripColor(username).toLowerCase();
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                PData pD = playerDataList.get(i);
+                PlayerDataImpl pD = playerDataList.get(i);
                 String checkUserName = pD.getUsername().toLowerCase();
                 String checkNickName = ChatColor.stripColor(pD.getDisplayname()).toLowerCase();
                 String pUserName = pD.getUsername();
@@ -333,7 +335,7 @@ public final class PDataHandler {
         String user = ChatColor.stripColor(userName).toLowerCase();
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                final PData pData = playerDataList.get(i);
+                final PlayerDataImpl pData = playerDataList.get(i);
                 final boolean online = pData.isOnline();
                 final String pUserName = pData.getUsername();
                 final String pNickName = pData.getDisplayname();
@@ -444,15 +446,17 @@ public final class PDataHandler {
     }
 
     /**
-     * This gets a PData from a given username. The usernames needs to be an
-     * exact match of the PData's recorded username, not case sensitive. If you
-     * want to find the exact username given a partial username, then use the
-     * getFullUsername() function.
+     * This gets a PlayerDataImpl from a given username. The usernames needs to
+     * be an exact match of the PlayerDataImpl's recorded username, not case
+     * sensitive. If you want to find the exact username given a partial
+     * username, then use the getFullUsername() function.
      *
      * @param name The FULL username of a player in the database.
-     * @return The PData that is loaded for that player, or null if not found.
+     * @return The PlayerDataImpl that is loaded for that player, or null if not
+     * found.
      */
-    protected PData getPDataFromUsername(String name) {
+    @Override
+    public PlayerDataImpl getPlayerData(String name) {
         if (name == null) {
             return null;
         }
@@ -466,26 +470,32 @@ public final class PDataHandler {
         return null;
     }
 
+    @Override
+    public PlayerData getPlayerDataPartial(String partialName) {
+        return getPlayerData(getFullUsername(partialName));
+    }
+
     /**
-     * This function gets a PData given an online Player. This function just
-     * goes through all loaded PDatas and sees if any of their names exactly
-     * equals the given Player's name.
+     * This function gets a PlayerDataImpl given an online Player. This function
+     * just goes through all loaded PDatas and sees if any of their names
+     * exactly equals the given Player's name.
      *
-     * @return The PData loaded for the given Player. Or null if the Player
-     * Given is null.
+     * @return The PlayerDataImpl loaded for the given Player. Or null if the
+     * Player Given is null.
      */
-    protected PData getPData(Player p) {
+    @Override
+    public PlayerDataImpl getPlayerData(Player p) {
         if (p == null) {
             return null;
         }
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                PData pData = playerDataList.get(i);
+                PlayerDataImpl pData = playerDataList.get(i);
                 if (pData.getUsername().equalsIgnoreCase(p.getName())) {
                     return pData;
                 }
             }
-            PData pData = new PData(p);
+            PlayerDataImpl pData = new PlayerDataImpl(p);
             if (!playerDataList.contains(pData)) {
                 playerDataList.add(pData);
             }
@@ -497,23 +507,23 @@ public final class PDataHandler {
     }
 
     /**
-     * This will log in a given player's PData.
+     * This will log in a given player's PlayerDataImpl.
      *
-     * @return a PData for the player
+     * @return a PlayerDataImpl for the player
      */
-    public PData logIn(Player p) {
+    public PlayerDataImpl logIn(Player p) {
         if (p == null) {
             throw new IllegalArgumentException("Null Argument");
         }
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                PData pData = playerDataList.get(i);
+                PlayerDataImpl pData = playerDataList.get(i);
                 if (pData.getUsername().equals(p.getName())) {
                     pData.loggedIn(p, this);
                     return pData;
                 }
             }
-            PData pData = new PData(p);
+            PlayerDataImpl pData = new PlayerDataImpl(p);
             pData.loggedIn(p, this);
             if (!playerDataList.contains(pData)) {
                 playerDataList.add(0, pData);
@@ -525,48 +535,10 @@ public final class PDataHandler {
         }
     }
 
-    public PData logOut(Player p) {
-        PData pData = getPData(p);
+    public PlayerData logOut(Player p) {
+        PlayerDataImpl pData = getPlayerData(p);
         pData.loggedOut(p, this);
         return pData;
-    }
-
-    /**
-     * Adds a DataDisplayParser that you supply as a parser for a custom data
-     * type you specify. PlayerDataBukkit will call the shortInfo() function
-     * from your display parser and include the lines your parser returns
-     * whenever someone uses /playerdata viewinfo for a player with this data
-     * type. You will need to run this function every getDate your Plugin is
-     * loaded because PlayerDataBukkit will not keep the DataDisplayParser after
-     * unload. This will overwrite any previous DataDisplayParsers loaded with
-     * this function for this Data Type.
-     *
-     * @param dataName The Name of the data this parser will parse. If you have
-     * multiple data types that this parser can parse, then you will need to run
-     * this function once for each data type.
-     * @param ddp The Data Display Parser that will parse the data given.
-     */
-    protected void addDataParser(String name, DataDisplayParser ddp) {
-        ddpMap.put(name, ddp);
-    }
-
-    /**
-     * This function gets the "Displayable Data" for a given Custom Data. This
-     * function checks to see if there are any custom data parsers loaded for
-     * the given datas type, and if there are, it will call that Data Display
-     * Parser's method for getting displayable data. If no Data Display Parser
-     * is loaded for this data type, then it will return an array of Strings,
-     * with 0 strings in it.
-     *
-     * @param d The data to parse.
-     * @param longInfo Whether to call the DataDisplayParser's LongInfo. If
-     * false, then the ShortInfo method is called.
-     */
-    public String getDisplayData(String dataName, String[] data) {
-        if (ddpMap.containsKey(dataName)) {
-            return ddpMap.get(dataName).commandInfo(dataName, data);
-        }
-        return null;
     }
 
     /**
@@ -577,12 +549,13 @@ public final class PDataHandler {
      *
      * @param dataName The type of the data.
      */
-    protected List<String[]> getAllData(String dataName) {
+    @Override
+    public List<PlayerData> getAllPlayerDatasWithExtraData(String dataName) {
         synchronized (playerDataListLock) {
-            List<String[]> returnArrayList = new ArrayList<String[]>();
-            for (PData pData : playerDataList) {
+            List<PlayerData> returnArrayList = new ArrayList<PlayerData>();
+            for (PlayerDataImpl pData : playerDataList) {
                 if (pData.hasExtraData(dataName)) {
-                    returnArrayList.add(pData.getExtraData(dataName));
+                    returnArrayList.add(pData);
                 }
             }
             return returnArrayList;
@@ -593,9 +566,10 @@ public final class PDataHandler {
      * This function gets all PDatas loaded, which should be one for each Player
      * who has ever joined the server. This returns an unmodifiable list.
      *
-     * @return A copy of the list of PDatas that PDataHandler keeps.
+     * @return A copy of the list of PDatas that PlayerHandlerImpl keeps.
      */
-    public List<PData> getAllPDatas() {
+    @Override
+    public List<PlayerDataImpl> getAllPlayerDatas() {
         synchronized (playerDataListLock) {
             return Collections.unmodifiableList(playerDataList);
         }
@@ -604,15 +578,15 @@ public final class PDataHandler {
     /**
      * This returns an unmodifiable list!
      */
-    public List<PData> getAllPDatasFirstJoin() {
+    public List<PlayerDataImpl> getAllPDatasFirstJoin() {
         return Collections.unmodifiableList(playerDataListFirstJoin);
     }
 
     /**
-     * This Function moves the PData given to the top of the list. Should be
-     * only called BY THE PDATA when the player has logged in.
+     * This Function moves the PlayerDataImpl given to the top of the list.
+     * Should be only called BY THE PDATA when the player has logged in.
      */
-    void loggedIn(PData pd) {
+    void loggedIn(PlayerDataImpl pd) {
         synchronized (playerDataListLock) {
             while (playerDataList.contains(pd)) {
                 playerDataList.remove(pd);
@@ -622,10 +596,10 @@ public final class PDataHandler {
     }
 
     /**
-     * This Function moves the PData down the list. Should be only called BY THE
-     * PDATA when the player has logged in.
+     * This Function moves the PlayerDataImpl down the list. Should be only
+     * called BY THE PDATA when the player has logged in.
      */
-    void loggedOut(PData pd) {
+    void loggedOut(PlayerDataImpl pd) {
         synchronized (playerDataListLock) {
             int pos = playerDataList.indexOf(pd);
             while (playerDataList.contains(pd)) {
@@ -639,14 +613,18 @@ public final class PDataHandler {
     }
 
     /**
-     * This will Sort the PData lists depending on how long it has been since
-     * each played last joined. IN A SEPERATE THREAD.
+     * This will Sort the PlayerDataImpl lists depending on how long it has been
+     * since each played last joined. IN A SEPERATE THREAD.
      */
     public void sortData(Runnable afterLoad) {
-        final Logger l = playerDataMain.getLogger();
         Runnable sorter = new Sorter(afterLoad);
         Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
 
+    }
+
+    @Override
+    public List<? extends PlayerData> getAllPlayerDatasFirstJoin() {
+        throw new UnsupportedOperationException("PlayerHandlerImpl: Not Created Yet!: getAllPlayerDatasFirstJoin");
     }
 
     private class Sorter implements Runnable {
@@ -687,8 +665,8 @@ public final class PDataHandler {
 
     /**
      * This is the "initial" function that should be called directly after this
-     * PDataHandler is created. The PDataHandler instance variable in
-     * PlayerDataBukkit needs to be set to this PDataHandler before this
+     * PlayerHandlerImpl is created. The PlayerHandlerImpl instance variable in
+     * PlayerDataBukkit needs to be set to this PlayerHandlerImpl before this
      * function is called. This will also create new PDatas from Bukkit if file
      * folder is empty.
      */
@@ -727,7 +705,7 @@ public final class PDataHandler {
                             if (fl.isFile()) {
                                 String type = fl.getName().substring(fl.getName().lastIndexOf('.') + 1, fl.getName().length());
                                 if (type.equals("xml")) {
-                                    PData pData = null;
+                                    PlayerDataImpl pData = null;
                                     try {
                                         pData = XMLFileParser.readFromFile(fl);
                                     } catch (DXMLException dxmle) {

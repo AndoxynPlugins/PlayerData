@@ -6,11 +6,10 @@ import java.util.Set;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.IPLogin;
-import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -33,7 +32,7 @@ public class IPLookupCommandHandler implements SubCommandHandler {
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
-        String playerNameGiven = PlayerDataBukkit.getCombinedString(subCommandArgs, 0);
+        String playerNameGiven = StaticHelper.getCombinedString(subCommandArgs, 0);
         PlayerData pData = playerDataMain.getHandler().getPlayerDataPartial(playerNameGiven);
         if (pData == null) {
             sender.sendMessage(ColorList.ERR + "Player '" + ColorList.ERR_ARGS + playerNameGiven + ColorList.ERR + "' not found");

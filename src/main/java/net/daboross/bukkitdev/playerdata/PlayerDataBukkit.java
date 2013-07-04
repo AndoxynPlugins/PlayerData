@@ -1,7 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.metrics.Metrics;
@@ -19,33 +18,27 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public final class PlayerDataBukkit extends JavaPlugin {
 
-    private static PlayerDataBukkit currentInstance;
-    private static boolean isVaultLoaded;
-    private static Permission permissionHandler;
-    private PDataHandler playerDataHandler;
-    private PlayerDataHandler handler;
+    private PlayerHandlerImpl playerHandler;
     private PlayerDataEventListener eventListener;
-    private Metrics metrics;
-    private PlayerDataCustomMetrics pdcm;
+    private boolean permissionLoaded = false;
+    private Permission permissionHandler;
 
-    /**
-     *
-     */
     @Override
     public void onEnable() {
-        currentInstance = this;
+        PlayerDataStatic.setPlayerDataBukkit(this);
+        Metrics metrics;
         try {
             metrics = new Metrics(this);
         } catch (IOException ioe) {
             getLogger().warning("Unable to create Metrics");
+            metrics = null;
         }
         if (metrics != null) {
             metrics.start();
-            pdcm = new PlayerDataCustomMetrics(this, metrics);
         }
         PluginManager pm = this.getServer().getPluginManager();
         setupVault(pm);
-        playerDataHandler = new PDataHandler(this);
+        playerHandler = new PlayerHandlerImpl(this);
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
             new PlayerDataCommandExecutor(this).registerCommand(playerdata);
@@ -60,145 +53,53 @@ public final class PlayerDataBukkit extends JavaPlugin {
         }
         eventListener = new PlayerDataEventListener(this);
         pm.registerEvents(eventListener, this);
-        handler = new PlayerDataHandler(this);
-        playerDataHandler.init();
-        if (pdcm != null) {
-            pdcm.addCustom();
-        }
+        playerHandler.init();
         getLogger().info("PlayerData Load Completed");
     }
 
-    /**
-     *
-     */
     @Override
     public void onDisable() {
-        playerDataHandler.endServer();
-        playerDataHandler.saveAllData(false, null);
-        currentInstance = null;
+        playerHandler.endServer();
+        playerHandler.saveAllData(false, null);
+        PlayerDataStatic.setPlayerDataBukkit(null);
         permissionHandler = null;
-        isVaultLoaded = false;
+        permissionLoaded = false;
         getLogger().info("PlayerData Unload Completed");
     }
 
     /**
-     * This is the internal PDataHandler. Use getHandler() instead if you are
-     * outside of the PlayerDataBukkit project.
-     *
-     * @return
+     * This is the internal PlayerHandlerImpl. Use getHandler() instead if you are
+     * outside of the PlayerData project.
      */
-    public PDataHandler getPDataHandler() {
-        return playerDataHandler;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public static PlayerDataBukkit getCurrentInstance() {
-        return currentInstance;
+    public PlayerHandlerImpl getPDataHandler() {
+        return playerHandler;
     }
 
     public PlayerHandler getHandler() {
-        return handler;
+        return playerHandler;
     }
 
-    /**
-     * Get a visually nice date from a timestamp. Acts like: 4 years, 2 months,
-     * 1 day, 10 hours, 30 minutes, and 9 seconds (That is just a random string
-     * of numbers I came up with, but that is what the formating is like) Will
-     * emit any terms that are 0, eg, if 0 days, then it would be 4 years, 2
-     * months, 10 hours, 30 minutes, and 9 seconds Will put a , between all
-     * terms and also a , and between the last term and the second to last term.
-     * would do 4 years, 2 months and 10 hours returns now if
-     *
-     * @param millis the millisecond value to turn into a date string
-     * @return A visually nice date. "Not That Long" if millis == 0;
-     */
-    public static String getFormattedDate(long millis) {
-        if (millis == 0) {
-            return "Not That Long";
-        }
-        long years, days, hours, minutes, seconds;
-
-        years = TimeUnit.MILLISECONDS.toDays(millis) / 365;
-        days = TimeUnit.MILLISECONDS.toDays(millis);
-        hours = TimeUnit.MILLISECONDS.toHours(millis);
-        minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
-        seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
-        minutes -= TimeUnit.HOURS.toMinutes(hours);
-        hours -= TimeUnit.DAYS.toHours(days);
-        days %= 365;
-        StringBuilder resultBuilder = new StringBuilder();
-        if (years > 0) {
-            resultBuilder.append(years).append(years == 1 ? " year" : " years");
-            if (days > 0) {
-                resultBuilder.append(" and ");
-            }
-        }
-        if (days > 0) {
-            resultBuilder.append(days).append(days == 1 ? " day" : " days");
-            if (hours > 0 && years <= 0) {
-                resultBuilder.append(" and ");
-            }
-        }
-        if (years <= 0) {
-            if (hours > 0) {
-                resultBuilder.append(hours).append(hours == 1 ? " hour" : " hours");
-                if (minutes > 0 && days <= 0) {
-                    resultBuilder.append(" and ");
-                }
-            }
-            if (days <= 0) {
-                if (minutes > 0) {
-                    resultBuilder.append(minutes).append(minutes == 1 ? " minute" : " minutes");
-                } else if (seconds > 0 && hours <= 0) {
-                    resultBuilder.append(seconds).append(seconds == 1 ? " second" : " seconds");
-                }
-            }
-        }
-        return resultBuilder.toString();
+    public boolean isPermissionLoaded() {
+        return permissionLoaded;
     }
 
-    public static String getCombinedString(String[] array, int start) {
-        if (array == null || start >= array.length || start < 0) {
-            throw new IllegalArgumentException();
-        } else if (start + 1 == array.length) {
-            return array[start];
-        } else {
-            StringBuilder sb = new StringBuilder(array[start]);
-            for (int i = start + 1; i < array.length; i++) {
-                sb.append(" ").append(array[i]);
-            }
-            return sb.toString();
-        }
+    public Permission getPermissionHandler() {
+        return permissionHandler;
     }
 
     private void setupVault(PluginManager pm) {
-        isVaultLoaded = pm.isPluginEnabled("Vault");
+        boolean isVaultLoaded = pm.isPluginEnabled("Vault");
         if (isVaultLoaded) {
             RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
             permissionHandler = rsp.getProvider();
             if (permissionHandler == null) {
-                isVaultLoaded = false;
                 getLogger().log(Level.INFO, "Vault found, but Permission handler not found.");
             } else {
+                permissionLoaded = true;
                 getLogger().log(Level.INFO, "Vault and Permission handler found.");
             }
         } else {
             getLogger().log(Level.INFO, "Vault not found.");
         }
-    }
-
-    public static boolean isVaultLoaded() {
-        return isVaultLoaded;
-    }
-
-    public static Permission getPermissionHandler() {
-        return permissionHandler;
-    }
-
-    public PlayerDataEventListener getEventListener() {
-        return eventListener;
     }
 }

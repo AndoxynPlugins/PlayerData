@@ -10,21 +10,21 @@ import org.w3c.dom.Node;
  *
  * @author daboross
  */
-public class IPLogin implements LoginData, Comparable<IPLogin> {
+public class LoginDataImpl implements LoginData, Comparable<LoginDataImpl> {
 
     private long time;
     private String ip;
 
     /**
-     * The Constructor for an IPLogin. You CAN use null IP's if you don't know
-     * what it is. If the IP is null it will be replaced with "Unknown".
+     * The Constructor for an LoginDataImpl. You CAN use null IP's if you don't
+     * know what it is. If the IP is null it will be replaced with "Unknown".
      */
-    public IPLogin(final long time, final String ip) {
+    public LoginDataImpl(final long time, final String ip) {
         this.time = time;
         this.ip = ip == null ? "Unknown" : ip;
     }
 
-    public IPLogin(long time) {
+    public LoginDataImpl(long time) {
         this.time = time;
         this.ip = "Unknown";
     }
@@ -39,11 +39,11 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
     }
 
     /**
-     * Gets an IPLogin from a string that has been gotten by IPLogin.toString().
-     * THis will work over multiple JVM's, and will decode from a regular login
-     * (just a long).
+     * Gets an LoginDataImpl from a string that has been gotten by
+     * LoginDataImpl.toString(). THis will work over multiple JVM's, and will
+     * decode from a regular login (just a long).
      */
-    public static IPLogin fromString(final String coded) {
+    public static LoginDataImpl fromString(final String coded) {
         String[] firstLast = new String[]{coded};
         if (coded.contains("  :  ")) {
             firstLast = coded.split("  :  ");
@@ -72,7 +72,7 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
             } catch (Exception e) {
                 return null;
             }
-            return new IPLogin(time, null);
+            return new LoginDataImpl(time, null);
         } else if (firstLast.length == 2) {
             long time;
             try {
@@ -81,7 +81,7 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
                 return null;
             }
             String ip = firstLast[1];
-            return new IPLogin(time, ip);
+            return new LoginDataImpl(time, ip);
         } else {
             System.out.println("Error Parsing String! 3:" + coded);
             return null;
@@ -89,8 +89,8 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
     }
 
     /**
-     * This returns a coded version of the IPLogin. It is in the form of getDate +
-     * " : " + getIP.
+     * This returns a coded version of the LoginDataImpl. It is in the form of
+     * getDate + " : " + getIP.
      */
     @Override
     public String toString() {
@@ -102,7 +102,7 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
         e.setAttribute("timestamp", String.valueOf(time));
     }
 
-    public IPLogin(Node n) throws DXMLException {
+    public LoginDataImpl(Node n) throws DXMLException {
         NamedNodeMap nnm = n.getAttributes();
         Node ipNode = nnm.getNamedItem("ip");
         if (ipNode == null) {
@@ -116,9 +116,8 @@ public class IPLogin implements LoginData, Comparable<IPLogin> {
         time = Long.valueOf(timeNode.getNodeValue());
     }
 
-    public int compareTo(IPLogin other) {
-        Long l1 = this.time;
-        Long l2 = other.getDate();
-        return l1.compareTo(l2);
+    @Override
+    public int compareTo(LoginDataImpl other) {
+        return Long.compare(this.time, other.time);
     }
 }

@@ -6,7 +6,6 @@
 package net.daboross.bukkitdev.playerdata.helpers;
 
 import java.util.Comparator;
-import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 
 /**

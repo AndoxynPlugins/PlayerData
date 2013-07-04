@@ -1,5 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
+import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,7 +35,7 @@ public class PossibleUserNames implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length > 0) {
-            String givenPlayerName = PlayerDataBukkit.getCombinedString(args, 0);
+            String givenPlayerName = StaticHelper.getCombinedString(args, 0);
             String[] users = instance.getPDataHandler().getPossibleUsernames(givenPlayerName);
             sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + givenPlayerName + ColorList.TOP_SEPERATOR + " --");
             for (int i = 0; i < users.length && i < 10; i++) {

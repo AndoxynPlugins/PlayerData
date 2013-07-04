@@ -1,7 +1,6 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,11 +21,11 @@ import org.bukkit.entity.Player;
  * when they have logged in, and a list of times they have logged out. Other
  * information which is loaded when needed, not from files, includes the user's
  * group, and whether or not they are online. All this is accessible through one
- * player's PData.
+ * player's PlayerDataImpl.
  *
  * @author daboross
  */
-public final class PData implements PlayerData {
+public final class PlayerDataImpl implements PlayerData {
 
     private long MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES = TimeUnit.SECONDS.toMillis(10);
     /**
@@ -38,8 +37,8 @@ public final class PData implements PlayerData {
     private String displayname;
     private long timePlayed = 0;
     private long currentSession;
-    private final List<IPLogin> logins = new ArrayList<IPLogin>();
-    private final List<IPLogin> loginsUnmodifiable = Collections.unmodifiableList(logins);
+    private final List<LoginDataImpl> logins = new ArrayList<LoginDataImpl>();
+    private final List<LoginDataImpl> loginsUnmodifiable = Collections.unmodifiableList(logins);
     private final List<Long> logouts = new ArrayList<Long>();
     private final List<Long> logoutsUnmodifiable = Collections.unmodifiableList(logouts);
     private final Map<String, String[]> extraData = new HashMap<String, String[]>();
@@ -48,15 +47,15 @@ public final class PData implements PlayerData {
 
     /**
      * Use This to create a NEW Player who has never joined before This should
-     * never called be any class besides the PDataHandler.
+     * never called be any class besides the PlayerHandlerImpl.
      *
-     * @param p The Player to create a PData from.
+     * @param p The Player to create a PlayerDataImpl from.
      */
-    PData(Player p) {
+    PlayerDataImpl(Player p) {
         if (p == null) {
             throw new IllegalArgumentException("Player Can't Be Null");
         }
-        logins.add(new IPLogin(p.getFirstPlayed(), p.getAddress().toString()));
+        logins.add(new LoginDataImpl(p.getFirstPlayed(), p.getAddress().toString()));
         timePlayed = 0;
         username = p.getName();
         updateDisplayName(p);
@@ -67,20 +66,20 @@ public final class PData implements PlayerData {
 
     /**
      * Use This to create a NEW Player who has never joined before This should
-     * never called be any class besides the PDataHandler. This should only be
+     * never called be any class besides the PlayerHandlerImpl. This should only be
      * used when PlayerDataBukkit is creating empty player data files from
      * another data storage, such as Bukkit's store.
      *
-     * @param offlinePlayer The Offline Player to create a PData from.
+     * @param offlinePlayer The Offline Player to create a PlayerDataImpl from.
      */
-    PData(OfflinePlayer offlinePlayer) {
+    PlayerDataImpl(OfflinePlayer offlinePlayer) {
         if (offlinePlayer == null) {
             throw new IllegalArgumentException("Player Can't Be Null");
         }
         if (!offlinePlayer.hasPlayedBefore()) {
             throw new IllegalArgumentException("Player Has Never Been Online!");
         }
-        logins.add(new IPLogin(offlinePlayer.getFirstPlayed()));
+        logins.add(new LoginDataImpl(offlinePlayer.getFirstPlayed()));
         timePlayed = 0;
         username = offlinePlayer.getName();
         if (offlinePlayer.isOnline()) {
@@ -98,7 +97,7 @@ public final class PData implements PlayerData {
     }
 
     /**
-     * This creates a PData from data loaded from a file. This should never be
+     * This creates a PlayerDataImpl from data loaded from a file. This should never be
      * called except from within a FileParser!
      *
      * @param getUsername The Full UserName of this player
@@ -110,7 +109,7 @@ public final class PData implements PlayerData {
      * @param getTimePlayed The getDate this player has played on this server.
      * @param data A List of custom data entries.
      */
-    public PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Map<String, String[]> extraData) {
+    public PlayerDataImpl(String userName, String nickName, ArrayList<LoginDataImpl> logIns, ArrayList<Long> logOuts, long timePlayed, Map<String, String[]> extraData) {
         this.username = userName;
         this.displayname = nickName;
         if (this.displayname == null || this.displayname.length() == 0) {
@@ -125,7 +124,7 @@ public final class PData implements PlayerData {
     }
 
     /**
-     * This updates this player's status. This will NOT save this PData.
+     * This updates this player's status. This will NOT save this PlayerDataImpl.
      *
      * @return Will return true if the player's username equals the players
      * display name, or if the player is offline. false otherwise.
@@ -143,7 +142,7 @@ public final class PData implements PlayerData {
 
     /**
      * Checks if the player is null and then updates the nick with the player's
-     * nickname. Don't use this with a player that isn't this PData's Player.
+     * nickname. Don't use this with a player that isn't this PlayerDataImpl's Player.
      */
     private void updateDisplayName(Player p) {
         if (!p.getName().equals(p.getDisplayName())) {
@@ -170,18 +169,15 @@ public final class PData implements PlayerData {
     }
 
     /**
-     * This saves this PData's Status to file. Does this by calling the
-     * PDataHandler's function to do this.
+     * This saves this PlayerDataImpl's Status to file. Does this by calling the
+     * PlayerHandlerImpl's function to do this.
      */
     private void saveStatus() {
-        PlayerDataBukkit pd = PlayerDataBukkit.getCurrentInstance();
-        if (pd != null) {
-            PDataHandler pDH = pd.getPDataHandler();
-            if (pDH != null) {
-                pDH.savePData(this);
-            } else {
-                pd.getLogger().info("PDataHandler Not Found!");
-            }
+        PlayerHandlerImpl pdh = PlayerDataStatic.getInternalHandler();
+        if (pdh != null) {
+            pdh.savePData(this);
+        } else {
+            PlayerDataStatic.getPlayerDataLogger().warning("PlayerData internal handler not found!");
         }
     }
 
@@ -196,9 +192,9 @@ public final class PData implements PlayerData {
         if (p.isOnline() && !updateDisplayNameWithResult(p)) {
             if (nickUpdateExtraThreadUpdateTimes < 5) {
                 nickUpdateExtraThreadUpdateTimes++;
-                PlayerDataBukkit instance = PlayerDataBukkit.getCurrentInstance();
-                if (instance != null) {
-                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance, new Runnable() {
+                PlayerDataBukkit pdb = PlayerDataStatic.getPlayerDataBukkit();
+                if (pdb != null) {
+                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pdb, new Runnable() {
                         @Override
                         public void run() {
                             makeExtraThread(p);
@@ -210,12 +206,12 @@ public final class PData implements PlayerData {
     }
 
     /**
-     * This function tells this PData that the player who this PData is
+     * This function tells this PlayerDataImpl that the player who this PlayerDataImpl is
      * representing just logged out. Do not run this function from outside the
-     * PlayerDataEventListener. This will save the current status of this PData
+     * PlayerDataEventListener. This will save the current status of this PlayerDataImpl
      * to file.
      */
-    void loggedOut(Player p, PDataHandler pdh) {
+    void loggedOut(Player p, PlayerHandlerImpl pdh) {
         if (online) {
             timePlayed += (System.currentTimeMillis() - currentSession);
             currentSession = System.currentTimeMillis();
@@ -224,32 +220,32 @@ public final class PData implements PlayerData {
             updateDisplayName(p);
             saveStatus();
             pdh.loggedIn(this);
-            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged Out", username);
+            PlayerDataStatic.getPlayerDataLogger().log(Level.INFO, "{0} Logged Out", username);
         }
     }
 
     /**
-     * This function tells this PData that the player who this PData is
+     * This function tells this PlayerDataImpl that the player who this PlayerDataImpl is
      * representing just logged in. Do not run this function from outside the
-     * PlayerDataEventListener. This will save the current status of this PData
+     * PlayerDataEventListener. This will save the current status of this PlayerDataImpl
      * to file.
      */
-    void loggedIn(Player p, PDataHandler pdh) {
+    void loggedIn(Player p, PlayerHandlerImpl pdh) {
         if (!online) {
-            logins.add(new IPLogin(System.currentTimeMillis(), p.getAddress().toString()));
+            logins.add(new LoginDataImpl(System.currentTimeMillis(), p.getAddress().toString()));
             currentSession = System.currentTimeMillis();
             online = true;
             nickUpdateExtraThreadUpdateTimes = 0;
             makeExtraThread(p);
             pdh.loggedIn(this);
-            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.INFO, "{0} Logged In", username);
+            PlayerDataStatic.getPlayerDataLogger().log(Level.INFO, "{0} Logged In", username);
         }
     }
 
     /**
-     * This function gets the username of the player represented by this PData.
+     * This function gets the username of the player represented by this PlayerDataImpl.
      *
-     * @return The username of the player represented by this PData.
+     * @return The username of the player represented by this PlayerDataImpl.
      */
     @Override
     public String getUsername() {
@@ -281,13 +277,13 @@ public final class PData implements PlayerData {
 
     /**
      * This function gets the first getDate this player logged into this server.
-     * If Bukkit's the recorded first log in is earlier then this PData's
-     * recorded first log in, then this PData's information is updated with
+     * If Bukkit's the recorded first log in is earlier then this PlayerDataImpl's
+     * recorded first log in, then this PlayerDataImpl's information is updated with
      * Bukkit's
      *
      * @return
      */
-    public IPLogin getFirstLogIn() {
+    public LoginDataImpl getFirstLogIn() {
         return logins.get(0);
     }
 
@@ -312,7 +308,7 @@ public final class PData implements PlayerData {
         return loginsUnmodifiable;
     }
 
-    public List<IPLogin> getAllLoginsInternal() {
+    public List<LoginDataImpl> getAllLoginsInternal() {
         return loginsUnmodifiable;
     }
 
@@ -380,9 +376,9 @@ public final class PData implements PlayerData {
         long bukkitLastPlayed = offP.getLastPlayed();
         if (offP.hasPlayedBefore()) {
             if (logins.isEmpty()) {
-                logins.add(new IPLogin(bukkitFirstPlayed));
+                logins.add(new LoginDataImpl(bukkitFirstPlayed));
             } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
-                logins.add(0, new IPLogin(bukkitFirstPlayed));
+                logins.add(0, new LoginDataImpl(bukkitFirstPlayed));
             }
             if (!online) {
                 if (logouts.isEmpty()) {
@@ -417,7 +413,7 @@ public final class PData implements PlayerData {
         }
     }
 
-    public int compareTo(PData other) {
+    public int compareTo(PlayerDataImpl other) {
         if (other == null) {
             throw new NullPointerException();
         }

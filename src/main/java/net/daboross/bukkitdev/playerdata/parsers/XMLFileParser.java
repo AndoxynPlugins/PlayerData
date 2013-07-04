@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import net.daboross.bukkitdev.playerdata.IPLogin;
-import net.daboross.bukkitdev.playerdata.PData;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
+import net.daboross.bukkitdev.playerdata.LoginDataImpl;
+import net.daboross.bukkitdev.playerdata.PlayerDataImpl;
+import net.daboross.bukkitdev.playerdata.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper;
 import org.w3c.dom.Document;
@@ -23,7 +23,7 @@ import org.w3c.dom.NodeList;
  */
 public class XMLFileParser {
 
-    public static void writeToFile(PData pData, File fileResult) throws DXMLException {
+    public static void writeToFile(PlayerDataImpl pData, File fileResult) throws DXMLException {
         Document document = DXMLHelper.newDocument();
         Element root = document.createElement("playerdata");
         document.appendChild(root);
@@ -31,7 +31,7 @@ public class XMLFileParser {
         root.appendChild(createElement(document, "displayname", pData.getDisplayname()));
         root.appendChild(createElement(document, "timeplayed", String.valueOf(pData.getTimePlayed())));
         {
-            List<IPLogin> logins = pData.getAllLoginsInternal();
+            List<LoginDataImpl> logins = pData.getAllLoginsInternal();
             Element logInsElement = document.createElement("logins");
             for (int i = 0; i < logins.size(); i++) {
                 Element e = document.createElement("login" + i);
@@ -60,7 +60,7 @@ public class XMLFileParser {
         DXMLHelper.writeXML(document, fileResult);
     }
 
-    public static PData readFromFile(File fl) throws DXMLException {
+    public static PlayerDataImpl readFromFile(File fl) throws DXMLException {
         Document d = DXMLHelper.readDocument(fl);
         Node root = d.getFirstChild();
         if (!root.getNodeName().equals("playerdata")) {
@@ -100,7 +100,7 @@ public class XMLFileParser {
         NodeList logOutList = logOuts.getChildNodes();
         ArrayList<Long> logOutsFinal = new ArrayList<Long>(logOutList.getLength());
         NodeList logInList = logIns.getChildNodes();
-        ArrayList<IPLogin> logInsFinal = new ArrayList<IPLogin>(logInList.getLength());
+        ArrayList<LoginDataImpl> logInsFinal = new ArrayList<LoginDataImpl>(logInList.getLength());
         for (int i = 0; i < logOutList.getLength(); i++) {
             Node current = logOutList.item(i);
             if (current.getNodeName().equals("#text")) {
@@ -108,13 +108,13 @@ public class XMLFileParser {
             }
             Node child = current.getFirstChild();
             if (child == null) {
-                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
                 continue;
             }
             try {
                 logOutsFinal.add(Long.valueOf(child.getNodeValue()));
             } catch (NumberFormatException nfe) {
-                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
             }
         }
         for (int i = 0; i < logInList.getLength(); i++) {
@@ -123,9 +123,9 @@ public class XMLFileParser {
                 continue;
             }
             try {
-                logInsFinal.add(new IPLogin(current));
+                logInsFinal.add(new LoginDataImpl(current));
             } catch (DXMLException dxmle) {
-                PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
+                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
             }
         }
         NodeList dataList = data.getChildNodes();
@@ -141,8 +141,8 @@ public class XMLFileParser {
         try {
             timePlayedLong = Long.parseLong(timePlayed);
         } catch (NumberFormatException nfe) {
-            PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
+            PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
-        return new PData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, extraData);
+        return new PlayerDataImpl(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, extraData);
     }
 }

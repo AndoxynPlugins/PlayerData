@@ -6,6 +6,7 @@
 package net.daboross.bukkitdev.playerdata.api;
 
 import java.util.List;
+import org.bukkit.entity.Player;
 
 /**
  *
@@ -27,10 +28,19 @@ public interface PlayerHandler {
      * Gets a PlayerData in the database from the given username.
      *
      * @param username The full username of a player in the database.
-     * @return The PlayerData in the database for that username, or null if not
-     * found.
+     * @return The PlayerData in the database for the given username, or null if
+     * not found.
      */
     public PlayerData getPlayerData(String username);
+
+    /**
+     * Gets a PlayerData in the database from the given player. Under normal
+     * circumstances this method will never return null.
+     *
+     * @param player The full username of a player in the database.
+     * @return The PlayerData in the database for the given player.
+     */
+    public PlayerData getPlayerData(Player player);
 
     /**
      * Gets a PlayerData in the database from the given partial username or
@@ -45,9 +55,29 @@ public interface PlayerHandler {
 
     /**
      * Gets a copy of the internal list of all PlayerDatas. List is in order of
-     * last seen.
+     * last seen. Do not query this list outside of the server thread as it is
+     * not thread safe. This list is in order of last seen.
      *
      * @return A copy of the full list of all PlayerDatas.
      */
     public List<? extends PlayerData> getAllPlayerDatas();
+
+    /**
+     * Gets a copy of the internal list of all PlayerDatas. List is in order of
+     * last seen. Do not query this list outside of the server thread as it is
+     * not thread safe. This list is in order of first seen on the server.
+     *
+     * @return A copy of the full list of all PlayerDatas.
+     */
+    public List<? extends PlayerData> getAllPlayerDatasFirstJoin();
+
+    /**
+     * Gets a list of all PlayerDatas that have an extra data stored under the
+     * given dataName
+     *
+     * @param dataName The name of the extra data to search for.
+     * @return A list (newly created - no references kept) of all PlayerDatas
+     * loaded which have extra data stored under the given dataName.
+     */
+    public List<? extends PlayerData> getAllPlayerDatasWithExtraData(String dataName);
 }

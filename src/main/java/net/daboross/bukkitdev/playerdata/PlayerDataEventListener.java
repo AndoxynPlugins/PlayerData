@@ -1,7 +1,9 @@
 package net.daboross.bukkitdev.playerdata;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.events.PlayerDataPlayerJoinEvent;
+import net.daboross.bukkitdev.playerdata.api.events.PlayerDataPlayerQuitEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,24 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerDataEventListener implements Listener {
 
     private final PlayerDataBukkit pDataMain;
-    private final List<PDPlayerJoinListener> joinListeners = new ArrayList<PDPlayerJoinListener>();
-    private final List<PDPlayerLeaveListener> leaveListeners = new ArrayList<PDPlayerLeaveListener>();
-
-    protected void addJoinListener(PDPlayerJoinListener pdpjl) {
-        joinListeners.add(pdpjl);
-    }
-
-    protected void addLeaveListener(PDPlayerLeaveListener pdpll) {
-        leaveListeners.add(pdpll);
-    }
-
-    protected void removeJoinListener(PDPlayerJoinListener pdpjl) {
-        joinListeners.remove(pdpjl);
-    }
-
-    protected void removeLeaveListeners(PDPlayerLeaveListener pdpll) {
-        leaveListeners.remove(pdpll);
-    }
 
     protected PlayerDataEventListener(PlayerDataBukkit main) {
         pDataMain = main;
@@ -44,10 +28,9 @@ public class PlayerDataEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(final PlayerJoinEvent evt) {
-        PData pData = pDataMain.getPDataHandler().logIn(evt.getPlayer());
-        for (PDPlayerJoinListener pdpjl : joinListeners) {
-            pdpjl.playerJoinNotify(evt, pData);
-        }
+        PlayerData pData = pDataMain.getPDataHandler().logIn(evt.getPlayer());
+        PlayerDataPlayerJoinEvent pdpje = new PlayerDataPlayerJoinEvent(evt.getPlayer(), pData);
+        Bukkit.getServer().getPluginManager().callEvent(pdpje);
     }
 
     /**
@@ -56,9 +39,8 @@ public class PlayerDataEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerQuit(final PlayerQuitEvent evt) {
-        PData pData = pDataMain.getPDataHandler().logOut(evt.getPlayer());
-        for (PDPlayerLeaveListener pdpll : leaveListeners) {
-            pdpll.playerLeaveNotify(evt, pData);
-        }
+        PlayerData pd = pDataMain.getPDataHandler().logOut(evt.getPlayer());
+        PlayerDataPlayerQuitEvent pdpqe = new PlayerDataPlayerQuitEvent(evt.getPlayer(), pd);
+        Bukkit.getServer().getPluginManager().callEvent(pdpqe);
     }
 }
