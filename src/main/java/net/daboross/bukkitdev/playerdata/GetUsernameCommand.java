@@ -8,7 +8,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.util.List;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -31,7 +31,7 @@ public class GetUsernameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length > 0) {
-            String givenName = StaticHelper.getCombinedString(args, 0).toLowerCase();
+            String givenName = ArrayHelpers.combinedWithSeperator(args, " ").toLowerCase();
             List<? extends PlayerData> playerDataList = playerHandler.getAllPlayerDatas();
             sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + givenName + ColorList.TOP_SEPERATOR + " --");
             for (int i = 0; i < playerDataList.size(); i++) {

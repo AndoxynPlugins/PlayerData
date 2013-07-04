@@ -37,10 +37,6 @@ public class PlayerDataStatic {
         return playerDataBukkit == null ? null : playerDataBukkit.getLogger();
     }
 
-    public static PlayerHandlerImpl getInternalHandler() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getInternalHandler();
-    }
-
     static void setPlayerDataBukkit(PlayerDataBukkit playerDataBukkit) {
         PlayerDataStatic.playerDataBukkit = playerDataBukkit;
     }

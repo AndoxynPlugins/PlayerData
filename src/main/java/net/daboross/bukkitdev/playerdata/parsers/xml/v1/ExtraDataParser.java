@@ -3,7 +3,7 @@
  * Website: www.daboross.net
  * Email: daboross@daboross.net
  */
-package net.daboross.bukkitdev.playerdata.parsers;
+package net.daboross.bukkitdev.playerdata.parsers.xml.v1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import org.w3c.dom.NodeList;
  */
 public class ExtraDataParser {
 
-    public static void putDataOnXML(String dataName, String[] data, Element e) {
+    public static void putOnXML(String dataName, String[] data, Element e) {
         e.setAttribute("name", dataName);
         Element dataElement = e.getOwnerDocument().createElement("data");
         for (int i = 0; i < data.length; i++) {
@@ -30,7 +30,7 @@ public class ExtraDataParser {
         e.appendChild(dataElement);
     }
 
-    public static String getDataNameFromXML(Node node) throws DXMLException {
+    public static String getNameFromXML(Node node) throws DXMLException {
         NamedNodeMap attributes = node.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             Node n = attributes.item(i);
@@ -38,7 +38,7 @@ public class ExtraDataParser {
                 return n.getNodeValue();
             }
         }
-        throw new DXMLException("Not Data Element");
+        throw new DXMLException("Not ExtraData Element");
     }
 
     public static String[] getDataFromXML(Node node) throws DXMLException {
@@ -57,7 +57,7 @@ public class ExtraDataParser {
                     if (n2.getNodeName().startsWith("dataline")) {
                         beforeData.put(n2.getNodeName(), n2.getNodeValue());
                     } else {
-                        throw new DXMLException("Unknown Attribute on data child:" + n2.getNodeName());
+                        throw new DXMLException("Unknown attribute on data child:" + n2.getNodeName());
                     }
                 }
                 int k = 0;
@@ -70,7 +70,7 @@ public class ExtraDataParser {
                 }
 
             } else {
-                throw new DXMLException("Not Data Element");
+                throw new DXMLException("Not ExtraData Element");
             }
         }
         return data.toArray(new String[data.size()]);

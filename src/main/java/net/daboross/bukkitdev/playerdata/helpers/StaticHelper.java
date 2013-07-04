@@ -6,6 +6,7 @@
 package net.daboross.bukkitdev.playerdata.helpers;
 
 import java.util.concurrent.TimeUnit;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 
 /**
  *
@@ -23,9 +24,9 @@ public class StaticHelper {
      * would do 4 years, 2 months and 10 hours returns now if
      *
      * @param millis the millisecond value to turn into a date string
-     * @return A visually nice date. "Not That Long" if millis == 0;
+     * @return A visually nice relative date.
      */
-    public static String getFormattedDate(long millis) {
+    public static String getFormattedRelativeDate(long millis) {
         if (millis == 0) {
             return "Not That Long";
         }
@@ -68,19 +69,5 @@ public class StaticHelper {
             }
         }
         return resultBuilder.toString();
-    }
-
-    public static String getCombinedString(String[] array, int start) {
-        if (array == null || start >= array.length || start < 0) {
-            throw new IllegalArgumentException();
-        } else if (start + 1 == array.length) {
-            return array[start];
-        } else {
-            StringBuilder sb = new StringBuilder(array[start]);
-            for (int i = start + 1; i < array.length; i++) {
-                sb.append(" ").append(array[i]);
-            }
-            return sb.toString();
-        }
     }
 }

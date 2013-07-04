@@ -14,12 +14,6 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
  */
 public class LastSeenComparator implements Comparator<PlayerData> {
 
-    private static final Object INSTANCE_LOCK = new Object();
-    private static LastSeenComparator instance;
-
-    private LastSeenComparator() {
-    }
-
     @Override
     public int compare(PlayerData o1, PlayerData o2) {
         Long l1;
@@ -35,14 +29,5 @@ public class LastSeenComparator implements Comparator<PlayerData> {
             l2 = o2.getLastSeen();
         }
         return l2.compareTo(l1);
-    }
-
-    public static LastSeenComparator getInstance() {
-        synchronized (INSTANCE_LOCK) {
-            if (instance == null) {
-                instance = new LastSeenComparator();
-            }
-            return instance;
-        }
     }
 }

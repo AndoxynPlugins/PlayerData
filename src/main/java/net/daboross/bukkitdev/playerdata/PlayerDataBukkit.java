@@ -8,7 +8,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.IOException;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.metrics.Metrics;
+import net.daboross.bukkitdev.playerdata.libraries.metrics.MetricsLite;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -31,12 +31,11 @@ public final class PlayerDataBukkit extends JavaPlugin {
     @Override
     public void onEnable() {
         PlayerDataStatic.setPlayerDataBukkit(this);
-        Metrics metrics;
+        MetricsLite metrics = null;
         try {
-            metrics = new Metrics(this);
+            metrics = new MetricsLite(this);
         } catch (IOException ioe) {
             getLogger().warning("Unable to create Metrics");
-            metrics = null;
         }
         if (metrics != null) {
             metrics.start();
@@ -46,15 +45,11 @@ public final class PlayerDataBukkit extends JavaPlugin {
         playerHandler = new PlayerHandlerImpl(this);
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
-            new PlayerDataCommandExecutor(playerHandler).registerCommand(playerdata);
-        } else {
-            getLogger().log(Level.WARNING, "Command /pd not found! Is another plugin using it?");
+            new PlayerDataCommandExecutor(this, playerHandler).registerCommand(playerdata);
         }
         PluginCommand getusername = getCommand("gu");
         if (getusername != null) {
             getusername.setExecutor(new GetUsernameCommand(playerHandler));
-        } else {
-            getLogger().log(Level.WARNING, "Command /gu not found! Is another plugin using it?");
         }
         eventListener = new PlayerDataEventListener(playerHandler);
         pm.registerEvents(eventListener, this);
@@ -65,18 +60,14 @@ public final class PlayerDataBukkit extends JavaPlugin {
     @Override
     public void onDisable() {
         playerHandler.endServer();
-        playerHandler.saveAllData(false, null);
+        playerHandler.saveAllData();
         PlayerDataStatic.setPlayerDataBukkit(null);
         permissionHandler = null;
         permissionLoaded = false;
         getLogger().info("PlayerData Unload Completed");
     }
 
-    /**
-     * This is the internal PlayerHandlerImpl. Use getHandler() instead if you
-     * are outside of the PlayerData project.
-     */
-    public PlayerHandlerImpl getInternalHandler() {
+    PlayerHandlerImpl getInternalHandler() {
         return playerHandler;
     }
 
@@ -98,13 +89,13 @@ public final class PlayerDataBukkit extends JavaPlugin {
             RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
             permissionHandler = rsp.getProvider();
             if (permissionHandler == null) {
-                getLogger().log(Level.INFO, "Vault found, but Permission handler not found.");
+                getLogger().log(Level.INFO, "Vault found. Permission not found.");
             } else {
                 permissionLoaded = true;
-                getLogger().log(Level.INFO, "Vault and Permission handler found.");
+                getLogger().log(Level.INFO, "Vault found. Permission not found.");
             }
         } else {
-            getLogger().log(Level.INFO, "Vault not found.");
+            getLogger().log(Level.INFO, "Vault not found. Permission not found.");
         }
     }
 }

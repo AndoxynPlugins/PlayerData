@@ -5,7 +5,7 @@
  */
 package net.daboross.bukkitdev.playerdata;
 
-import java.util.concurrent.Callable;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.CommandExecutorBase;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
@@ -15,6 +15,7 @@ import net.daboross.bukkitdev.playerdata.subcommandhandlers.IPReverseLookupComma
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.ListPlayersFirstJoinCommandHandler;
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.ListPlayersCommandReactor;
 import net.daboross.bukkitdev.playerdata.subcommandhandlers.ViewInfoCommandHandler;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -26,9 +27,12 @@ import org.bukkit.command.PluginCommand;
 public final class PlayerDataCommandExecutor {
 
     private final CommandExecutorBase commandExecutorBase;
-    private final PlayerHandlerImpl playerHandler;
+    private final PlayerHandler playerHandler;
+    private final PlayerDataBukkit playerDataBukkit;
 
-    protected PlayerDataCommandExecutor(final PlayerHandlerImpl playerHandler) {
+    protected PlayerDataCommandExecutor(PlayerDataBukkit playerDataBukkit, PlayerHandler playerHandler) {
+        this.playerDataBukkit = playerDataBukkit;
+        this.playerHandler = playerHandler;
         this.commandExecutorBase = new CommandExecutorBase("playerdata.help");
         commandExecutorBase.addSubCommand(new SubCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},
                 "Get info on a player", new ViewInfoCommandHandler(playerHandler)));
@@ -43,40 +47,23 @@ public final class PlayerDataCommandExecutor {
         commandExecutorBase.addSubCommand(new SubCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new SubCommandHandler() {
             @Override
             public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
-                runXMLCommand(sender);
+                runSaveAllCommand(sender);
             }
         }));
-        commandExecutorBase.addSubCommand(new SubCommand("recreateall", true, "playerdata.admin", "Deletes all player data and recreates it from bukkit", new SubCommandHandler() {
-            @Override
-            public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
-                runReCreateAllCommand(sender, baseCommandLabel, subCommandLabel, subCommandArgs);
-            }
-        }));
-        this.playerHandler = playerHandler;
     }
 
-    protected void registerCommand(PluginCommand command) {
+    void registerCommand(PluginCommand command) {
         command.setExecutor(commandExecutorBase);
     }
 
-    private void runXMLCommand(final CommandSender sender) {
+    private void runSaveAllCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.REG + "Saving data");
-        playerHandler.saveAllData(true, new Callable<Void>() {
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataBukkit, new Runnable() {
             @Override
-            public Void call() {
-                sender.sendMessage(ColorList.REG + "Data saving done");
-                return null;
+            public void run() {
+                playerHandler.saveAllData();
+                sender.sendMessage(ColorList.REG + "Done saving data");
             }
         });
-    }
-
-    private void runReCreateAllCommand(CommandSender sender, String baseCommandLabel, String subCommandLabel, String[] args) {
-        if (args.length > 0) {
-            sender.sendMessage(ColorList.REG + "Arguments aren't needed after " + ColorList.CMD + "/" + baseCommandLabel + " " + ColorList.SUBCMD + subCommandLabel);
-            return;
-        }
-        sender.sendMessage(ColorList.REG + "Now recreating all Data!");
-        int numberLoaded = playerHandler.createEmptyPlayerDataFilesFromBukkit();
-        sender.sendMessage(ColorList.REG + "PlayerData has loaded " + ColorList.DATA + numberLoaded + ColorList.REG + " new data files");
     }
 }

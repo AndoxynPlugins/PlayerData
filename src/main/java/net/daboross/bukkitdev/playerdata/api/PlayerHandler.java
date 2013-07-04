@@ -80,4 +80,12 @@ public interface PlayerHandler {
      * loaded which have extra data stored under the given dataName.
      */
     public List<? extends PlayerData> getAllPlayerDatasWithExtraData(String dataName);
+
+    /**
+     * Saves all PlayerDatas to files in the current thread. This method is
+     * thread safe and can be run from any thread. Usually this method is not
+     * required as PlayerData automatically saves PlayerDatas to file when they
+     * log out.
+     */
+    public void saveAllData();
 }

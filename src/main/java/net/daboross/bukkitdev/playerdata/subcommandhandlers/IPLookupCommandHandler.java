@@ -14,7 +14,7 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -37,7 +37,7 @@ public class IPLookupCommandHandler implements SubCommandHandler {
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
-        String playerNameGiven = StaticHelper.getCombinedString(subCommandArgs, 0);
+        String playerNameGiven = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
         PlayerData pd = playerHandler.getPlayerDataPartial(playerNameGiven);
         if (pd == null) {
             sender.sendMessage(ColorList.ERR + "Player '" + ColorList.ERR_ARGS + playerNameGiven + ColorList.ERR + "' not found");

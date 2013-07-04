@@ -60,7 +60,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
 
         for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
             PlayerData current = pDataList.get(i);
-            messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + StaticHelper.getFormattedDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.getLastSeen()) + ColorList.REG + " ago.");
+            messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + StaticHelper.getFormattedRelativeDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.getLastSeen()) + ColorList.REG + " ago.");
         }
 
         if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {

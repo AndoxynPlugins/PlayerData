@@ -5,15 +5,13 @@
  */
 package net.daboross.bukkitdev.playerdata;
 
-import net.daboross.bukkitdev.playerdata.parsers.XMLFileParser;
+import net.daboross.bukkitdev.playerdata.parsers.xml.v1.XMLFileParser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.FirstJoinComparator;
@@ -40,13 +38,15 @@ import org.bukkit.entity.Player;
  */
 public final class PlayerHandlerImpl implements PlayerHandler {
 
-    private final Object playerDataListLock = new Object();
     /**
-     * This is a list of all the PDatas loaded. This list should contain one
-     * PlayerDataImpl for EVERY player who has EVER joined the server.
+     * List lock for the PlayerData lists. synchronize on this object when:
+     * <br>1. Reading the list from another thread (not the server thread)
+     * <br>2. Changing the list from the server thread (you shouldn't ever
+     * change the list from outside of the server thread)
      */
-    private final ArrayList<PlayerDataImpl> playerDataList = new ArrayList<PlayerDataImpl>();
-    private final ArrayList<PlayerDataImpl> playerDataListFirstJoin = new ArrayList<PlayerDataImpl>();
+    private final Object LIST_LOCK = new Object();
+    private final List<PlayerDataImpl> playerDataList = new ArrayList<PlayerDataImpl>();
+    private final List<PlayerDataImpl> playerDataListFirstJoin = new ArrayList<PlayerDataImpl>();
     private final PlayerDataBukkit playerDataBukkit;
     private final File dataFolder;
 
@@ -54,163 +54,23 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      * Use this to create a new PlayerHandlerImpl when PlayerDataBukkit is
      * loaded. There should only be one PlayerHandlerImpl instance.
      */
-    protected PlayerHandlerImpl(PlayerDataBukkit playerDataMain) {
+    PlayerHandlerImpl(PlayerDataBukkit playerDataMain) {
         this.playerDataBukkit = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
-        if (pluginFolder != null) {
-            dataFolder = new File(pluginFolder, "xml");
-            if (dataFolder != null) {
-                if (!dataFolder.isDirectory()) {
-                    dataFolder.mkdirs();
-                }
-            }
-        } else {
-            dataFolder = null;
-            playerDataMain.getLogger().severe("Plugin Data Folder Is Null!");
+        dataFolder = new File(pluginFolder, "xml");
+        if (!dataFolder.isDirectory()) {
+            dataFolder.mkdirs();
         }
     }
 
-    /**
-     * This function erases the entire database and creates a PlayerData for
-     * every player who has ever joined this server.
-     *
-     * @return The number of new PlayerData Files created.
-     */
-    protected int createEmptyPlayerDataFilesFromBukkit() {
-        OfflinePlayer[] players = Bukkit.getServer().getOfflinePlayers();
-        synchronized (playerDataListLock) {
-            playerDataList.clear();
-            playerDataListFirstJoin.clear();
-            for (int i = 0; i < players.length; i++) {
-                if (players[i].hasPlayedBefore()) {
-                    PlayerDataImpl pData = new PlayerDataImpl(players[i]);
-                    if (!playerDataList.contains(pData)) {
-                        playerDataList.add(pData);
-                    }
-                    if (!playerDataListFirstJoin.contains(pData)) {
-                        playerDataListFirstJoin.add(pData);
-                    }
-                }
-            }
-        }
-        saveAllData(false, null);
-        readDataToList();
-        return playerDataList.size();
-    }
-
-    /**
-     * This function Goes through all PlayerDatas who are online, and tells them
-     * their player has logged out, which in turn saves all unsaved PlayerDatas.
-     */
-    protected void endServer() {
-        Player[] ls = Bukkit.getOnlinePlayers();
-        for (Player p : ls) {
-            PlayerDataImpl pData = getPlayerData(p);
-            pData.loggedOut(p, this);
-        }
-    }
-
-    public void saveAllData(final boolean executeAsync, final Callable<Void> callAfter) {
-        if (executeAsync) {
-            Bukkit.getScheduler().runTaskAsynchronously(playerDataBukkit, new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (playerDataListLock) {
-                        for (PlayerDataImpl pData : playerDataList) {
-                            pData.updateStatus();
-                            savePDataXML(pData);
-                        }
-                        if (callAfter != null) {
-                            Bukkit.getScheduler().callSyncMethod(playerDataBukkit, callAfter);
-                        }
-                    }
-                }
-            });
-        } else {
-            for (PlayerDataImpl pData : playerDataList) {
-                pData.updateStatus();
-                savePDataXML(pData);
-            }
-            if (callAfter != null) {
-                try {
-                    callAfter.call();
-                } catch (Exception ex) {
-                    Logger.getLogger(PlayerHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-    }
-
-    /**
-     * This function saves the given PlayerDataImpl to file. This should ONLY be
-     * run from within the PlayerDataImpl class. If you want to manually save a
-     * PlayerDataImpl from outside that PlayerDataImpl's object, then run that
-     * PlayerDataImpl's update method, with parameters (true,true).
-     */
-    protected void savePData(PlayerDataImpl pData) {
-        if (pData == null) {
-            return;
-        }
-        savePDataXML(pData);
-    }
-
-    private void savePDataXML(PlayerDataImpl pd) {
-        File file = new File(dataFolder, pd.getUsername() + ".xml");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
-                return;
-            }
-        }
-        if (file.canWrite()) {
-            try {
-                XMLFileParser.writeToFile(pd, file);
-            } catch (DXMLException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
-            }
-        } else {
-            playerDataBukkit.getLogger().log(Level.SEVERE, "Can''t write to file {0}", file.getAbsolutePath());
-        }
-    }
-
-    /**
-     * This function gets the full username from a partial username given. The
-     * way this function works is by going through all usernames loaded, which
-     * should be all players who have ever played on the server, and checks if
-     * their username contains the given string, or if their last display name
-     * contains the given string. Will return the BEST match, not the first one.
-     * The best match is determined in this order:
-     *
-     * First priority is if the given string equals (ignoring case) a loaded
-     * username.
-     *
-     * Second priority is if the given string equals (ignoring case and colors)
-     * a loaded nickname.
-     *
-     * Third priority is if the a loaded username begins with the given string.
-     *
-     * Fourth priority is if the a loaded displayname begins with the given
-     * string.
-     *
-     * Fifth priority is if a loaded username contains the given string.
-     *
-     * And finally sixth priority is if a loaded nickname contains the given
-     * string.
-     *
-     * ALSO, People who are online always have priority over people who are
-     * offline. And people who have joined within the last 2 months have
-     * priority of people who haven't.
-     */
     @Override
     public String getFullUsername(String partialName) {
         if (partialName == null) {
-            throw new NullArgumentException("Username can't be null");
+            throw new NullArgumentException("partialName can't be null");
         }
         String[] possibleMatches = new String[2];
         String partialNameLowerCase = partialName.toLowerCase();
-        synchronized (playerDataListLock) {
+        synchronized (LIST_LOCK) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PlayerData pd = playerDataList.get(i);
                 String checkUserName = pd.getUsername().toLowerCase();
@@ -238,22 +98,12 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         return null;
     }
 
-    /**
-     * This gets a PlayerDataImpl from a given username. The usernames needs to
-     * be an exact match of the PlayerDataImpl's recorded username, not case
-     * sensitive. If you want to find the exact username given a partial
-     * username, then use the getFullUsername() function.
-     *
-     * @param name The FULL username of a player in the database.
-     * @return The PlayerDataImpl that is loaded for that player, or null if not
-     * found.
-     */
     @Override
     public PlayerDataImpl getPlayerData(String name) {
         if (name == null) {
             return null;
         }
-        synchronized (playerDataListLock) {
+        synchronized (LIST_LOCK) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 if (playerDataList.get(i).getUsername().equalsIgnoreCase(name)) {
                     return playerDataList.get(i);
@@ -264,31 +114,26 @@ public final class PlayerHandlerImpl implements PlayerHandler {
     }
 
     @Override
-    public PlayerData getPlayerDataPartial(String partialName) {
+    public PlayerDataImpl getPlayerDataPartial(String partialName) {
+        if (partialName == null) {
+            return null;
+        }
         return getPlayerData(getFullUsername(partialName));
     }
 
-    /**
-     * This function gets a PlayerDataImpl given an online Player. This function
-     * just goes through all loaded PDatas and sees if any of their names
-     * exactly equals the given Player's name.
-     *
-     * @return The PlayerDataImpl loaded for the given Player. Or null if the
-     * Player Given is null.
-     */
     @Override
-    public PlayerDataImpl getPlayerData(Player p) {
-        if (p == null) {
+    public PlayerDataImpl getPlayerData(Player player) {
+        if (player == null) {
             return null;
         }
-        synchronized (playerDataListLock) {
+        synchronized (LIST_LOCK) {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PlayerDataImpl pData = playerDataList.get(i);
-                if (pData.getUsername().equalsIgnoreCase(p.getName())) {
+                if (pData.getUsername().equalsIgnoreCase(player.getName())) {
                     return pData;
                 }
             }
-            PlayerDataImpl pData = new PlayerDataImpl(p);
+            PlayerDataImpl pData = new PlayerDataImpl(player);
             if (!playerDataList.contains(pData)) {
                 playerDataList.add(pData);
             }
@@ -299,52 +144,12 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         }
     }
 
-    /**
-     * This will log in a given player's PlayerDataImpl.
-     *
-     * @return a PlayerDataImpl for the player
-     */
-    public PlayerDataImpl logIn(Player p) {
-        if (p == null) {
-            throw new IllegalArgumentException("Null Argument");
-        }
-        synchronized (playerDataListLock) {
-            for (int i = 0; i < playerDataList.size(); i++) {
-                PlayerDataImpl pData = playerDataList.get(i);
-                if (pData.getUsername().equals(p.getName())) {
-                    pData.loggedIn(p, this);
-                    return pData;
-                }
-            }
-            PlayerDataImpl pData = new PlayerDataImpl(p);
-            pData.loggedIn(p, this);
-            if (!playerDataList.contains(pData)) {
-                playerDataList.add(0, pData);
-            }
-            if (!playerDataListFirstJoin.contains(pData)) {
-                playerDataListFirstJoin.add(pData);
-            }
-            return pData;
-        }
-    }
-
-    public PlayerData logOut(Player p) {
-        PlayerDataImpl pData = getPlayerData(p);
-        pData.loggedOut(p, this);
-        return pData;
-    }
-
-    /**
-     * This function gives all custom data loaded of a given data Type. This
-     * function goes through ALL loaded PDatas and checks each one if they have
-     * data of the given type. The returned list is created in this command and
-     * no references are kept. You can do whatever you want to to the list.
-     *
-     * @param dataName The type of the data.
-     */
     @Override
     public List<PlayerData> getAllPlayerDatasWithExtraData(String dataName) {
-        synchronized (playerDataListLock) {
+        if (dataName == null) {
+            return null;
+        }
+        synchronized (LIST_LOCK) {
             List<PlayerData> returnArrayList = new ArrayList<PlayerData>();
             for (PlayerDataImpl pData : playerDataList) {
                 if (pData.hasExtraData(dataName)) {
@@ -363,37 +168,94 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      */
     @Override
     public List<PlayerDataImpl> getAllPlayerDatas() {
-        synchronized (playerDataListLock) {
+        synchronized (LIST_LOCK) {
             return Collections.unmodifiableList(playerDataList);
         }
     }
 
-    /**
-     * This returns an unmodifiable list!
-     */
-    public List<PlayerDataImpl> getAllPDatasFirstJoin() {
-        return Collections.unmodifiableList(playerDataListFirstJoin);
+    @Override
+    public List<PlayerDataImpl> getAllPlayerDatasFirstJoin() {
+        synchronized (LIST_LOCK) {
+            return Collections.unmodifiableList(playerDataListFirstJoin);
+        }
     }
 
-    /**
-     * This Function moves the PlayerDataImpl given to the top of the list.
-     * Should be only called BY THE PDATA when the player has logged in.
-     */
-    void loggedIn(PlayerDataImpl pd) {
-        synchronized (playerDataListLock) {
-            while (playerDataList.contains(pd)) {
-                playerDataList.remove(pd);
+    @Override
+    public void saveAllData() {
+        synchronized (LIST_LOCK) {
+            for (PlayerDataImpl pData : playerDataList) {
+                pData.updateStatus();
+                savePData(pData);
             }
-            playerDataList.add(0, pd);
+        }
+    }
+
+    void savePData(PlayerDataImpl pd) {
+        if (pd == null) {
+            return;
+        }
+        File file = new File(dataFolder, pd.getUsername() + ".xml");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
+                return;
+            }
+        }
+        if (file.canWrite()) {
+            try {
+                XMLFileParser.writeToFile(pd, file);
+            } catch (DXMLException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
+            }
+        } else {
+            playerDataBukkit.getLogger().log(Level.SEVERE, "Can''t write to file {0}", file.getAbsolutePath());
         }
     }
 
     /**
-     * This Function moves the PlayerDataImpl down the list. Should be only
-     * called BY THE PDATA when the player has logged in.
+     * This function Goes through all PlayerDatas who are online, and tells them
+     * their player has logged out, which in turn saves all unsaved PlayerDatas.
      */
-    void loggedOut(PlayerDataImpl pd) {
-        synchronized (playerDataListLock) {
+    void endServer() {
+        Player[] ls = Bukkit.getOnlinePlayers();
+        for (Player p : ls) {
+            this.logout(p);
+        }
+    }
+
+    PlayerDataImpl login(Player p) {
+        if (p == null) {
+            throw new IllegalArgumentException("Null Argument");
+        }
+        synchronized (LIST_LOCK) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PlayerDataImpl pData = playerDataList.get(i);
+                if (pData.getUsername().equals(p.getName())) {
+                    pData.loggedIn(p, this);
+                    return pData;
+                }
+            }
+        }
+        PlayerDataImpl pd = new PlayerDataImpl(p);
+        pd.loggedIn(p, this);
+        synchronized (LIST_LOCK) {
+            if (!playerDataListFirstJoin.contains(pd)) {
+                playerDataListFirstJoin.add(pd);
+            }
+            while (playerDataList.contains(pd)) {
+                playerDataList.remove(pd);
+            }
+            playerDataList.add(0, pd);
+            return pd;
+        }
+    }
+
+    PlayerData logout(Player p) {
+        PlayerDataImpl pd = getPlayerData(p);
+        pd.loggedOut(p, this);
+        synchronized (LIST_LOCK) {
             int pos = playerDataList.indexOf(pd);
             while (playerDataList.contains(pd)) {
                 playerDataList.remove(pd);
@@ -403,104 +265,67 @@ public final class PlayerHandlerImpl implements PlayerHandler {
             }
             playerDataList.add(pos, pd);
         }
-    }
-
-    /**
-     * This will Sort the PlayerDataImpl lists depending on how long it has been
-     * since each played last joined. IN A SEPERATE THREAD.
-     */
-    public void sortData(Runnable afterLoad) {
-        Runnable sorter = new Sorter(afterLoad);
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataBukkit, sorter);
-
-    }
-
-    @Override
-    public List<? extends PlayerData> getAllPlayerDatasFirstJoin() {
-        throw new UnsupportedOperationException("PlayerHandlerImpl: Not Created Yet!: getAllPlayerDatasFirstJoin");
-
-
-    }
-
-    private class Sorter implements Runnable {
-
-        private final Runnable afterLoad;
-
-        public Sorter(Runnable afterLoad) {
-            this.afterLoad = afterLoad;
-        }
-
-        @Override
-        public void run() {
-            synchronized (playerDataListLock) {
-                Collections.sort(playerDataList, LastSeenComparator.getInstance());
-                Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
-            }
-            if (afterLoad != null) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataBukkit, afterLoad);
-            }
-        }
+        return pd;
     }
 
     /**
      * This is the "initial" function that should be called directly after this
      * PlayerHandlerImpl is created. The PlayerHandlerImpl instance variable in
      * PlayerDataBukkit needs to be set to this PlayerHandlerImpl before this
-     * function is called. This will also create new PDatas from Bukkit if file
-     * folder is empty.
+     * function is called. This will also create new PlayerDatas from Bukkit if
+     * file folder is empty.
      */
-    protected void init() {
-        if (dataFolder.listFiles().length == 0) {
-            createEmptyPlayerDataFilesFromBukkit();
-        }
-        readDataToList();
-        synchronized (playerDataListLock) {
-            Collections.sort(playerDataList, LastSeenComparator.getInstance());
-            Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
-        }
-        Player[] ls = Bukkit.getOnlinePlayers();
-        for (Player p : ls) {
-            PlayerDataImpl pData = getPlayerData(p);
-            pData.loggedIn(p, this);
-        }
-    }
-
-    private int readDataToList() {
-        synchronized (playerDataListLock) {
+    void init() {
+        synchronized (LIST_LOCK) {
             playerDataList.clear();
             playerDataListFirstJoin.clear();
-            int count = 0;
-            if (dataFolder != null && dataFolder.exists()) {
-                File[] playerFiles = dataFolder.listFiles();
-                for (File fl : playerFiles) {
-                    if (fl != null) {
-                        if (fl.canRead()) {
-                            if (fl.isFile()) {
-                                String type = fl.getName().substring(fl.getName().lastIndexOf('.') + 1, fl.getName().length());
-                                if (type.equals("xml")) {
-                                    PlayerDataImpl pData = null;
-                                    try {
-                                        pData = XMLFileParser.readFromFile(fl);
-                                    } catch (DXMLException dxmle) {
-                                        playerDataBukkit.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
-                                    }
-                                    if (pData != null) {
-                                        if (!playerDataList.contains(pData)) {
-                                            playerDataList.add(pData);
-                                        }
-                                        if (!playerDataListFirstJoin.contains(pData)) {
-                                            playerDataListFirstJoin.add(pData);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            File[] playerFiles = dataFolder.listFiles();
+            if (playerFiles.length == 0) {
+                OfflinePlayer[] players = Bukkit.getServer().getOfflinePlayers();
+                for (OfflinePlayer p : players) {
+                    PlayerDataImpl pd = new PlayerDataImpl(p);
+                    if (!playerDataList.contains(pd)) {
+                        playerDataList.add(pd);
+                    }
+                    if (!playerDataListFirstJoin.contains(pd)) {
+                        playerDataListFirstJoin.add(pd);
                     }
                 }
-                count = playerDataList.size();
+                saveAllData();
+            } else {
+                for (File fl : playerFiles) {
+                    if (fl.canRead() && fl.isFile()) {
+                        String[] split = fl.getName().split("\\.");
+                        String type = split[split.length - 1];
+                        if (type.equals("xml")) {
+                            PlayerDataImpl pData = null;
+                            try {
+                                pData = XMLFileParser.readFromFile(fl);
+                            } catch (DXMLException dxmle) {
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
+                            }
+                            if (pData != null) {
+                                if (!playerDataList.contains(pData)) {
+                                    playerDataList.add(pData);
+                                }
+                                if (!playerDataListFirstJoin.contains(pData)) {
+                                    playerDataListFirstJoin.add(pData);
+                                }
+                            }
+                        } else {
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "Unknown file in data directory: {0}", fl.getAbsolutePath());
+                        }
+                    } else {
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "Unknown file in data directory: {0}", fl.getAbsolutePath());
+                    }
+                }
+                playerDataBukkit.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
             }
-            playerDataBukkit.getLogger().log(Level.INFO, "Read {0} data files", count);
-            return count;
+            Collections.sort(playerDataList, new LastSeenComparator());
+            Collections.sort(playerDataListFirstJoin, new FirstJoinComparator());
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            this.login(p);
         }
     }
 }

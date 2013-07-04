@@ -6,14 +6,13 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import org.bukkit.Bukkit;
@@ -33,20 +32,18 @@ import org.bukkit.entity.Player;
  */
 public final class PlayerDataImpl implements PlayerData {
 
-    private long MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES = TimeUnit.SECONDS.toMillis(10);
+    private long MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES = TimeUnit.MINUTES.toMillis(1);
     /**
      * Stores the last getDate that the nickname was updated so that we don't
      * updated it very very often.
      */
-    private long minNextNicknameUpdate = System.currentTimeMillis();
+    private long minNextDisplaynameUpdate = System.currentTimeMillis();
     private final String username;
     private String displayname;
     private long timePlayed = 0;
     private long currentSession;
     private final List<LoginDataImpl> logins = new ArrayList<LoginDataImpl>();
-    private final List<LoginDataImpl> loginsUnmodifiable = Collections.unmodifiableList(logins);
     private final List<Long> logouts = new ArrayList<Long>();
-    private final List<Long> logoutsUnmodifiable = Collections.unmodifiableList(logouts);
     private final Map<String, String[]> extraData = new HashMap<String, String[]>();
     private boolean online = false;
     private int nickUpdateExtraThreadUpdateTimes = 0;
@@ -106,23 +103,23 @@ public final class PlayerDataImpl implements PlayerData {
      * This creates a PlayerDataImpl from data loaded from a file. This should
      * never be called except from within a FileParser!
      *
-     * @param getUsername The Full UserName of this player
-     * @param getDisplayname The Last DisplayName this player had that was not
-     * the same as this player's username. Or the player's username if the
-     * player's display name has never been recorded.
-     * @param getAllLogins A list of times this player has logged in.
-     * @param getAllLogouts A list of times this player has logged out.
-     * @param getTimePlayed The getDate this player has played on this server.
-     * @param data A List of custom data entries.
+     * @param username The Full UserName of this player
+     * @param displayname The Last DisplayName this player had that was not the
+     * same as this player's username. Or the player's username if the player's
+     * display name has never been recorded.
+     * @param logins A list of times this player has logged in.
+     * @param logouts A list of times this player has logged out.
+     * @param timePlayed The getDate this player has played on this server.
+     * @param extraData A List of custom data entries.
      */
-    public PlayerDataImpl(String userName, String nickName, ArrayList<LoginDataImpl> logIns, ArrayList<Long> logOuts, long timePlayed, Map<String, String[]> extraData) {
-        this.username = userName;
-        this.displayname = nickName;
-        if (this.displayname == null || this.displayname.length() == 0) {
+    public PlayerDataImpl(String username, String displayname, ArrayList<LoginDataImpl> logins, ArrayList<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
+        this.username = username;
+        this.displayname = displayname;
+        if (this.displayname == null) {
             this.displayname = this.username;
         }
-        this.logins.addAll(logIns);
-        this.logouts.addAll(logOuts);
+        this.logins.addAll(logins);
+        this.logouts.addAll(logouts);
         this.timePlayed = timePlayed;
         this.extraData.putAll(extraData);
         currentSession = System.currentTimeMillis();
@@ -158,15 +155,6 @@ public final class PlayerDataImpl implements PlayerData {
         }
     }
 
-    private boolean updateDisplayNameWithResult(Player p) {
-        if (!p.getName().equals(p.getDisplayName())) {
-            this.displayname = p.getDisplayName();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /**
      * Updates this player's DisplayName with a player gotten from Bukkit.
      */
@@ -177,16 +165,18 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This saves this PlayerDataImpl's Status to file. Does this by calling the
-     * PlayerHandlerImpl's function to do this.
+     * This saves this PlayerData to file async.
      */
     private void saveStatus() {
-        PlayerHandlerImpl pdh = PlayerDataStatic.getInternalHandler();
-        if (pdh != null) {
-            pdh.savePData(this);
-        } else {
-            PlayerDataStatic.getLogger().warning("PlayerData internal handler not found!");
-        }
+        final PlayerDataBukkit plugin = PlayerDataStatic.getPlayerDataBukkit();
+        final PlayerHandlerImpl ph = plugin.getInternalHandler();
+        final PlayerDataImpl pd = this;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                ph.savePData(pd);
+            }
+        });
     }
 
     /**
@@ -197,17 +187,20 @@ public final class PlayerDataImpl implements PlayerData {
      * then it will run this function again.
      */
     private void makeExtraThread(final Player p) {
-        if (p.isOnline() && !updateDisplayNameWithResult(p)) {
-            if (nickUpdateExtraThreadUpdateTimes < 5) {
-                nickUpdateExtraThreadUpdateTimes++;
-                PlayerDataBukkit pdb = PlayerDataStatic.getPlayerDataBukkit();
-                if (pdb != null) {
-                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pdb, new Runnable() {
-                        @Override
-                        public void run() {
-                            makeExtraThread(p);
-                        }
-                    }, 40l);
+        if (p.isOnline()) {
+            updateDisplayName(p);
+            if (displayname.equalsIgnoreCase(username)) {
+                if (nickUpdateExtraThreadUpdateTimes < 5) {
+                    nickUpdateExtraThreadUpdateTimes++;
+                    PlayerDataBukkit pdb = PlayerDataStatic.getPlayerDataBukkit();
+                    if (pdb != null) {
+                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pdb, new Runnable() {
+                            @Override
+                            public void run() {
+                                makeExtraThread(p);
+                            }
+                        }, 40l);
+                    }
                 }
             }
         }
@@ -227,8 +220,6 @@ public final class PlayerDataImpl implements PlayerData {
             online = false;
             updateDisplayName(p);
             saveStatus();
-            pdh.loggedIn(this);
-            PlayerDataStatic.getLogger().log(Level.INFO, "{0} Logged Out", username);
         }
     }
 
@@ -245,104 +236,41 @@ public final class PlayerDataImpl implements PlayerData {
             online = true;
             nickUpdateExtraThreadUpdateTimes = 0;
             makeExtraThread(p);
-            pdh.loggedIn(this);
-            PlayerDataStatic.getLogger().log(Level.INFO, "{0} Logged In", username);
         }
     }
 
-    /**
-     * This function gets the username of the player represented by this
-     * PlayerDataImpl.
-     *
-     * @return The username of the player represented by this PlayerDataImpl.
-     */
     @Override
     public String getUsername() {
         return username;
     }
 
-    /**
-     * This gets the last display name that this player had the last getDate
-     * they were online.
-     */
     @Override
     public String getDisplayname() {
-        if (System.currentTimeMillis() > minNextNicknameUpdate) {
+        if (System.currentTimeMillis() > minNextDisplaynameUpdate) {
             updateDisplayName();
-            minNextNicknameUpdate = System.currentTimeMillis() + MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES;
+            minNextDisplaynameUpdate = System.currentTimeMillis() + MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES;
         }
         return displayname;
     }
 
-    /**
-     * This function gets whether or not this player is online.
-     *
-     * @return Whether or not this player is online
-     */
     @Override
     public boolean isOnline() {
         return online;
     }
 
-    /**
-     * This function gets the first getDate this player logged into this server.
-     * If Bukkit's the recorded first log in is earlier then this
-     * PlayerDataImpl's recorded first log in, then this PlayerDataImpl's
-     * information is updated with Bukkit's
-     *
-     * @return
-     */
-    public LoginDataImpl getFirstLogIn() {
-        return logins.get(0);
-    }
-
-    /**
-     * This function gets how long this player has played on this server.
-     *
-     * @return The Time Played on this server in milliseconds.
-     */
     @Override
     public long getTimePlayed() {
         return timePlayed;
     }
 
-    /**
-     * This function gets a list of times this player has logged in.
-     *
-     * @return An unmodifiable list of timestamps when this player has logged
-     * in. Each In milliseconds.
-     */
     @Override
-    public List<? extends LoginData> getAllLogins() {
-        return loginsUnmodifiable;
+    public List<LoginDataImpl> getAllLogins() {
+        return Collections.unmodifiableList(logins);
     }
 
-    public List<LoginDataImpl> getAllLoginsInternal() {
-        return loginsUnmodifiable;
-    }
-
-    /**
-     * This function gets a list of times this player has logged out.
-     *
-     * @return An unmodifiable list of timestamps when this player has logged
-     * out. Each In milliseconds.
-     */
     @Override
     public List<Long> getAllLogouts() {
-        return logoutsUnmodifiable;
-    }
-
-    /**
-     * This function checks whether the last getDate the player was seen is
-     * within the specified amount in days.
-     */
-    public boolean joinedLastWithinDays(int days) {
-        if (isOnline()) {
-            return true;
-        }
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, -days);
-        return getLastSeen() > cal.getTimeInMillis();
+        return Collections.unmodifiableList(logouts);
     }
 
     @Override
@@ -380,31 +308,24 @@ public final class PlayerDataImpl implements PlayerData {
      * last getDate this player has played with Bukkit's records.
      */
     public void checkBukkitForTimes() {
-        OfflinePlayer offP = Bukkit.getOfflinePlayer(username);
-        long bukkitFirstPlayed = offP.getFirstPlayed();
-        long bukkitLastPlayed = offP.getLastPlayed();
-        if (offP.hasPlayedBefore()) {
-            if (logins.isEmpty()) {
-                logins.add(new LoginDataImpl(bukkitFirstPlayed));
-            } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
-                logins.add(0, new LoginDataImpl(bukkitFirstPlayed));
-            }
-            if (!online) {
-                if (logouts.isEmpty()) {
-                    logouts.add(bukkitLastPlayed);
-                } else if (bukkitLastPlayed > logouts.get(logouts.size() - 1)) {
-                    logouts.add(bukkitLastPlayed);
-                }
+        OfflinePlayer p = Bukkit.getOfflinePlayer(username);
+        long bukkitFirstPlayed = p.getFirstPlayed();
+        long bukkitLastPlayed = p.getLastPlayed();
+        if (logins.isEmpty()) {
+            logins.add(new LoginDataImpl(bukkitFirstPlayed));
+        } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
+            logins.add(0, new LoginDataImpl(bukkitFirstPlayed));
+        }
+        if (!online) {
+            if (logouts.isEmpty()) {
+                logouts.add(bukkitLastPlayed);
+            } else if (bukkitLastPlayed > logouts.get(logouts.size() - 1)) {
+                logouts.add(bukkitLastPlayed);
             }
         }
-        ArrayList<Long> logOutsNewList = new ArrayList<Long>();
-        for (Long l : logouts) {
-            if (!logOutsNewList.contains(l)) {
-                logOutsNewList.add(l);
-            }
-        }
+        Set<Long> logoutsNew = new LinkedHashSet<Long>(logouts);
         logouts.clear();
-        logouts.addAll(logOutsNewList);
+        logouts.addAll(logoutsNew);
     }
 
     /**
