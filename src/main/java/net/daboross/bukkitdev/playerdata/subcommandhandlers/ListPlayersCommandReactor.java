@@ -10,8 +10,8 @@ import java.util.List;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.PlayerDataImpl;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
 
 import org.bukkit.command.Command;
@@ -23,10 +23,10 @@ import org.bukkit.command.CommandSender;
  */
 public class ListPlayersCommandReactor implements SubCommandHandler {
 
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerHandler playerHandler;
 
-    public ListPlayersCommandReactor(PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+    public ListPlayersCommandReactor(PlayerHandler playerHandler) {
+        this.playerHandler = playerHandler;
     }
 
     @Override
@@ -54,12 +54,12 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
             }
         }
         int pageNumberReal = pageNumber - 1;
-        List<PlayerDataImpl> pDataList = playerDataMain.getPDataHandler().getAllPlayerDatas();
+        List<? extends PlayerData> pDataList = playerHandler.getAllPlayerDatas();
         ArrayList<String> messagesToSend = new ArrayList<String>();
         messagesToSend.add(ColorList.TOP_SEPERATOR + " --" + ColorList.TOP + " Player List " + ColorList.TOP_SEPERATOR + "--" + ColorList.TOP + " Page " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_SEPERATOR + " --");
 
         for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
-            PlayerDataImpl current = pDataList.get(i);
+            PlayerData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + StaticHelper.getFormattedDate(current.isOnline() ? 0 : System.currentTimeMillis() - current.getLastSeen()) + ColorList.REG + " ago.");
         }
 

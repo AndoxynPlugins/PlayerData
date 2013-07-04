@@ -26,21 +26,20 @@ import org.bukkit.command.PluginCommand;
 public final class PlayerDataCommandExecutor {
 
     private final CommandExecutorBase commandExecutorBase;
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerHandlerImpl playerHandler;
 
-    protected PlayerDataCommandExecutor(final PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+    protected PlayerDataCommandExecutor(final PlayerHandlerImpl playerHandler) {
         this.commandExecutorBase = new CommandExecutorBase("playerdata.help");
         commandExecutorBase.addSubCommand(new SubCommand("viewinfo", new String[]{"getinfo", "i"}, true, "playerdata.viewinfo", new String[]{"Player"},
-                "Get info on a player", new ViewInfoCommandHandler(playerDataMain)));
+                "Get info on a player", new ViewInfoCommandHandler(playerHandler)));
         commandExecutorBase.addSubCommand(new SubCommand("list", new String[]{"lp", "pl", "l"}, true, "playerdata.list", new String[]{"PageNumber"},
-                "Lists all players who have ever joined this server in order of last seen", new ListPlayersCommandReactor(playerDataMain)));
+                "Lists all players who have ever joined this server in order of last seen", new ListPlayersCommandReactor(playerHandler)));
         commandExecutorBase.addSubCommand(new SubCommand("listfirst", new String[]{"lf", "fl"}, true, "playerdata.firstjoinlist", new String[]{"PageNumber"},
-                "List allplayers who have have ever joined this server in order of first join", new ListPlayersFirstJoinCommandHandler(playerDataMain)));
+                "List allplayers who have have ever joined this server in order of first join", new ListPlayersFirstJoinCommandHandler(playerHandler)));
         commandExecutorBase.addSubCommand(new SubCommand("iplookup", new String[]{"ipl", "ip"}, true, "playerdata.iplookup", new String[]{"Player"},
-                "Gets all different IPs used by a Player", new IPLookupCommandHandler(playerDataMain)));
+                "Gets all different IPs used by a Player", new IPLookupCommandHandler(playerHandler)));
         commandExecutorBase.addSubCommand(new SubCommand("ipreverselookup", new String[]{"ipr", "iprl"}, true, "playerdata.ipreverselookup", new String[]{"IP"},
-                "Gets all different Players using an IP", new IPReverseLookupCommandHandler(playerDataMain)));
+                "Gets all different Players using an IP", new IPReverseLookupCommandHandler(playerHandler)));
         commandExecutorBase.addSubCommand(new SubCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas", new SubCommandHandler() {
             @Override
             public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
@@ -53,6 +52,7 @@ public final class PlayerDataCommandExecutor {
                 runReCreateAllCommand(sender, baseCommandLabel, subCommandLabel, subCommandArgs);
             }
         }));
+        this.playerHandler = playerHandler;
     }
 
     protected void registerCommand(PluginCommand command) {
@@ -61,7 +61,7 @@ public final class PlayerDataCommandExecutor {
 
     private void runXMLCommand(final CommandSender sender) {
         sender.sendMessage(ColorList.REG + "Saving data");
-        playerDataMain.getPDataHandler().saveAllData(true, new Callable<Void>() {
+        playerHandler.saveAllData(true, new Callable<Void>() {
             @Override
             public Void call() {
                 sender.sendMessage(ColorList.REG + "Data saving done");
@@ -76,7 +76,7 @@ public final class PlayerDataCommandExecutor {
             return;
         }
         sender.sendMessage(ColorList.REG + "Now recreating all Data!");
-        int numberLoaded = playerDataMain.getPDataHandler().createEmptyPlayerDataFilesFromBukkit();
+        int numberLoaded = playerHandler.createEmptyPlayerDataFilesFromBukkit();
         sender.sendMessage(ColorList.REG + "PlayerData has loaded " + ColorList.DATA + numberLoaded + ColorList.REG + " new data files");
     }
 }

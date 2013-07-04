@@ -33,12 +33,12 @@ public class PlayerDataStatic {
         return playerDataBukkit == null ? null : playerDataBukkit.getPermissionHandler();
     }
 
-    public static Logger getPlayerDataLogger() {
+    public static Logger getLogger() {
         return playerDataBukkit == null ? null : playerDataBukkit.getLogger();
     }
 
     public static PlayerHandlerImpl getInternalHandler() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getPDataHandler();
+        return playerDataBukkit == null ? null : playerDataBukkit.getInternalHandler();
     }
 
     static void setPlayerDataBukkit(PlayerDataBukkit playerDataBukkit) {

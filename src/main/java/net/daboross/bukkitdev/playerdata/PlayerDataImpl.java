@@ -185,7 +185,7 @@ public final class PlayerDataImpl implements PlayerData {
         if (pdh != null) {
             pdh.savePData(this);
         } else {
-            PlayerDataStatic.getPlayerDataLogger().warning("PlayerData internal handler not found!");
+            PlayerDataStatic.getLogger().warning("PlayerData internal handler not found!");
         }
     }
 
@@ -228,7 +228,7 @@ public final class PlayerDataImpl implements PlayerData {
             updateDisplayName(p);
             saveStatus();
             pdh.loggedIn(this);
-            PlayerDataStatic.getPlayerDataLogger().log(Level.INFO, "{0} Logged Out", username);
+            PlayerDataStatic.getLogger().log(Level.INFO, "{0} Logged Out", username);
         }
     }
 
@@ -246,7 +246,7 @@ public final class PlayerDataImpl implements PlayerData {
             nickUpdateExtraThreadUpdateTimes = 0;
             makeExtraThread(p);
             pdh.loggedIn(this);
-            PlayerDataStatic.getPlayerDataLogger().log(Level.INFO, "{0} Logged In", username);
+            PlayerDataStatic.getLogger().log(Level.INFO, "{0} Logged In", username);
         }
     }
 

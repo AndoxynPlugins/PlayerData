@@ -46,17 +46,17 @@ public final class PlayerDataBukkit extends JavaPlugin {
         playerHandler = new PlayerHandlerImpl(this);
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
-            new PlayerDataCommandExecutor(this).registerCommand(playerdata);
+            new PlayerDataCommandExecutor(playerHandler).registerCommand(playerdata);
         } else {
             getLogger().log(Level.WARNING, "Command /pd not found! Is another plugin using it?");
         }
         PluginCommand getusername = getCommand("gu");
         if (getusername != null) {
-            getusername.setExecutor(new PossibleUserNames(this));
+            getusername.setExecutor(new GetUsernameCommand(playerHandler));
         } else {
             getLogger().log(Level.WARNING, "Command /gu not found! Is another plugin using it?");
         }
-        eventListener = new PlayerDataEventListener(this);
+        eventListener = new PlayerDataEventListener(playerHandler);
         pm.registerEvents(eventListener, this);
         playerHandler.init();
         getLogger().info("PlayerData Load Completed");
@@ -73,10 +73,10 @@ public final class PlayerDataBukkit extends JavaPlugin {
     }
 
     /**
-     * This is the internal PlayerHandlerImpl. Use getHandler() instead if you are
-     * outside of the PlayerData project.
+     * This is the internal PlayerHandlerImpl. Use getHandler() instead if you
+     * are outside of the PlayerData project.
      */
-    public PlayerHandlerImpl getPDataHandler() {
+    public PlayerHandlerImpl getInternalHandler() {
         return playerHandler;
     }
 

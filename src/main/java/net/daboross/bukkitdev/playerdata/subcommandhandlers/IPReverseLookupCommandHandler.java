@@ -10,9 +10,9 @@ import java.util.List;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -22,10 +22,10 @@ import org.bukkit.command.CommandSender;
  */
 public class IPReverseLookupCommandHandler implements SubCommandHandler {
 
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerHandler playerHandler;
 
-    public IPReverseLookupCommandHandler(PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+    public IPReverseLookupCommandHandler(PlayerHandler playerHandler) {
+        this.playerHandler = playerHandler;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class IPReverseLookupCommandHandler implements SubCommandHandler {
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
         }
         List<String> usersList = new ArrayList<String>();
-        for (PlayerData player : playerDataMain.getHandler().getAllPlayerDatas()) {
+        for (PlayerData player : playerHandler.getAllPlayerDatas()) {
             for (LoginData login : player.getAllLogins()) {
                 String ip = login.getIP();
                 String[] ipSplit = ip.split(":")[0].split("/");

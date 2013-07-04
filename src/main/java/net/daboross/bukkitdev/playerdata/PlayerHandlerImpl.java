@@ -18,7 +18,6 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.FirstJoinComparator;
 import net.daboross.bukkitdev.playerdata.helpers.LastSeenComparator;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
@@ -48,7 +47,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      */
     private final ArrayList<PlayerDataImpl> playerDataList = new ArrayList<PlayerDataImpl>();
     private final ArrayList<PlayerDataImpl> playerDataListFirstJoin = new ArrayList<PlayerDataImpl>();
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerDataBukkit playerDataBukkit;
     private final File dataFolder;
 
     /**
@@ -56,7 +55,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      * loaded. There should only be one PlayerHandlerImpl instance.
      */
     protected PlayerHandlerImpl(PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+        this.playerDataBukkit = playerDataMain;
         File pluginFolder = playerDataMain.getDataFolder();
         if (pluginFolder != null) {
             dataFolder = new File(pluginFolder, "xml");
@@ -72,30 +71,13 @@ public final class PlayerHandlerImpl implements PlayerHandler {
     }
 
     /**
-     * This function creates a PlayerDataImpl for every player who has ever
-     * joined this server. It uses Bukkit's store of players and their data. It
-     * will only load the first getDate a player has played and the last getDate
-     * they have played from this function. This WILL erase all data currently
-     * stored by PlayerDataBukkit. This WILL return before the data is loaded.
+     * This function erases the entire database and creates a PlayerData for
+     * every player who has ever joined this server.
      *
-     * @return The number of new PlayerDataImpl Files created.
+     * @return The number of new PlayerData Files created.
      */
     protected int createEmptyPlayerDataFilesFromBukkit() {
-        OfflinePlayer[] pls = Bukkit.getServer().getOfflinePlayers();
-        return createEmptyPlayerDataFiles(pls);
-    }
-
-    /**
-     * This creates an empty PlayerDataImpl for every OfflinePlayer in this
-     * list. This WILL erase all data currently recorded on any players included
-     * in this list. If any of the players have not played on this server
-     * before, then they are not included. This WILL return before the data is
-     * loaded.
-     *
-     * @return The number of players loaded from this list.
-     */
-    protected int createEmptyPlayerDataFiles(OfflinePlayer[] players) {
-        int returnValue = 0;
+        OfflinePlayer[] players = Bukkit.getServer().getOfflinePlayers();
         synchronized (playerDataListLock) {
             playerDataList.clear();
             playerDataListFirstJoin.clear();
@@ -108,23 +90,17 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                     if (!playerDataListFirstJoin.contains(pData)) {
                         playerDataListFirstJoin.add(pData);
                     }
-                    returnValue += 1;
                 }
             }
         }
         saveAllData(false, null);
-        loadDataFromFiles(null);
-        return returnValue;
+        readDataToList();
+        return playerDataList.size();
     }
 
     /**
-     * This function Goes through all PDatas who are online, and tells them
-     * their player has logged out, which in turn saves all unsaved PDatas. This
-     * function doesn't save any offline player's PDatas, because there is no
-     * way for their state to change after the player has logged out, and they
-     * auto save when their player logs out. The only reason this function is
-     * helpful is if the PlayerDataBukkit Plugin is unloaded while the server is
-     * still running.
+     * This function Goes through all PlayerDatas who are online, and tells them
+     * their player has logged out, which in turn saves all unsaved PlayerDatas.
      */
     protected void endServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
@@ -134,23 +110,9 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         }
     }
 
-    /**
-     * This function goes through all online player's PDatas and tells each of
-     * them that the Player has logged in. The only reason this function is
-     * helpful is if the PlayerDataBukkit Plugin is loaded when the server is
-     * already running and there are players online.
-     */
-    private void startServer() {
-        Player[] ls = Bukkit.getOnlinePlayers();
-        for (Player p : ls) {
-            PlayerDataImpl pData = getPlayerData(p);
-            pData.loggedIn(p, this);
-        }
-    }
-
     public void saveAllData(final boolean executeAsync, final Callable<Void> callAfter) {
         if (executeAsync) {
-            Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, new Runnable() {
+            Bukkit.getScheduler().runTaskAsynchronously(playerDataBukkit, new Runnable() {
                 @Override
                 public void run() {
                     synchronized (playerDataListLock) {
@@ -159,7 +121,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                             savePDataXML(pData);
                         }
                         if (callAfter != null) {
-                            Bukkit.getScheduler().callSyncMethod(playerDataMain, callAfter);
+                            Bukkit.getScheduler().callSyncMethod(playerDataBukkit, callAfter);
                         }
                     }
                 }
@@ -189,28 +151,27 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         if (pData == null) {
             return;
         }
-        synchronized (playerDataListLock) {
-            if (!playerDataList.contains(pData)) {
-                playerDataList.add(0, pData);
-            }
-            if (!playerDataListFirstJoin.contains(pData)) {
-                playerDataListFirstJoin.add(pData);
-            }
-        }
         savePDataXML(pData);
     }
 
     private void savePDataXML(PlayerDataImpl pd) {
         File file = new File(dataFolder, pd.getUsername() + ".xml");
-        try {
-            file.createNewFile();
-        } catch (IOException ex) {
-            playerDataMain.getLogger().log(Level.SEVERE, "Exception Creating New File", ex);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
+                return;
+            }
         }
-        try {
-            XMLFileParser.writeToFile(pd, file);
-        } catch (DXMLException ex) {
-            playerDataMain.getLogger().log(Level.SEVERE, "Exception Writing To File", ex);
+        if (file.canWrite()) {
+            try {
+                XMLFileParser.writeToFile(pd, file);
+            } catch (DXMLException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
+            }
+        } else {
+            playerDataBukkit.getLogger().log(Level.SEVERE, "Can''t write to file {0}", file.getAbsolutePath());
         }
     }
 
@@ -243,211 +204,38 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      * priority of people who haven't.
      */
     @Override
-    public String getFullUsername(String username) {
-        if (username == null) {
-            throw new NullArgumentException("Username Can't Be Null");
+    public String getFullUsername(String partialName) {
+        if (partialName == null) {
+            throw new NullArgumentException("Username can't be null");
         }
-        //This is a list of usernames to return, in order from first choice to last choise
-        String[] returnUserNames = new String[12];
-        String user = ChatColor.stripColor(username).toLowerCase();
+        String[] possibleMatches = new String[2];
+        String partialNameLowerCase = partialName.toLowerCase();
         synchronized (playerDataListLock) {
             for (int i = 0; i < playerDataList.size(); i++) {
-                PlayerDataImpl pD = playerDataList.get(i);
-                String checkUserName = pD.getUsername().toLowerCase();
-                String checkNickName = ChatColor.stripColor(pD.getDisplayname()).toLowerCase();
-                String pUserName = pD.getUsername();
-                int add = pD.isOnline() ? 0 : 1;
-                if (checkUserName != null) {
-                    if (checkUserName.equalsIgnoreCase(user)) {
-                        if (returnUserNames[0] == null) {
-                            returnUserNames[0] = pUserName;
-                        }
-                        break;
+                PlayerData pd = playerDataList.get(i);
+                String checkUserName = pd.getUsername().toLowerCase();
+                String checkNickName = ChatColor.stripColor(pd.getDisplayname()).toLowerCase();
+                if (checkUserName.equals(partialNameLowerCase)) {
+                    return pd.getUsername();
+                }
+                if (checkUserName.contains(partialNameLowerCase)) {
+                    if (possibleMatches[0] == null) {
+                        possibleMatches[0] = pd.getUsername();
                     }
-                    if (checkUserName.startsWith(user)) {
-                        if (returnUserNames[4 + add] == null) {
-                            returnUserNames[4 + add] = pUserName;
-                        }
-                    }
-                    if (checkUserName.contains(user)) {
-                        if (returnUserNames[8 + add] == null) {
-                            returnUserNames[8 + add] = pUserName;
-                        }
-                    }
-                    if (checkNickName != null) {
-                        if (checkNickName.equalsIgnoreCase(user)) {
-                            if (returnUserNames[2 + add] == null) {
-                                returnUserNames[2 + add] = pUserName;
-                            }
-                        }
-                        if (checkNickName.startsWith(user)) {
-                            if (returnUserNames[6 + add] == null) {
-                                returnUserNames[6 + add] = pUserName;
-                            }
-                        }
-                        if (checkNickName.contains(user)) {
-                            if (returnUserNames[10 + add] == null) {
-                                returnUserNames[10 + add] = pUserName;
-                            }
-                        }
+                }
+                if (checkNickName.contains(partialNameLowerCase)) {
+                    if (possibleMatches[1] == null) {
+                        possibleMatches[1] = pd.getUsername();
                     }
                 }
             }
         }
-        for (int i = 0; i < returnUserNames.length; i++) {
-            if (returnUserNames[i] != null) {
-                return returnUserNames[i];
+        for (int i = 0; i < possibleMatches.length; i++) {
+            if (possibleMatches[i] != null) {
+                return possibleMatches[i];
             }
         }
         return null;
-    }
-
-    /**
-     * This function gets a list of Player's who's usernames or nicknames
-     * contain the given String. They are ordered in a priority, as Follows:
-     *
-     * First priority is if the given string equals (ignoring case) a loaded
-     * username.
-     *
-     * Second priority is if the given string equals (ignoring case and colors)
-     * a loaded nickname.
-     *
-     * Third priority is if the a loaded username begins with the given string.
-     *
-     * Fourth priority is if the a loaded displayname begins with the given
-     * string.
-     *
-     * Fifth priority is if a loaded username contains the given string.
-     *
-     * And finally sixth priority is if a loaded nickname contains the given
-     * string.
-     *
-     * ALSO, People who are online always have priority over people who are
-     * offline. And people who have joined within the last 2 months have
-     * priority of people who haven't.
-     */
-    protected String[] getPossibleUsernames(String userName) {
-        if (userName == null) {
-            throw new NullArgumentException("UserName Can't Be Null");
-        }
-        //This is a list of usernames to return, in order from first choice to last choise
-        ArrayList<String> onlineUserNames = new ArrayList<String>();//This is online player's usernames
-        ArrayList<String> onlineNickNames = new ArrayList<String>();//This is online player's nicknames
-        ArrayList<String> pUserNames = new ArrayList<String>();//This is offline player's usernames
-        ArrayList<String> pNickNames = new ArrayList<String>();//This is offline player's nicknames
-        int onlineNumberFound = 0;
-        int offlineNumberFound = 0;
-        String user = ChatColor.stripColor(userName).toLowerCase();
-        synchronized (playerDataListLock) {
-            for (int i = 0; i < playerDataList.size(); i++) {
-                final PlayerDataImpl pData = playerDataList.get(i);
-                final boolean online = pData.isOnline();
-                final String pUserName = pData.getUsername();
-                final String pNickName = pData.getDisplayname();
-                final String checkUserName = pUserName.toLowerCase();
-                final String checkNickName = ChatColor.stripColor(pNickName).toLowerCase();
-                if (checkUserName != null) {
-                    if (checkUserName.equalsIgnoreCase(pNickName)) {
-                        if (checkUserName.equalsIgnoreCase(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(null);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(null);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkUserName.startsWith(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(null);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(null);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkUserName.contains(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(null);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(null);
-                                offlineNumberFound++;
-                            }
-                        }
-                    } else {
-                        if (checkUserName.equalsIgnoreCase(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(pNickName);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(pNickName);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkUserName.contains(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(pNickName);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(pNickName);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkNickName.equalsIgnoreCase(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(pNickName);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(pNickName);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkNickName.startsWith(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(pNickName);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(pNickName);
-                                offlineNumberFound++;
-                            }
-                        } else if (checkNickName.contains(user)) {
-                            if (online) {
-                                onlineUserNames.add(pUserName);
-                                onlineNickNames.add(pNickName);
-                                onlineNumberFound++;
-                            } else {
-                                pUserNames.add(pUserName);
-                                pNickNames.add(pNickName);
-                                offlineNumberFound++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        String[] returnList = new String[onlineNumberFound + offlineNumberFound];
-        for (int i = 0; i < onlineNumberFound && i < returnList.length; i++) {
-            if (onlineNickNames.get(i) == null) {
-                returnList[i] = onlineUserNames.get(i);
-            } else {
-                returnList[i] = onlineUserNames.get(i) + ColorList.DIVIDER + "/" + onlineNickNames.get(i);
-            }
-        }
-        for (int i = 0, k = onlineNumberFound; i < offlineNumberFound && k < returnList.length; i++, k++) {
-            returnList[k] = (pNickNames.get(i) == null) ? pUserNames.get(i) : pUserNames.get(i) + ColorList.DIVIDER + "/" + pNickNames.get(i);
-
-        }
-        return returnList;
     }
 
     /**
@@ -623,13 +411,15 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      */
     public void sortData(Runnable afterLoad) {
         Runnable sorter = new Sorter(afterLoad);
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, sorter);
+        Bukkit.getScheduler().runTaskAsynchronously(playerDataBukkit, sorter);
 
     }
 
     @Override
     public List<? extends PlayerData> getAllPlayerDatasFirstJoin() {
         throw new UnsupportedOperationException("PlayerHandlerImpl: Not Created Yet!: getAllPlayerDatasFirstJoin");
+
+
     }
 
     private class Sorter implements Runnable {
@@ -647,25 +437,9 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                 Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
             }
             if (afterLoad != null) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, afterLoad);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataBukkit, afterLoad);
             }
         }
-    }
-
-    private void loadDataFromFiles(final Runnable runAfter) {
-        final Logger l = playerDataMain.getLogger();
-        Runnable run = new Runnable() {
-            @Override
-            public void run() {
-                readData(l, runAfter);
-            }
-        };
-        Bukkit.getScheduler().runTaskAsynchronously(playerDataMain, run);
-    }
-
-    private void readData(final Logger l, final Runnable runAfter) {
-        readData(l);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(playerDataMain, runAfter);
     }
 
     /**
@@ -676,32 +450,26 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      * folder is empty.
      */
     protected void init() {
-        final Logger l = playerDataMain.getLogger();
         if (dataFolder.listFiles().length == 0) {
             createEmptyPlayerDataFilesFromBukkit();
         }
-        readData(l);
+        readDataToList();
         synchronized (playerDataListLock) {
             Collections.sort(playerDataList, LastSeenComparator.getInstance());
             Collections.sort(playerDataListFirstJoin, FirstJoinComparator.getInstance());
         }
-        startServer();
+        Player[] ls = Bukkit.getOnlinePlayers();
+        for (Player p : ls) {
+            PlayerDataImpl pData = getPlayerData(p);
+            pData.loggedIn(p, this);
+        }
     }
 
-    /**
-     * This function removes all the current PDatas loaded, and loads new ones
-     * from the files in the playerdata folder. This function should only be
-     * used on startup.
-     */
-    private void readData(Logger l) {
-        int count = loadAllPDataToList();
-        l.log(Level.INFO, "Read {0} Player Data Files", count);
-    }
-
-    private int loadAllPDataToList() {
+    private int readDataToList() {
         synchronized (playerDataListLock) {
             playerDataList.clear();
             playerDataListFirstJoin.clear();
+            int count = 0;
             if (dataFolder != null && dataFolder.exists()) {
                 File[] playerFiles = dataFolder.listFiles();
                 for (File fl : playerFiles) {
@@ -714,7 +482,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                                     try {
                                         pData = XMLFileParser.readFromFile(fl);
                                     } catch (DXMLException dxmle) {
-                                        playerDataMain.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
+                                        playerDataBukkit.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
                                     }
                                     if (pData != null) {
                                         if (!playerDataList.contains(pData)) {
@@ -729,14 +497,10 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                         }
                     }
                 }
-                return playerDataList.size();
-            } else {
-                return 0;
+                count = playerDataList.size();
             }
+            playerDataBukkit.getLogger().log(Level.INFO, "Read {0} data files", count);
+            return count;
         }
-    }
-
-    public int numPlayersLoaded() {
-        return playerDataList.size();
     }
 }

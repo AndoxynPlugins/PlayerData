@@ -15,10 +15,10 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
 import org.bukkit.Bukkit;
 
@@ -28,10 +28,10 @@ import org.bukkit.Bukkit;
  */
 public class ViewInfoCommandHandler implements SubCommandHandler {
 
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerHandler playerHandler;
 
-    public ViewInfoCommandHandler(PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+    public ViewInfoCommandHandler(PlayerHandler playerHandler) {
+        this.playerHandler = playerHandler;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
             return;
         }
         String givenPlayerName = StaticHelper.getCombinedString(subCommandArgs, 0);
-        PlayerData pd = playerDataMain.getHandler().getPlayerDataPartial(givenPlayerName);
+        PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
         if (pd == null) {
             sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
             return;
@@ -66,7 +66,7 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
         if (PlayerDataStatic.isPermissionLoaded()) {
             String[] groups = PlayerDataStatic.getPermissionHandler().getPlayerGroups((String) null, pd.getUsername());
             if (groups == null) {
-                playerDataMain.getLogger().log(Level.FINE, "Permissions handler exists but gave null groups for player {0}", pd.getUsername());
+                PlayerDataStatic.getLogger().log(Level.FINE, "Permissions handler exists but gave null groups for player {0}", pd.getUsername());
             } else {
                 linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
             }

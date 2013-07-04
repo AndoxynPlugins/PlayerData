@@ -11,9 +11,9 @@ import java.util.Set;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,10 +24,10 @@ import org.bukkit.command.CommandSender;
  */
 public class IPLookupCommandHandler implements SubCommandHandler {
 
-    private final PlayerDataBukkit playerDataMain;
+    private final PlayerHandler playerHandler;
 
-    public IPLookupCommandHandler(PlayerDataBukkit playerDataMain) {
-        this.playerDataMain = playerDataMain;
+    public IPLookupCommandHandler(PlayerHandler playerHandler) {
+        this.playerHandler = playerHandler;
     }
 
     @Override
@@ -38,16 +38,16 @@ public class IPLookupCommandHandler implements SubCommandHandler {
             return;
         }
         String playerNameGiven = StaticHelper.getCombinedString(subCommandArgs, 0);
-        PlayerData pData = playerDataMain.getHandler().getPlayerDataPartial(playerNameGiven);
-        if (pData == null) {
+        PlayerData pd = playerHandler.getPlayerDataPartial(playerNameGiven);
+        if (pd == null) {
             sender.sendMessage(ColorList.ERR + "Player '" + ColorList.ERR_ARGS + playerNameGiven + ColorList.ERR + "' not found");
             return;
         }
-        List<? extends LoginData> logins = pData.getAllLogins();
+        List<? extends LoginData> logins = pd.getAllLogins();
         if (logins.isEmpty()) {
-            sender.sendMessage(ColorList.ERR + "No know IPs for " + ColorList.ERR_ARGS + pData.getUsername());
+            sender.sendMessage(ColorList.ERR + "No know IPs for " + ColorList.ERR_ARGS + pd.getUsername());
         } else if (logins.size() == 1) {
-            sender.sendMessage(ColorList.REG + "Different IPs used by " + pData.getUsername());
+            sender.sendMessage(ColorList.REG + "Different IPs used by " + pd.getUsername());
             sender.sendMessage(ColorList.DATA + logins.get(0).getIP());
         } else {
             Set<String> ipList = new HashSet<String>();

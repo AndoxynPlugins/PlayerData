@@ -113,13 +113,13 @@ public class XMLFileParser {
             }
             Node child = current.getFirstChild();
             if (child == null) {
-                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataStatic.getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
                 continue;
             }
             try {
                 logOutsFinal.add(Long.valueOf(child.getNodeValue()));
             } catch (NumberFormatException nfe) {
-                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
+                PlayerDataStatic.getLogger().log(Level.WARNING, "Invalid Logout: User:{0}", username);
             }
         }
         for (int i = 0; i < logInList.getLength(); i++) {
@@ -130,7 +130,7 @@ public class XMLFileParser {
             try {
                 logInsFinal.add(new LoginDataImpl(current));
             } catch (DXMLException dxmle) {
-                PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
+                PlayerDataStatic.getLogger().log(Level.WARNING, "Invalid Login: User:{0}", username);
             }
         }
         NodeList dataList = data.getChildNodes();
@@ -146,7 +146,7 @@ public class XMLFileParser {
         try {
             timePlayedLong = Long.parseLong(timePlayed);
         } catch (NumberFormatException nfe) {
-            PlayerDataStatic.getPlayerDataLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
+            PlayerDataStatic.getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
         return new PlayerDataImpl(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, extraData);
     }

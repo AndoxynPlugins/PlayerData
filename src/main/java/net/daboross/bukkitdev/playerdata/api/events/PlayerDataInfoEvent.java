@@ -16,6 +16,10 @@ public class PlayerDataInfoEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
+    public PlayerDataInfoEvent() {
+        super(false);
+    }
+
     @Override
     public HandlerList getHandlers() {
         return handlers;
