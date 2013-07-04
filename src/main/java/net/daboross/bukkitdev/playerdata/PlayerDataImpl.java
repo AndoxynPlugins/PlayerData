@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -66,8 +67,8 @@ public final class PlayerDataImpl implements PlayerData {
 
     /**
      * Use This to create a NEW Player who has never joined before This should
-     * never called be any class besides the PlayerHandlerImpl. This should only be
-     * used when PlayerDataBukkit is creating empty player data files from
+     * never called be any class besides the PlayerHandlerImpl. This should only
+     * be used when PlayerDataBukkit is creating empty player data files from
      * another data storage, such as Bukkit's store.
      *
      * @param offlinePlayer The Offline Player to create a PlayerDataImpl from.
@@ -97,8 +98,8 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This creates a PlayerDataImpl from data loaded from a file. This should never be
-     * called except from within a FileParser!
+     * This creates a PlayerDataImpl from data loaded from a file. This should
+     * never be called except from within a FileParser!
      *
      * @param getUsername The Full UserName of this player
      * @param getDisplayname The Last DisplayName this player had that was not
@@ -124,7 +125,8 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This updates this player's status. This will NOT save this PlayerDataImpl.
+     * This updates this player's status. This will NOT save this
+     * PlayerDataImpl.
      *
      * @return Will return true if the player's username equals the players
      * display name, or if the player is offline. false otherwise.
@@ -142,7 +144,8 @@ public final class PlayerDataImpl implements PlayerData {
 
     /**
      * Checks if the player is null and then updates the nick with the player's
-     * nickname. Don't use this with a player that isn't this PlayerDataImpl's Player.
+     * nickname. Don't use this with a player that isn't this PlayerDataImpl's
+     * Player.
      */
     private void updateDisplayName(Player p) {
         if (!p.getName().equals(p.getDisplayName())) {
@@ -206,10 +209,10 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This function tells this PlayerDataImpl that the player who this PlayerDataImpl is
-     * representing just logged out. Do not run this function from outside the
-     * PlayerDataEventListener. This will save the current status of this PlayerDataImpl
-     * to file.
+     * This function tells this PlayerDataImpl that the player who this
+     * PlayerDataImpl is representing just logged out. Do not run this function
+     * from outside the PlayerDataEventListener. This will save the current
+     * status of this PlayerDataImpl to file.
      */
     void loggedOut(Player p, PlayerHandlerImpl pdh) {
         if (online) {
@@ -225,10 +228,10 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This function tells this PlayerDataImpl that the player who this PlayerDataImpl is
-     * representing just logged in. Do not run this function from outside the
-     * PlayerDataEventListener. This will save the current status of this PlayerDataImpl
-     * to file.
+     * This function tells this PlayerDataImpl that the player who this
+     * PlayerDataImpl is representing just logged in. Do not run this function
+     * from outside the PlayerDataEventListener. This will save the current
+     * status of this PlayerDataImpl to file.
      */
     void loggedIn(Player p, PlayerHandlerImpl pdh) {
         if (!online) {
@@ -243,7 +246,8 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This function gets the username of the player represented by this PlayerDataImpl.
+     * This function gets the username of the player represented by this
+     * PlayerDataImpl.
      *
      * @return The username of the player represented by this PlayerDataImpl.
      */
@@ -277,9 +281,9 @@ public final class PlayerDataImpl implements PlayerData {
 
     /**
      * This function gets the first getDate this player logged into this server.
-     * If Bukkit's the recorded first log in is earlier then this PlayerDataImpl's
-     * recorded first log in, then this PlayerDataImpl's information is updated with
-     * Bukkit's
+     * If Bukkit's the recorded first log in is earlier then this
+     * PlayerDataImpl's recorded first log in, then this PlayerDataImpl's
+     * information is updated with Bukkit's
      *
      * @return
      */
@@ -343,7 +347,7 @@ public final class PlayerDataImpl implements PlayerData {
 
     @Override
     public String[] addExtraData(String dataName, String[] data) {
-        return extraData.put(dataName.toLowerCase(), data);
+        return extraData.put(dataName.toLowerCase(), ArrayHelpers.copyArray(data));
     }
 
     @Override
@@ -353,7 +357,7 @@ public final class PlayerDataImpl implements PlayerData {
 
     @Override
     public String[] getExtraData(String dataName) {
-        return extraData.get(dataName.toLowerCase());
+        return ArrayHelpers.copyArray(extraData.get(dataName.toLowerCase()));
     }
 
     @Override
