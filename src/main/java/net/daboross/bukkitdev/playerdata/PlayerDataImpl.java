@@ -1,3 +1,8 @@
+/*
+ * Author: Dabo Ross
+ * Website: www.daboross.net
+ * Email: daboross@daboross.net
+ */
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.ArrayList;

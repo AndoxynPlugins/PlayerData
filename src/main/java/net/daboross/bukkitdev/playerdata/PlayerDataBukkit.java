@@ -1,3 +1,8 @@
+/*
+ * Author: Dabo Ross
+ * Website: www.daboross.net
+ * Email: daboross@daboross.net
+ */
 package net.daboross.bukkitdev.playerdata;
 
 import java.io.IOException;
@@ -12,7 +17,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * PlayerDataBukkit Plugin Made By DaboRoss
+ * PlayerData Plugin Made By DaboRoss
  *
  * @author daboross
  */

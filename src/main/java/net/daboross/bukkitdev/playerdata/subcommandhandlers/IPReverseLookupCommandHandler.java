@@ -1,3 +1,8 @@
+/*
+ * Author: Dabo Ross
+ * Website: www.daboross.net
+ * Email: daboross@daboross.net
+ */
 package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.ArrayList;
@@ -5,8 +10,6 @@ import java.util.List;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
-import net.daboross.bukkitdev.playerdata.LoginDataImpl;
-import net.daboross.bukkitdev.playerdata.PlayerDataImpl;
 import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
