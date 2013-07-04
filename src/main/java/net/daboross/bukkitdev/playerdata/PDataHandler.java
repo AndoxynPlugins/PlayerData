@@ -562,15 +562,11 @@ public final class PDataHandler {
      * @param longInfo Whether to call the DataDisplayParser's LongInfo. If
      * false, then the ShortInfo method is called.
      */
-    public String[] getDisplayData(Data d, boolean longInfo) {
-        if (ddpMap.containsKey(d.getName())) {
-            if (longInfo) {
-                return ddpMap.get(d.getName()).longInfo(d);
-            } else {
-                return ddpMap.get(d.getName()).shortInfo(d);
-            }
+    public String getDisplayData(String dataName, String[] data) {
+        if (ddpMap.containsKey(dataName)) {
+            return ddpMap.get(dataName).commandInfo(dataName, data);
         }
-        return new String[0];
+        return null;
     }
 
     /**
@@ -581,12 +577,12 @@ public final class PDataHandler {
      *
      * @param dataName The type of the data.
      */
-    protected List<Data> getAllData(String dataName) {
+    protected List<String[]> getAllData(String dataName) {
         synchronized (playerDataListLock) {
-            List<Data> returnArrayList = new ArrayList<Data>();
+            List<String[]> returnArrayList = new ArrayList<String[]>();
             for (PData pData : playerDataList) {
-                if (pData.hasData(dataName)) {
-                    returnArrayList.add(pData.getData(dataName));
+                if (pData.hasExtraData(dataName)) {
+                    returnArrayList.add(pData.getExtraData(dataName));
                 }
             }
             return returnArrayList;

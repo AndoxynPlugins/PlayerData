@@ -5,11 +5,13 @@
  */
 package net.daboross.bukkitdev.playerdata.api;
 
+import java.util.List;
+
 /**
  *
  * @author daboross
  */
-public interface PlayerDataDataHandler {
+public interface PlayerHandler {
 
     /**
      * Gets the username of a player based off of the partial username or
@@ -35,7 +37,7 @@ public interface PlayerDataDataHandler {
      * displayname. This function is more efficient than using
      * getPlayerData(getFullUsername(name)), but it does the exact same thing.
      *
-     * @param name The partial username or displayname of the player
+     * @param partialName The partial username or displayname of the player
      * @return The first PlayerData in the database who's username or
      * displayname contains the given name, or null if not found.
      */
@@ -47,5 +49,5 @@ public interface PlayerDataDataHandler {
      *
      * @return A copy of the full list of all PlayerDatas.
      */
-    public PlayerData[] getAllPlayerData();
+    public List<? extends PlayerData> getAllPlayerDatas();
 }

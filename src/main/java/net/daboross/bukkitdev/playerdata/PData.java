@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 /**
@@ -37,11 +38,11 @@ public final class PData implements PlayerData {
     private String displayname;
     private long timePlayed = 0;
     private long currentSession;
-    private final ArrayList<IPLogin> logins = new ArrayList<IPLogin>();
+    private final List<IPLogin> logins = new ArrayList<IPLogin>();
     private final List<IPLogin> loginsUnmodifiable = Collections.unmodifiableList(logins);
-    private final ArrayList<Long> logouts = new ArrayList<Long>();
+    private final List<Long> logouts = new ArrayList<Long>();
     private final List<Long> logoutsUnmodifiable = Collections.unmodifiableList(logouts);
-    private final ArrayList<Data> data = new ArrayList<Data>();
+    private final Map<String, String[]> extraData = new HashMap<String, String[]>();
     private boolean online = false;
     private int nickUpdateExtraThreadUpdateTimes = 0;
 
@@ -109,7 +110,7 @@ public final class PData implements PlayerData {
      * @param getTimePlayed The getDate this player has played on this server.
      * @param data A List of custom data entries.
      */
-    public PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Data[] data) {
+    public PData(String userName, String nickName, ArrayList<IPLogin> logIns, ArrayList<Long> logOuts, long timePlayed, Map<String, String[]> extraData) {
         this.username = userName;
         this.displayname = nickName;
         if (this.displayname == null || this.displayname.length() == 0) {
@@ -118,16 +119,9 @@ public final class PData implements PlayerData {
         this.logins.addAll(logIns);
         this.logouts.addAll(logOuts);
         this.timePlayed = timePlayed;
-        this.data.addAll(Arrays.asList(data));
-        setDataOwners();
+        this.extraData.putAll(extraData);
         currentSession = System.currentTimeMillis();
         sortTimes();
-    }
-
-    private void setDataOwners() {
-        for (Data d : data) {
-            d.setOwner(this);
-        }
     }
 
     /**
@@ -346,116 +340,29 @@ public final class PData implements PlayerData {
         return getLastSeen() > cal.getTimeInMillis();
     }
 
-    /**
-     * Adds Data To This Player. If Data Is Already On With the given data's
-     * Name, It will be Replaced! This PData will keep track of this data, and
-     * will save it on server shutdown, and will load it when PlayerDataBukkit
-     * is loaded.
-     *
-     * @param d The Data To Add.
-     */
-    public void addData(Data d) {
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getName().equalsIgnoreCase(d.getName())) {
-                data.remove(i);
-                i -= 1;
-            }
-        }
-        data.add(d);
-        d.setOwner(this);
-        saveStatus();
+    @Override
+    public boolean hasExtraData(String dataName) {
+        return extraData.containsKey(dataName.toLowerCase());
     }
 
-    public void removeData(String name) {
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getName().equalsIgnoreCase(name)) {
-                data.remove(i);
-                i -= 1;
-            }
-        }
-        saveStatus();
+    @Override
+    public String[] addExtraData(String dataName, String[] data) {
+        return extraData.put(dataName.toLowerCase(), data);
     }
 
-    /**
-     * This gets ALL Custom Data that has ever been given to a PData for this
-     * player.
-     *
-     * @return An array of custom datas that have been added to this Player's
-     * PData.
-     */
-    public Data[] getData() {
-        return data.toArray(new Data[0]);
+    @Override
+    public String[] removeExtraData(String dataName) {
+        return extraData.remove(dataName.toLowerCase());
     }
 
-    /**
-     * This gets a Data from this player with of a given type.
-     *
-     * @param name The data type, EG "bandata".
-     * @return The Data that has been given to this player with addData(), or
-     * null if data of this type has never been added to this player.
-     */
-    public Data getData(String name) {
-        for (Data d : data) {
-            if (d.getName().equalsIgnoreCase(name)) {
-                return d;
-            }
-        }
-        return null;
+    @Override
+    public String[] getExtraData(String dataName) {
+        return extraData.get(dataName.toLowerCase());
     }
 
-    /**
-     * This function gets whether or not this PData is storing a custom data of
-     * a given type.
-     *
-     * @param name The type of PData to check.
-     * @return true if that type of data is being stored, false otherwise.
-     */
-    public boolean hasData(String name) {
-        for (Data d : data) {
-            if (d.getName().equalsIgnoreCase(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Gets the OfflinePlayer stored by Bukkit that represents the same player
-     * that this PData represents.
-     *
-     * @return The OfflinePlayer stored by Bukkit that represents the same
-     * player that this PData represents.
-     */
-    public OfflinePlayer getOfflinePlayer() {
-        OfflinePlayer ofp = Bukkit.getOfflinePlayer(username);
-        return ofp;
-    }
-    private static String[] EMPTY_STRING_LIST = {};
-
-    /**
-     * This function gets the permissions groups that this player is in. This is
-     * retrieved from Vault Permissions. If PlayerDataBukkit hasn't found a
-     * permission handler, then this will return an empty list.
-     *
-     * @return
-     */
-    public String[] getGroups() {
-        if (PlayerDataBukkit.isVaultLoaded()) {
-            return PlayerDataBukkit.getPermissionHandler().getPlayerGroups((String) null, username);
-        }
-        return EMPTY_STRING_LIST;
-    }
-
-    public boolean isGroup(String group) {
-        if (PlayerDataBukkit.isVaultLoaded()) {
-            for (World world : Bukkit.getWorlds()) {
-                boolean inGroup = PlayerDataBukkit.getPermissionHandler().playerInGroup(world, username, group);
-                if (inGroup) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    @Override
+    public String[] getExtraDataNames() {
+        return extraData.keySet().toArray(new String[extraData.keySet().size()]);
     }
 
     private void sortTimes() {

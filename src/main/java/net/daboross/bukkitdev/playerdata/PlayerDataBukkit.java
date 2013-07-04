@@ -3,6 +3,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.metrics.Metrics;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
@@ -98,7 +99,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
         return currentInstance;
     }
 
-    public PlayerDataHandler getHandler() {
+    public PlayerHandler getHandler() {
         return handler;
     }
 

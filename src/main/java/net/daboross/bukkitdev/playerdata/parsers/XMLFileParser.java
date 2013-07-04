@@ -2,9 +2,10 @@ package net.daboross.bukkitdev.playerdata.parsers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
-import net.daboross.bukkitdev.playerdata.Data;
 import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
@@ -49,9 +50,9 @@ public class XMLFileParser {
         }
         {
             Element otherData = document.createElement("data");
-            for (Data data : pData.getData()) {
-                Element e = document.createElement(data.getName());
-                data.putDataOnXML(e);
+            for (String dataName : pData.getExtraDataNames()) {
+                Element e = document.createElement(dataName);
+                ExtraDataParser.putDataOnXML(dataName, pData.getExtraData(dataName), e);
                 otherData.appendChild(e);
             }
             root.appendChild(otherData);
@@ -128,13 +129,13 @@ public class XMLFileParser {
             }
         }
         NodeList dataList = data.getChildNodes();
-        ArrayList<Data> dataFinal = new ArrayList<Data>(dataList.getLength());
+        Map<String, String[]> extraData = new HashMap<String, String[]>();
         for (int i = 0; i < dataList.getLength(); i++) {
             Node current = dataList.item(i);
             if (current.getNodeName().equals("#text")) {
                 continue;
             }
-            dataFinal.add(new Data(current));
+            extraData.put(ExtraDataParser.getDataNameFromXML(current), ExtraDataParser.getDataFromXML(current));
         }
         long timePlayedLong = 0;
         try {
@@ -142,6 +143,6 @@ public class XMLFileParser {
         } catch (NumberFormatException nfe) {
             PlayerDataBukkit.getCurrentInstance().getLogger().log(Level.WARNING, "Invalid TimePlayed: User:{0}", username);
         }
-        return new PData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, dataFinal.toArray(new Data[dataFinal.size()]));
+        return new PData(username, displayname, logInsFinal, logOutsFinal, timePlayedLong, extraData);
     }
 }

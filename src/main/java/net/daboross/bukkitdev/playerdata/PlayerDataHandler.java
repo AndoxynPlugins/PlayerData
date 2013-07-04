@@ -2,14 +2,14 @@ package net.daboross.bukkitdev.playerdata;
 
 import java.util.List;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
-import net.daboross.bukkitdev.playerdata.api.PlayerDataDataHandler;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 
 /**
  * This is the main API function for PlayerDataBukkit.
  *
  * @author daboross
  */
-public class PlayerDataHandler implements PlayerDataDataHandler {
+public class PlayerDataHandler implements PlayerHandler {
 
     private final PDataHandler pDataHandler;
     private final PlayerDataBukkit playerDataMain;
@@ -42,22 +42,9 @@ public class PlayerDataHandler implements PlayerDataDataHandler {
      * @returns The Full Username of the Player Found, or Null if no player is
      * found who's name contains the given string.
      */
+    @Override
     public String getFullUsername(String name) {
         return pDataHandler.getFullUsername(name);
-    }
-
-    /**
-     * Adds the data given to the Player given. If the player already has a data
-     * with data's name, then the previous data is replaced with the new data.
-     */
-    public boolean addCustomData(String playerName, Data data) {
-        PData pData = pDataHandler.getPDataFromUsername(playerName);
-        if (pData != null) {
-            pData.addData(data);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -83,35 +70,29 @@ public class PlayerDataHandler implements PlayerDataDataHandler {
     }
 
     /**
+     * Gets a PlayerData in the database from the given username.
      *
-     * Get Custom Data For Given Player Name and Given data Name. Will return
-     * null if player is not found or if data with given name is not found on
-     * player. This internally calls the getFullUsername() on the playerName
-     * given function before getting player data for that username.
-     *
-     * @param playerName The Name of the player to get data for
-     * @param dataName The Data Type to get
-     * @return The Data That PlayerDataBukkit is holding for that player if this
-     * dataType has been loaded onto this player. null otherwise
+     * @param username The full username of a player in the database.
+     * @return The PlayerData in the database for that username, or null if not
+     * found.
      */
-    public Data getCustomData(String playerName, String dataName) {
-        PData pData = pDataHandler.getPDataFromUsername(playerName);
-        if (pData != null) {
-            return pData.getData(dataName);
-        } else {
-            return null;
-        }
+    @Override
+    public PlayerData getPlayerData(String username) {
+        return pDataHandler.getPDataFromUsername(username);
     }
 
     /**
-     * This function gets a PData corresponding to the username given.
+     * Gets a PlayerData in the database from the given partial username or
+     * displayname. This function is more efficient than using
+     * getPlayerData(getFullUsername(name)), but it does the exact same thing.
      *
-     * @param getUsername This should be the full or partial username of a
-     * player
-     * @return the PData corresponding to that getUsername.
+     * @param partialName The partial username or displayname of the player
+     * @return The first PlayerData in the database who's username or
+     * displayname contains the given name, or null if not found.
      */
-    public PData getPData(String userName) {
-        return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(userName));
+    @Override
+    public PData getPlayerDataPartial(String partialName) {
+        return pDataHandler.getPDataFromUsername(pDataHandler.getFullUsername(partialName));
     }
 
     /**
@@ -119,11 +100,11 @@ public class PlayerDataHandler implements PlayerDataDataHandler {
      * all the data's of the type given. This list is created inside this
      * command and no references are kept.
      *
-     * @param dataType This is the data type to search for.
+     * @param dataName This is the data type to search for.
      * @return A list of all data's of that type which are loaded.
      */
-    public List<Data> getAllDatas(String dataType) {
-        return pDataHandler.getAllData(dataType);
+    public List<String[]> getAllDatas(String dataName) {
+        return pDataHandler.getAllData(dataName);
     }
 
     /**
@@ -133,7 +114,8 @@ public class PlayerDataHandler implements PlayerDataDataHandler {
      *
      * @return A list of PData's Loaded.
      */
-    public List<? extends PlayerData> getAllPDatas() {
+    @Override
+    public List<? extends PlayerData> getAllPlayerDatas() {
         return pDataHandler.getAllPDatas();
     }
 
@@ -165,3 +147,4 @@ public class PlayerDataHandler implements PlayerDataDataHandler {
     public PlayerData getPDataFromUsername(String name) {
         return pDataHandler.getPDataFromUsername(name);
     }
+}

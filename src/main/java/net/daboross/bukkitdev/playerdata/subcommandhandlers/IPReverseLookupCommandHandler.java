@@ -9,6 +9,7 @@ import net.daboross.bukkitdev.playerdata.IPLogin;
 import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -36,13 +37,13 @@ public class IPReverseLookupCommandHandler implements SubCommandHandler {
             sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
         }
         List<String> usersList = new ArrayList<String>();
-        for (PData pData : playerDataMain.getHandler().getAllPDatas()) {
-            for (LoginData login : pData.getAllLogins()) {
+        for (PlayerData player : playerDataMain.getHandler().getAllPlayerDatas()) {
+            for (LoginData login : player.getAllLogins()) {
                 String ip = login.getIP();
                 String[] ipSplit = ip.split(":")[0].split("/");
                 ip = ipSplit[ipSplit.length - 1];
                 if (ip.equalsIgnoreCase(subCommandArgs[0])) {
-                    usersList.add(pData.getUsername());
+                    usersList.add(player.getUsername());
                     break;
                 }
             }

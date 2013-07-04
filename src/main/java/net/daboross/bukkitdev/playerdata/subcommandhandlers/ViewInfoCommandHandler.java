@@ -1,7 +1,6 @@
 package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
@@ -10,12 +9,10 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import net.daboross.bukkitdev.playerdata.Data;
-import net.daboross.bukkitdev.playerdata.IPLogin;
-import net.daboross.bukkitdev.playerdata.PData;
 import net.daboross.bukkitdev.playerdata.PDataHandler;
 import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import org.bukkit.Bukkit;
 
 /**
@@ -38,7 +35,7 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
             return;
         }
         String givenPlayerName = PlayerDataBukkit.getCombinedString(subCommandArgs, 0);
-        PData pData = playerDataMain.getHandler().getPData(givenPlayerName);
+        PlayerData pData = playerDataMain.getHandler().getPlayerDataPartial(givenPlayerName);
         if (pData == null) {
             sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
             return;
@@ -57,14 +54,17 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
         linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.getAllLogins().size());
         linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pData.getAllLogouts().size());
         linesToSend.add(ColorList.REG + "Time played on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(pData.getTimePlayed()));
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(System.currentTimeMillis() - pData.getFirstLogIn().getDate()) + ColorList.REG + " ago");
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pData.getFirstLogIn().getDate()));
+        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + PlayerDataBukkit.getFormattedDate(System.currentTimeMillis() - pData.getAllLogins().get(0).getDate()) + ColorList.REG + " ago");
+        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pData.getAllLogins().get(0).getDate()));
         if (PlayerDataBukkit.isVaultLoaded()) {
-            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(pData.getGroups(), ", "));
+            linesToSend.add(ColorList.NAME + pData.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(PlayerDataBukkit.getPermissionHandler().getPlayerGroups((String) null, givenPlayerName), ", "));
         }
         PDataHandler pdh = playerDataMain.getPDataHandler();
-        for (Data d : pData.getData()) {
-            linesToSend.addAll(Arrays.asList(pdh.getDisplayData(d, false)));
+        for (String dataName : pData.getExtraDataNames()) {
+            String info = pdh.getDisplayData(dataName, pData.getExtraData(dataName));
+            if (info != null) {
+                linesToSend.add(info);
+            }
         }
         sender.sendMessage(linesToSend.toArray(new String[0]));
     }
