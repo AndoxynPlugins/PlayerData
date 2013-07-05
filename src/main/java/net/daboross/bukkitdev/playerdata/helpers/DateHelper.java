@@ -12,7 +12,7 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelp
  *
  * @author daboross
  */
-public class StaticHelper {
+public class DateHelper {
 
     /**
      * Get a visually nice date from a timestamp. Acts like: 4 years, 2 months,

@@ -12,7 +12,7 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.helpers.StaticHelper;
+import net.daboross.bukkitdev.playerdata.helpers.DateHelper;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -58,7 +58,7 @@ public class ListPlayersFirstJoinCommandHandler implements SubCommandHandler {
         messagesToSend.add(ColorList.TOP_SEPERATOR + " --" + ColorList.TOP + " Player List " + ColorList.TOP_SEPERATOR + "--" + ColorList.TOP + " Page " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_SEPERATOR + " --");
         for (int i = (pageNumberReal * 6); i < ((pageNumberReal + 1) * 6) && i < pDataList.size(); i++) {
             PlayerData current = pDataList.get(i);
-            messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was first seen " + ColorList.DATA + StaticHelper.getFormattedRelativeDate(System.currentTimeMillis() - current.getAllLogins().get(0).getDate()) + ColorList.REG + " ago.");
+            messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was first seen " + ColorList.DATA + DateHelper.getFormattedRelativeDate(System.currentTimeMillis() - current.getAllLogins().get(0).getDate()) + ColorList.REG + " ago.");
         }
         if (pageNumberReal + 1 < (pDataList.size() / 6.0)) {
             messagesToSend.add(ColorList.REG + "To view the next page type '" + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel + ColorList.ARGS + " " + (pageNumber + 1) + ColorList.REG + "'");
