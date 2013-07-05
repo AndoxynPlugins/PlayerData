@@ -25,15 +25,26 @@ public class XMLParserFinder {
 
     public static PlayerDataImpl read(File file) throws DXMLException {
         Document document = DXMLHelper.readDocument(file);
-        Node versionNode = null;
-        Node rootTest = document.getFirstChild();
+        Node root = document.getFirstChild();
         while (true) {
-            if (rootTest == null) {
+            if (root == null) {
                 break;
-            } else if (rootTest.getNodeName().equalsIgnoreCase("version")) {
-                versionNode = rootTest;
+            } else if (root.getNodeName().equalsIgnoreCase("playerdata")) {
+                break;
             }
-            rootTest = rootTest.getNextSibling();
+            root = root.getNextSibling();
+        }
+        if (root == null) {
+            throw new DXMLException("Invalid Save File " + file.getAbsolutePath() + "! Root node incorrectly named!");
+        }
+        Node versionNode = root.getFirstChild();
+        while (true) {
+            if (versionNode == null) {
+                break;
+            } else if (versionNode.getNodeName().equalsIgnoreCase("version")) {
+                break;
+            }
+            versionNode = versionNode.getNextSibling();
         }
         int version;
         if (versionNode == null) {

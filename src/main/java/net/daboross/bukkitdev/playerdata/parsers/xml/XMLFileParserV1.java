@@ -25,11 +25,11 @@ import org.w3c.dom.NodeList;
  * @author daboross
  */
 public class XMLFileParserV1 {
-
+    
     public static void save(PlayerData pd, File fileResult) throws DXMLException {
         Document document = newDocument();
-        document.appendChild(createElement(document, "version", "1"));
         Element root = document.createElement("playerdata");
+        root.appendChild(createElement(document, "version", "1"));
         document.appendChild(root);
         root.appendChild(createElement(document, "username", pd.getUsername()));
         root.appendChild(createElement(document, "displayname", pd.getDisplayname()));
@@ -63,7 +63,7 @@ public class XMLFileParserV1 {
         }
         writeXML(document, fileResult);
     }
-
+    
     public static PlayerDataImpl read(Document document) throws DXMLException {
         Node root = null;
         Node rootTest = document.getFirstChild();
@@ -102,7 +102,7 @@ public class XMLFileParserV1 {
                 logouts = current;
             } else if (current.getNodeName().equals("data")) {
                 data = current;
-            } else if (!current.getNodeName().equals("#text")) {
+            } else if (!(current.getNodeName().equals("#text") || current.getNodeName().equals("version"))) {
                 throw new DXMLException("Root element child node " + current.getNodeName() + " unknown!");
             }
         }

@@ -211,7 +211,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                 playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
             }
         } else {
-            playerDataBukkit.getLogger().log(Level.SEVERE, "Can''t write to file {0}", file.getAbsolutePath());
+            playerDataBukkit.getLogger().log(Level.SEVERE, "Can\'t write to file {0}", file.getAbsolutePath());
         }
     }
 
@@ -295,9 +295,9 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                 saveAllData();
             } else {
                 for (File fl : playerFiles) {
-                    if (fl.isFile()) {
+                    if (!fl.isFile()) {
                         playerDataBukkit.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                         return false;
                     } else if (fl.canRead()) {
                         String[] split = fl.getName().split("\\.");
@@ -308,7 +308,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                                 pData = XMLParserFinder.read(fl);
                             } catch (DXMLException dxmle) {
                                 playerDataBukkit.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                                 return false;
                             }
                             if (!playerDataList.contains(pData)) {
@@ -318,13 +318,13 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                                 playerDataListFirstJoin.add(pData);
                             }
                         } else {
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type in the xml directory! File: {0}", fl.getAbsolutePath());
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                             return false;
                         }
                     } else {
                         playerDataBukkit.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                         return false;
                     }
                 }
