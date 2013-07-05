@@ -24,7 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class PlayerDataBukkit extends JavaPlugin {
 
     private PlayerHandlerImpl playerHandler;
-    private PlayerDataEventListener eventListener;
     private boolean permissionLoaded = false;
     private Permission permissionHandler;
 
@@ -41,7 +40,18 @@ public final class PlayerDataBukkit extends JavaPlugin {
             metrics.start();
         }
         PluginManager pm = this.getServer().getPluginManager();
-        setupVault(pm);
+        if (pm.isPluginEnabled("Vault")) {
+            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
+            permissionHandler = rsp.getProvider();
+            if (permissionHandler == null) {
+                getLogger().log(Level.INFO, "Vault found. Permission not found.");
+            } else {
+                permissionLoaded = true;
+                getLogger().log(Level.INFO, "Vault found. Permission not found.");
+            }
+        } else {
+            getLogger().log(Level.INFO, "Vault not found. Permission not found.");
+        }
         playerHandler = new PlayerHandlerImpl(this);
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
@@ -51,8 +61,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
         if (getusername != null) {
             getusername.setExecutor(new GetUsernameCommand(playerHandler));
         }
-        eventListener = new PlayerDataEventListener(playerHandler);
-        pm.registerEvents(eventListener, this);
+        pm.registerEvents(new PlayerDataEventListener(playerHandler), this);
         playerHandler.init();
         getLogger().info("PlayerData Load Completed");
     }
@@ -63,6 +72,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
         playerHandler.saveAllData();
         PlayerDataStatic.setPlayerDataBukkit(null);
         permissionHandler = null;
+        playerHandler = null;
         permissionLoaded = false;
         getLogger().info("PlayerData Unload Completed");
     }
@@ -83,19 +93,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
         return permissionHandler;
     }
 
-    private void setupVault(PluginManager pm) {
-        boolean isVaultLoaded = pm.isPluginEnabled("Vault");
-        if (isVaultLoaded) {
-            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
-            permissionHandler = rsp.getProvider();
-            if (permissionHandler == null) {
-                getLogger().log(Level.INFO, "Vault found. Permission not found.");
-            } else {
-                permissionLoaded = true;
-                getLogger().log(Level.INFO, "Vault found. Permission not found.");
-            }
-        } else {
-            getLogger().log(Level.INFO, "Vault not found. Permission not found.");
-        }
+    public int getAPIVersion() {
+        return 1;
     }
 }

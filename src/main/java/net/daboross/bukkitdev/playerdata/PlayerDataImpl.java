@@ -112,7 +112,7 @@ public final class PlayerDataImpl implements PlayerData {
      * @param timePlayed The getDate this player has played on this server.
      * @param extraData A List of custom data entries.
      */
-    public PlayerDataImpl(String username, String displayname, ArrayList<LoginDataImpl> logins, ArrayList<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
+    public PlayerDataImpl(String username, String displayname, List<LoginDataImpl> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
         this.username = username;
         this.displayname = displayname;
         if (this.displayname == null) {
@@ -126,38 +126,12 @@ public final class PlayerDataImpl implements PlayerData {
         sortTimes();
     }
 
-    /**
-     * This updates this player's status. This will NOT save this
-     * PlayerDataImpl.
-     *
-     * @return Will return true if the player's username equals the players
-     * display name, or if the player is offline. false otherwise.
-     */
-    protected void updateStatus() {
-        Player p = online ? Bukkit.getPlayer(this.username) : null;
-        if (p != null) {
-            updateDisplayName(p);
-            if (online) {
-                timePlayed += (System.currentTimeMillis() - currentSession);
-                currentSession = System.currentTimeMillis();
-            }
-        }
-    }
-
-    /**
-     * Checks if the player is null and then updates the nick with the player's
-     * nickname. Don't use this with a player that isn't this PlayerDataImpl's
-     * Player.
-     */
     private void updateDisplayName(Player p) {
         if (!p.getName().equals(p.getDisplayName())) {
             this.displayname = p.getDisplayName();
         }
     }
 
-    /**
-     * Updates this player's DisplayName with a player gotten from Bukkit.
-     */
     private void updateDisplayName() {
         if (online) {
             updateDisplayName(Bukkit.getPlayer(this.username));
@@ -170,11 +144,10 @@ public final class PlayerDataImpl implements PlayerData {
     private void saveStatus() {
         final PlayerDataBukkit plugin = PlayerDataStatic.getPlayerDataBukkit();
         final PlayerHandlerImpl ph = plugin.getInternalHandler();
-        final PlayerDataImpl pd = this;
         Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
-                ph.savePData(pd);
+                ph.savePData(PlayerDataImpl.this);
             }
         });
     }
@@ -203,6 +176,55 @@ public final class PlayerDataImpl implements PlayerData {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * This function will check the first getDate this player has played and the
+     * last getDate this player has played with Bukkit's records.
+     */
+    private void checkBukkitForTimes() {
+        OfflinePlayer p = Bukkit.getOfflinePlayer(username);
+        long bukkitFirstPlayed = p.getFirstPlayed();
+        long bukkitLastPlayed = p.getLastPlayed();
+        if (logins.isEmpty()) {
+            logins.add(new LoginDataImpl(bukkitFirstPlayed));
+        } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
+            logins.add(0, new LoginDataImpl(bukkitFirstPlayed));
+        }
+        if (!online) {
+            if (logouts.isEmpty()) {
+                logouts.add(bukkitLastPlayed);
+            } else if (bukkitLastPlayed > logouts.get(logouts.size() - 1)) {
+                logouts.add(bukkitLastPlayed);
+            }
+        }
+    }
+
+    private void sortTimes() {
+        Collections.sort(logins);
+        Collections.sort(logouts);
+        Set<Long> logoutsNew = new LinkedHashSet<Long>(logouts);
+        logouts.clear();
+        logouts.addAll(logoutsNew);
+        Set<LoginDataImpl> loginsNew = new LinkedHashSet<LoginDataImpl>(logins);
+        logins.clear();
+        logins.addAll(loginsNew);
+    }
+
+    /**
+     * This updates this player's status. This will NOT save this
+     * PlayerDataImpl.
+     *
+     * @return Will return true if the player's username equals the players
+     * display name, or if the player is offline. false otherwise.
+     */
+    void updateStatus() {
+        if (online) {
+            Player p = Bukkit.getPlayerExact(this.username);
+            updateDisplayName(p);
+            timePlayed += (System.currentTimeMillis() - currentSession);
+            currentSession = System.currentTimeMillis();
         }
     }
 
@@ -298,39 +320,6 @@ public final class PlayerDataImpl implements PlayerData {
         return extraData.keySet().toArray(new String[extraData.keySet().size()]);
     }
 
-    private void sortTimes() {
-        Collections.sort(logins);
-        Collections.sort(logouts);
-    }
-
-    /**
-     * This function will check the first getDate this player has played and the
-     * last getDate this player has played with Bukkit's records.
-     */
-    public void checkBukkitForTimes() {
-        OfflinePlayer p = Bukkit.getOfflinePlayer(username);
-        long bukkitFirstPlayed = p.getFirstPlayed();
-        long bukkitLastPlayed = p.getLastPlayed();
-        if (logins.isEmpty()) {
-            logins.add(new LoginDataImpl(bukkitFirstPlayed));
-        } else if (bukkitFirstPlayed < logins.get(0).getDate()) {
-            logins.add(0, new LoginDataImpl(bukkitFirstPlayed));
-        }
-        if (!online) {
-            if (logouts.isEmpty()) {
-                logouts.add(bukkitLastPlayed);
-            } else if (bukkitLastPlayed > logouts.get(logouts.size() - 1)) {
-                logouts.add(bukkitLastPlayed);
-            }
-        }
-        Set<Long> logoutsNew = new LinkedHashSet<Long>(logouts);
-        logouts.clear();
-        logouts.addAll(logoutsNew);
-    }
-
-    /**
-     * This function checks when the player was last on the server.
-     */
     @Override
     public long getLastSeen() {
         if (online) {
@@ -341,24 +330,5 @@ public final class PlayerDataImpl implements PlayerData {
         } else {
             return 0;
         }
-    }
-
-    public int compareTo(PlayerDataImpl other) {
-        if (other == null) {
-            throw new NullPointerException();
-        }
-        Long l1;
-        Long l2;
-        if (online) {
-            l1 = System.currentTimeMillis();
-        } else {
-            l1 = getLastSeen();
-        }
-        if (other.isOnline()) {
-            l2 = System.currentTimeMillis();
-        } else {
-            l2 = other.getLastSeen();
-        }
-        return l2.compareTo(l1);
     }
 }

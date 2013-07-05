@@ -37,6 +37,10 @@ public class PlayerDataStatic {
         return playerDataBukkit == null ? null : playerDataBukkit.getLogger();
     }
 
+    public static int getAPIVersion() {
+        return playerDataBukkit == null ? -1 : playerDataBukkit.getAPIVersion();
+    }
+
     static void setPlayerDataBukkit(PlayerDataBukkit playerDataBukkit) {
         PlayerDataStatic.playerDataBukkit = playerDataBukkit;
     }
