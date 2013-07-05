@@ -3,7 +3,7 @@
  * Website: www.daboross.net
  * Email: daboross@daboross.net
  */
-package net.daboross.bukkitdev.playerdata.parsers.xml.v1;
+package net.daboross.bukkitdev.playerdata.parsers.xml;
 
 import net.daboross.bukkitdev.playerdata.LoginDataImpl;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
@@ -16,25 +16,30 @@ import org.w3c.dom.Node;
  *
  * @author daboross
  */
-public class LoginDataParser {
+public class XMLLoginDataParserV1 {
 
     public static void putDataOnXML(LoginData data, Element e) {
         e.setAttribute("ip", data.getIP());
         e.setAttribute("timestamp", String.valueOf(data.getDate()));
     }
 
-    public static LoginDataImpl fromXML(Node n) throws DXMLException {
+    public static LoginData fromXML(Node n) throws DXMLException {
         NamedNodeMap nnm = n.getAttributes();
         Node ipNode = nnm.getNamedItem("ip");
         if (ipNode == null) {
-            throw new DXMLException("Null IP Node when Creating IPLogin");
+            throw new DXMLException("Invalid IPLogin node doesn't contain ip node!");
         }
         String ip = ipNode.getNodeValue();
         Node timeNode = nnm.getNamedItem("timestamp");
         if (timeNode == null) {
-            throw new DXMLException("Null TimeStamp Node when Creating IPLogin");
+            throw new DXMLException("Invalid IPLogin node doesn't contain timestamp node!");
         }
-        long date = Long.parseLong(timeNode.getNodeValue());
+        long date;
+        try {
+            date = Long.parseLong(timeNode.getNodeValue());
+        } catch (NumberFormatException nfe) {
+            throw new DXMLException("Invalid IPLogin node's timestamp isn't an integer!");
+        }
         return new LoginDataImpl(date, ip);
     }
 }

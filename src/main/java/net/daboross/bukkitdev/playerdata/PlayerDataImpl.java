@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -42,7 +44,7 @@ public final class PlayerDataImpl implements PlayerData {
     private String displayname;
     private long timePlayed = 0;
     private long currentSession;
-    private final List<LoginDataImpl> logins = new ArrayList<LoginDataImpl>();
+    private final List<LoginData> logins = new ArrayList<LoginData>();
     private final List<Long> logouts = new ArrayList<Long>();
     private final Map<String, String[]> extraData = new HashMap<String, String[]>();
     private boolean online = false;
@@ -112,7 +114,7 @@ public final class PlayerDataImpl implements PlayerData {
      * @param timePlayed The getDate this player has played on this server.
      * @param extraData A List of custom data entries.
      */
-    public PlayerDataImpl(String username, String displayname, List<LoginDataImpl> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
+    public PlayerDataImpl(String username, String displayname, List<LoginData> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
         this.username = username;
         this.displayname = displayname;
         if (this.displayname == null) {
@@ -202,12 +204,12 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     private void sortTimes() {
-        Collections.sort(logins);
+        Collections.sort(logins, new LoginDataNewestComparator());
         Collections.sort(logouts);
         Set<Long> logoutsNew = new LinkedHashSet<Long>(logouts);
         logouts.clear();
         logouts.addAll(logoutsNew);
-        Set<LoginDataImpl> loginsNew = new LinkedHashSet<LoginDataImpl>(logins);
+        Set<LoginData> loginsNew = new LinkedHashSet<LoginData>(logins);
         logins.clear();
         logins.addAll(loginsNew);
     }
@@ -286,7 +288,7 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     @Override
-    public List<LoginDataImpl> getAllLogins() {
+    public List<LoginData> getAllLogins() {
         return Collections.unmodifiableList(logins);
     }
 

@@ -3,7 +3,7 @@
  * Website: www.daboross.net
  * Email: daboross@daboross.net
  */
-package net.daboross.bukkitdev.playerdata.helpers;
+package net.daboross.bukkitdev.playerdata.helpers.comparators;
 
 import java.util.Comparator;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
@@ -12,7 +12,7 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
  *
  * @author daboross
  */
-public class LastSeenComparator implements Comparator<PlayerData> {
+public class PlayerDataLastSeenComparator implements Comparator<PlayerData> {
 
     @Override
     public int compare(PlayerData o1, PlayerData o2) {

@@ -26,6 +26,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
     private PlayerHandlerImpl playerHandler;
     private boolean permissionLoaded = false;
     private Permission permissionHandler;
+    private boolean enabledSucessfully = true;
 
     @Override
     public void onEnable() {
@@ -50,9 +51,18 @@ public final class PlayerDataBukkit extends JavaPlugin {
                 getLogger().log(Level.INFO, "Vault found. Permission not found.");
             }
         } else {
-            getLogger().log(Level.INFO, "Vault not found. Permission not found.");
+            getLogger().log(Level.INFO, "Vault not found.");
         }
         playerHandler = new PlayerHandlerImpl(this);
+        enabledSucessfully = playerHandler.init();
+        if (!enabledSucessfully) {
+            pm.disablePlugin(this);
+            PlayerDataStatic.setPlayerDataBukkit(null);
+            permissionHandler = null;
+            playerHandler = null;
+            permissionLoaded = false;
+            return;
+        }
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
             new PlayerDataCommandExecutor(this, playerHandler).registerCommand(playerdata);
@@ -63,18 +73,19 @@ public final class PlayerDataBukkit extends JavaPlugin {
         }
         pm.registerEvents(new PlayerDataEventListener(playerHandler), this);
         playerHandler.init();
-        getLogger().info("PlayerData Load Completed");
+        getLogger().info("PlayerData Load Sucessful");
     }
 
     @Override
     public void onDisable() {
-        playerHandler.endServer();
-        playerHandler.saveAllData();
+        if (enabledSucessfully) {
+            playerHandler.endServer();
+            playerHandler.saveAllData();
+        }
         PlayerDataStatic.setPlayerDataBukkit(null);
         permissionHandler = null;
         playerHandler = null;
         permissionLoaded = false;
-        getLogger().info("PlayerData Unload Completed");
     }
 
     PlayerHandlerImpl getInternalHandler() {
@@ -94,6 +105,10 @@ public final class PlayerDataBukkit extends JavaPlugin {
     }
 
     public int getAPIVersion() {
-        return 1;
+        return enabledSucessfully == true ? 1 : -1;
+    }
+
+    public boolean enabledSucessfully() {
+        return enabledSucessfully;
     }
 }

@@ -3,7 +3,7 @@
  * Website: www.daboross.net
  * Email: daboross@daboross.net
  */
-package net.daboross.bukkitdev.playerdata.parsers.xml.v1;
+package net.daboross.bukkitdev.playerdata.parsers.xml;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import org.w3c.dom.NodeList;
  *
  * @author daboross
  */
-public class ExtraDataParser {
+public class XMLExtraDataParserV1 {
 
     public static void putOnXML(String dataName, String[] data, Element e) {
         e.setAttribute("name", dataName);
@@ -38,7 +38,7 @@ public class ExtraDataParser {
                 return n.getNodeValue();
             }
         }
-        throw new DXMLException("Not ExtraData Element");
+        throw new DXMLException("Invalid ExtraData node! No name attribute!");
     }
 
     public static String[] getDataFromXML(Node node) throws DXMLException {
@@ -48,16 +48,15 @@ public class ExtraDataParser {
             Node current = childNodes.item(i);
             if (current.getNodeName().equals("#text")) {
                 continue;
-            }
-            if (current.getNodeName().equals("data")) {
-                NamedNodeMap list2 = current.getAttributes();
+            } else if (current.getNodeName().equals("data")) {
+                NamedNodeMap dataAttributelist = current.getAttributes();
                 Map<String, String> beforeData = new HashMap<String, String>();
-                for (int k = 0; k < list2.getLength(); k++) {
-                    Node n2 = list2.item(k);
-                    if (n2.getNodeName().startsWith("dataline")) {
-                        beforeData.put(n2.getNodeName(), n2.getNodeValue());
+                for (int k = 0; k < dataAttributelist.getLength(); k++) {
+                    Node attributeNode = dataAttributelist.item(k);
+                    if (attributeNode.getNodeName().startsWith("dataline")) {
+                        beforeData.put(attributeNode.getNodeName(), attributeNode.getNodeValue());
                     } else {
-                        throw new DXMLException("Unknown attribute on data child:" + n2.getNodeName());
+                        throw new DXMLException("Invalid ExtraData node! Unknown attribute on data node: " + attributeNode.getNodeName());
                     }
                 }
                 int k = 0;
@@ -68,9 +67,8 @@ public class ExtraDataParser {
                     }
                     data.add(str);
                 }
-
             } else {
-                throw new DXMLException("Not ExtraData Element");
+                throw new DXMLException("Invalid ExtraData node! Unknown child: " + current.getNodeName());
             }
         }
         return data.toArray(new String[data.size()]);

@@ -5,7 +5,7 @@
  */
 package net.daboross.bukkitdev.playerdata;
 
-import net.daboross.bukkitdev.playerdata.parsers.xml.v1.XMLFileParser;
+import net.daboross.bukkitdev.playerdata.parsers.xml.XMLFileParserV1;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.helpers.FirstJoinComparator;
-import net.daboross.bukkitdev.playerdata.helpers.LastSeenComparator;
+import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataFirstJoinComparator;
+import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataLastSeenComparator;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
+import net.daboross.bukkitdev.playerdata.parsers.xml.XMLParserFinder;
 import org.apache.commons.lang.NullArgumentException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -205,7 +206,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         }
         if (file.canWrite()) {
             try {
-                XMLFileParser.writeToFile(pd, file);
+                XMLFileParserV1.save(pd, file);
             } catch (DXMLException ex) {
                 playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
             }
@@ -275,7 +276,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
      * function is called. This will also create new PlayerDatas from Bukkit if
      * file folder is empty.
      */
-    void init() {
+    boolean init() {
         synchronized (LIST_LOCK) {
             playerDataList.clear();
             playerDataListFirstJoin.clear();
@@ -294,38 +295,47 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                 saveAllData();
             } else {
                 for (File fl : playerFiles) {
-                    if (fl.canRead() && fl.isFile()) {
+                    if (fl.isFile()) {
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                        return false;
+                    } else if (fl.canRead()) {
                         String[] split = fl.getName().split("\\.");
                         String type = split[split.length - 1];
                         if (type.equals("xml")) {
-                            PlayerDataImpl pData = null;
+                            PlayerDataImpl pData;
                             try {
-                                pData = XMLFileParser.readFromFile(fl);
+                                pData = XMLParserFinder.read(fl);
                             } catch (DXMLException dxmle) {
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception While Reading: " + fl.getAbsolutePath(), dxmle);
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                                return false;
                             }
-                            if (pData != null) {
-                                if (!playerDataList.contains(pData)) {
-                                    playerDataList.add(pData);
-                                }
-                                if (!playerDataListFirstJoin.contains(pData)) {
-                                    playerDataListFirstJoin.add(pData);
-                                }
+                            if (!playerDataList.contains(pData)) {
+                                playerDataList.add(pData);
+                            }
+                            if (!playerDataListFirstJoin.contains(pData)) {
+                                playerDataListFirstJoin.add(pData);
                             }
                         } else {
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "Unknown file in data directory: {0}", fl.getAbsolutePath());
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type in the xml directory! File: {0}", fl.getAbsolutePath());
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                            return false;
                         }
                     } else {
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "Unknown file in data directory: {0}", fl.getAbsolutePath());
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won''t load until you fix this!");
+                        return false;
                     }
                 }
                 playerDataBukkit.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
             }
-            Collections.sort(playerDataList, new LastSeenComparator());
-            Collections.sort(playerDataListFirstJoin, new FirstJoinComparator());
+            Collections.sort(playerDataList, new PlayerDataLastSeenComparator());
+            Collections.sort(playerDataListFirstJoin, new PlayerDataFirstJoinComparator());
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
             this.login(p);
         }
+        return true;
     }
 }
