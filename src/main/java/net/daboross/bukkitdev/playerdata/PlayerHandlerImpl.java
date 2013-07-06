@@ -184,9 +184,9 @@ public final class PlayerHandlerImpl implements PlayerHandler {
     @Override
     public void saveAllData() {
         synchronized (LIST_LOCK) {
-            for (PlayerDataImpl pData : playerDataList) {
-                pData.updateStatus();
-                savePData(pData);
+            for (PlayerDataImpl pd : playerDataList) {
+                pd.updateStatus();
+                savePData(pd);
             }
         }
     }
@@ -222,11 +222,15 @@ public final class PlayerHandlerImpl implements PlayerHandler {
     void endServer() {
         Player[] ls = Bukkit.getOnlinePlayers();
         for (Player p : ls) {
-            this.logout(p);
+            this.logout(p, true);
         }
     }
 
     PlayerDataImpl login(Player p) {
+        return login(p, false);
+    }
+
+    private PlayerDataImpl login(Player p, boolean startingServer) {
         if (p == null) {
             throw new IllegalArgumentException("Null Argument");
         }
@@ -234,13 +238,13 @@ public final class PlayerHandlerImpl implements PlayerHandler {
             for (int i = 0; i < playerDataList.size(); i++) {
                 PlayerDataImpl pData = playerDataList.get(i);
                 if (pData.getUsername().equals(p.getName())) {
-                    pData.loggedIn(p, this);
+                    pData.loggedIn(p, this, startingServer);
                     return pData;
                 }
             }
         }
         PlayerDataImpl pd = new PlayerDataImpl(p);
-        pd.loggedIn(p, this);
+        pd.loggedIn(p, this, startingServer);
         synchronized (LIST_LOCK) {
             if (!playerDataListFirstJoin.contains(pd)) {
                 playerDataListFirstJoin.add(pd);
@@ -254,19 +258,29 @@ public final class PlayerHandlerImpl implements PlayerHandler {
     }
 
     PlayerData logout(Player p) {
+        return logout(p, false);
+    }
+
+    private PlayerData logout(Player p, boolean endingServer) {
         PlayerDataImpl pd = getPlayerData(p);
-        pd.loggedOut(p, this);
-        synchronized (LIST_LOCK) {
-            int pos = playerDataList.indexOf(pd);
-            while (playerDataList.contains(pd)) {
-                playerDataList.remove(pd);
+        pd.loggedOut(p, this, endingServer);
+        if (!endingServer) {
+            synchronized (LIST_LOCK) {
+                int pos = playerDataList.indexOf(pd);
+                while (playerDataList.contains(pd)) {
+                    playerDataList.remove(pd);
+                }
+                while (pos < playerDataList.size() && playerDataList.get(pos).isOnline()) {
+                    pos++;
+                }
+                playerDataList.add(pos, pd);
             }
-            while (pos < playerDataList.size() && playerDataList.get(pos).isOnline()) {
-                pos++;
-            }
-            playerDataList.add(pos, pd);
         }
         return pd;
+    }
+
+    public PlayerDataBukkit getPlayerDataBukkit() {
+        return playerDataBukkit;
     }
 
     /**
@@ -334,7 +348,7 @@ public final class PlayerHandlerImpl implements PlayerHandler {
             Collections.sort(playerDataListFirstJoin, new PlayerDataFirstJoinComparator());
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            this.login(p);
+            this.login(p, true);
         }
         return true;
     }

@@ -65,9 +65,7 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
         linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pd.getAllLogins().get(0).getDate()));
         if (PlayerDataStatic.isPermissionLoaded()) {
             String[] groups = PlayerDataStatic.getPermissionHandler().getPlayerGroups((String) null, pd.getUsername());
-            if (groups == null) {
-                PlayerDataStatic.getLogger().log(Level.FINE, "Permissions handler exists but gave null groups for player {0}", pd.getUsername());
-            } else {
+            if (groups != null) {
                 linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
             }
         }

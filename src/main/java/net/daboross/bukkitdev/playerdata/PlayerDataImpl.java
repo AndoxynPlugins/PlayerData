@@ -140,18 +140,17 @@ public final class PlayerDataImpl implements PlayerData {
         }
     }
 
-    /**
-     * This saves this PlayerData to file async.
-     */
-    private void saveStatus() {
-        final PlayerDataBukkit plugin = PlayerDataStatic.getPlayerDataBukkit();
-        final PlayerHandlerImpl ph = plugin.getInternalHandler();
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                ph.savePData(PlayerDataImpl.this);
-            }
-        });
+    private void saveStatus(final PlayerHandlerImpl playerHandlerImpl, final PlayerDataBukkit plugin, boolean async) {
+        if (async) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    playerHandlerImpl.savePData(PlayerDataImpl.this);
+                }
+            });
+        } else {
+            playerHandlerImpl.savePData(PlayerDataImpl.this);
+        }
     }
 
     /**
@@ -162,8 +161,11 @@ public final class PlayerDataImpl implements PlayerData {
      * then it will run this function again.
      */
     private void makeExtraThread(final Player p) {
+        if (p == null) {
+            throw new IllegalArgumentException("Null Paramaters");
+        }
+        updateDisplayName(p);
         if (p.isOnline()) {
-            updateDisplayName(p);
             if (displayname.equalsIgnoreCase(username)) {
                 if (nickUpdateExtraThreadUpdateTimes < 5) {
                     nickUpdateExtraThreadUpdateTimes++;
@@ -204,22 +206,19 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     private void sortTimes() {
-        Collections.sort(logins, new LoginDataNewestComparator());
-        Collections.sort(logouts);
         Set<Long> logoutsNew = new LinkedHashSet<Long>(logouts);
         logouts.clear();
         logouts.addAll(logoutsNew);
         Set<LoginData> loginsNew = new LinkedHashSet<LoginData>(logins);
         logins.clear();
         logins.addAll(loginsNew);
+        Collections.sort(logins, new LoginDataNewestComparator());
+        Collections.sort(logouts);
     }
 
     /**
-     * This updates this player's status. This will NOT save this
-     * PlayerDataImpl.
-     *
-     * @return Will return true if the player's username equals the players
-     * display name, or if the player is offline. false otherwise.
+     * This updates this player's status by finding a player from Bukkit. Does
+     * nothing if this player isn't online
      */
     void updateStatus() {
         if (online) {
@@ -231,29 +230,39 @@ public final class PlayerDataImpl implements PlayerData {
     }
 
     /**
-     * This function tells this PlayerDataImpl that the player who this
-     * PlayerDataImpl is representing just logged out. Do not run this function
-     * from outside the PlayerDataEventListener. This will save the current
-     * status of this PlayerDataImpl to file.
+     * Tells this PlayerData that the Player has logged out.
+     *
+     * @param p The player logged out
+     * @param pdh The PlayerHandler
+     * @param pluginUnloading If this logout is because PlayerData is being
+     * unloaded when there are players online.
      */
-    void loggedOut(Player p, PlayerHandlerImpl pdh) {
+    void loggedOut(Player p, PlayerHandlerImpl pdh, boolean pluginUnloading) {
+        if (p == null || pdh == null) {
+            throw new IllegalArgumentException("Null Paramaters");
+        }
         if (online) {
             timePlayed += (System.currentTimeMillis() - currentSession);
             currentSession = System.currentTimeMillis();
             logouts.add(System.currentTimeMillis());
             online = false;
             updateDisplayName(p);
-            saveStatus();
+            saveStatus(pdh, pdh.getPlayerDataBukkit(), pluginUnloading);
         }
     }
 
     /**
-     * This function tells this PlayerDataImpl that the player who this
-     * PlayerDataImpl is representing just logged in. Do not run this function
-     * from outside the PlayerDataEventListener. This will save the current
-     * status of this PlayerDataImpl to file.
+     * Tells this PlayerData that the Player has logged in.
+     *
+     * @param p The player logged in.
+     * @param pdh The PlayerHandler
+     * @param pluginLoading If this login is because PlayerData is being loaded
+     * when there are players online.
      */
-    void loggedIn(Player p, PlayerHandlerImpl pdh) {
+    void loggedIn(Player p, PlayerHandlerImpl pdh, boolean pluginLoading) {
+        if (p == null || pdh == null) {
+            throw new IllegalArgumentException("Null Paramaters");
+        }
         if (!online) {
             logins.add(new LoginDataImpl(System.currentTimeMillis(), p.getAddress().toString()));
             currentSession = System.currentTimeMillis();
@@ -299,22 +308,35 @@ public final class PlayerDataImpl implements PlayerData {
 
     @Override
     public boolean hasExtraData(String dataName) {
+        if (dataName == null) {
+            throw new IllegalArgumentException("Null Paramater");
+        }
         return extraData.containsKey(dataName.toLowerCase());
     }
 
     @Override
     public String[] addExtraData(String dataName, String[] data) {
+        if (dataName == null || data == null) {
+            throw new IllegalArgumentException("Null Paramater");
+        }
         return extraData.put(dataName.toLowerCase(), ArrayHelpers.copyArray(data));
     }
 
     @Override
     public String[] removeExtraData(String dataName) {
+        if (dataName == null) {
+            throw new IllegalArgumentException("Null Paramater");
+        }
         return extraData.remove(dataName.toLowerCase());
     }
 
     @Override
     public String[] getExtraData(String dataName) {
-        return ArrayHelpers.copyArray(extraData.get(dataName.toLowerCase()));
+        if (dataName == null) {
+            throw new IllegalArgumentException("Null Paramater");
+        }
+        String[] orig = extraData.get(dataName.toLowerCase());
+        return orig == null ? null : ArrayHelpers.copyArray(orig);
     }
 
     @Override
