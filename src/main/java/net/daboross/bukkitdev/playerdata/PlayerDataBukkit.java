@@ -26,7 +26,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
     private PlayerHandlerImpl playerHandler;
     private boolean permissionLoaded = false;
     private Permission permissionHandler;
-    private boolean enabledSucessfully = true;
+    private boolean enabledSuccessfully = true;
 
     @Override
     public void onEnable() {
@@ -54,8 +54,8 @@ public final class PlayerDataBukkit extends JavaPlugin {
             getLogger().log(Level.INFO, "Vault not found.");
         }
         playerHandler = new PlayerHandlerImpl(this);
-        enabledSucessfully = playerHandler.init();
-        if (!enabledSucessfully) {
+        enabledSuccessfully = playerHandler.init();
+        if (!enabledSuccessfully) {
             pm.disablePlugin(this);
             PlayerDataStatic.setPlayerDataBukkit(null);
             permissionHandler = null;
@@ -78,7 +78,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (enabledSucessfully) {
+        if (enabledSuccessfully) {
             playerHandler.endServer();
             playerHandler.saveAllData();
         }
@@ -86,10 +86,6 @@ public final class PlayerDataBukkit extends JavaPlugin {
         permissionHandler = null;
         playerHandler = null;
         permissionLoaded = false;
-    }
-
-    PlayerHandlerImpl getInternalHandler() {
-        return playerHandler;
     }
 
     public PlayerHandler getHandler() {
@@ -105,10 +101,10 @@ public final class PlayerDataBukkit extends JavaPlugin {
     }
 
     public int getAPIVersion() {
-        return enabledSucessfully == true ? 1 : -1;
+        return enabledSuccessfully == true ? 1 : -1;
     }
 
-    public boolean enabledSucessfully() {
-        return enabledSucessfully;
+    public boolean enabledSuccessfully() {
+        return enabledSuccessfully;
     }
 }

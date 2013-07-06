@@ -5,7 +5,6 @@
  */
 package net.daboross.bukkitdev.playerdata;
 
-import net.daboross.bukkitdev.playerdata.parsers.xml.XMLFileParserV1;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,19 +24,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 /**
- * This is the internal handler of all PlayerDataImpl. This class is the network
- * that holds all the other functioning objects and classes together. When the
- * server starts up, it will go through all the files in the playerdata folder,
- * and read each one with the FileHandler. Then get a PlayerDataImpl from the
- * BPDFileParser, and put that PlayerDataImpl into its internal list. It stores
- * all the PDatas in two lists. All the PDatas are in the playerDataList. Then
- * they are also either in the aliveList or the deadList. When a PlayerDataImpl
- * is created, it will ask the PlayerHandlerImpl to put it in either the
- * aliveList or the dead List.
  *
  * @author daboross
  */
-public final class PlayerHandlerImpl implements PlayerHandler {
+public class PlayerHandlerImpl implements PlayerHandler {
 
     /**
      * List lock for the PlayerData lists. synchronize on this object when:
@@ -62,6 +52,166 @@ public final class PlayerHandlerImpl implements PlayerHandler {
         if (!dataFolder.isDirectory()) {
             dataFolder.mkdirs();
         }
+    }
+
+    private PlayerDataImpl login(Player p, boolean startingServer) {
+        if (p == null) {
+            throw new IllegalArgumentException("Null Argument");
+        }
+        synchronized (LIST_LOCK) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PlayerDataImpl pData = playerDataList.get(i);
+                if (pData.getUsername().equals(p.getName())) {
+                    pData.loggedIn(p, this, startingServer);
+                    return pData;
+                }
+            }
+        }
+        PlayerDataImpl pd = new PlayerDataImpl(p);
+        pd.loggedIn(p, this, startingServer);
+        synchronized (LIST_LOCK) {
+            if (!playerDataListFirstJoin.contains(pd)) {
+                playerDataListFirstJoin.add(pd);
+            }
+            while (playerDataList.contains(pd)) {
+                playerDataList.remove(pd);
+            }
+            playerDataList.add(0, pd);
+            return pd;
+        }
+    }
+
+    private PlayerData logout(Player p, boolean endingServer) {
+        PlayerDataImpl pd = getPlayerData(p);
+        pd.loggedOut(p, this, endingServer);
+        if (!endingServer) {
+            synchronized (LIST_LOCK) {
+                int pos = playerDataList.indexOf(pd);
+                while (playerDataList.contains(pd)) {
+                    playerDataList.remove(pd);
+                }
+                while (pos < playerDataList.size() && playerDataList.get(pos).isOnline()) {
+                    pos++;
+                }
+                playerDataList.add(pos, pd);
+            }
+        }
+        return pd;
+    }
+
+    void savePData(PlayerData pd) {
+        if (pd == null) {
+            return;
+        }
+        File file = new File(dataFolder, pd.getUsername() + ".xml");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
+                return;
+            }
+        }
+        if (file.canWrite()) {
+            try {
+                XMLParserFinder.save(pd, file);
+            } catch (DXMLException ex) {
+                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
+            }
+        } else {
+            playerDataBukkit.getLogger().log(Level.SEVERE, "Can\'t write to file {0}", file.getAbsolutePath());
+        }
+    }
+
+    void endServer() {
+        Player[] ls = Bukkit.getOnlinePlayers();
+        for (Player p : ls) {
+            this.logout(p, true);
+        }
+    }
+
+    PlayerData login(Player p) {
+        return login(p, false);
+    }
+
+    PlayerData logout(Player p) {
+        return logout(p, false);
+    }
+
+    /**
+     * This function reads all PlayerData files and loads them into the
+     * database. Also logs in all logged in players, and creates empty files
+     * from Bukkit if there are no files.
+     *
+     * @return True if load was successful. False if load failed. If load failed
+     * then it is expected that this PlayerHandler won't ever be used again.
+     */
+    boolean init() {
+        synchronized (LIST_LOCK) {
+            playerDataList.clear();
+            playerDataListFirstJoin.clear();
+            File[] playerFiles = dataFolder.listFiles();
+            if (playerFiles.length == 0) {
+                OfflinePlayer[] players = Bukkit.getServer().getOfflinePlayers();
+                for (OfflinePlayer p : players) {
+                    PlayerDataImpl pd = new PlayerDataImpl(p);
+                    if (!playerDataList.contains(pd)) {
+                        playerDataList.add(pd);
+                    }
+                    if (!playerDataListFirstJoin.contains(pd)) {
+                        playerDataListFirstJoin.add(pd);
+                    }
+                }
+                saveAllData();
+            } else {
+                for (File fl : playerFiles) {
+                    if (!fl.isFile()) {
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                        return false;
+                    } else if (fl.canRead()) {
+                        String[] split = fl.getName().split("\\.");
+                        String type = split[split.length - 1];
+                        if (type.equals("xml")) {
+                            PlayerDataImpl pData;
+                            try {
+                                pData = XMLParserFinder.read(fl);
+                            } catch (DXMLException dxmle) {
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
+                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                                return false;
+                            }
+                            if (!playerDataList.contains(pData)) {
+                                playerDataList.add(pData);
+                            }
+                            if (!playerDataListFirstJoin.contains(pData)) {
+                                playerDataListFirstJoin.add(pData);
+                            }
+                        } else {
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
+                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                            return false;
+                        }
+                    } else {
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
+                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                        return false;
+                    }
+                }
+                playerDataBukkit.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
+            }
+            Collections.sort(playerDataList, new PlayerDataLastSeenComparator());
+            Collections.sort(playerDataListFirstJoin, new PlayerDataFirstJoinComparator());
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            this.login(p, true);
+        }
+        return true;
+    }
+
+    @Override
+    public PlayerDataBukkit getPlayerDataBukkit() {
+        return playerDataBukkit;
     }
 
     @Override
@@ -189,167 +339,5 @@ public final class PlayerHandlerImpl implements PlayerHandler {
                 savePData(pd);
             }
         }
-    }
-
-    void savePData(PlayerDataImpl pd) {
-        if (pd == null) {
-            return;
-        }
-        File file = new File(dataFolder, pd.getUsername() + ".xml");
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
-                return;
-            }
-        }
-        if (file.canWrite()) {
-            try {
-                XMLFileParserV1.save(pd, file);
-            } catch (DXMLException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
-            }
-        } else {
-            playerDataBukkit.getLogger().log(Level.SEVERE, "Can\'t write to file {0}", file.getAbsolutePath());
-        }
-    }
-
-    /**
-     * This function Goes through all PlayerDatas who are online, and tells them
-     * their player has logged out, which in turn saves all unsaved PlayerDatas.
-     */
-    void endServer() {
-        Player[] ls = Bukkit.getOnlinePlayers();
-        for (Player p : ls) {
-            this.logout(p, true);
-        }
-    }
-
-    PlayerDataImpl login(Player p) {
-        return login(p, false);
-    }
-
-    private PlayerDataImpl login(Player p, boolean startingServer) {
-        if (p == null) {
-            throw new IllegalArgumentException("Null Argument");
-        }
-        synchronized (LIST_LOCK) {
-            for (int i = 0; i < playerDataList.size(); i++) {
-                PlayerDataImpl pData = playerDataList.get(i);
-                if (pData.getUsername().equals(p.getName())) {
-                    pData.loggedIn(p, this, startingServer);
-                    return pData;
-                }
-            }
-        }
-        PlayerDataImpl pd = new PlayerDataImpl(p);
-        pd.loggedIn(p, this, startingServer);
-        synchronized (LIST_LOCK) {
-            if (!playerDataListFirstJoin.contains(pd)) {
-                playerDataListFirstJoin.add(pd);
-            }
-            while (playerDataList.contains(pd)) {
-                playerDataList.remove(pd);
-            }
-            playerDataList.add(0, pd);
-            return pd;
-        }
-    }
-
-    PlayerData logout(Player p) {
-        return logout(p, false);
-    }
-
-    private PlayerData logout(Player p, boolean endingServer) {
-        PlayerDataImpl pd = getPlayerData(p);
-        pd.loggedOut(p, this, endingServer);
-        if (!endingServer) {
-            synchronized (LIST_LOCK) {
-                int pos = playerDataList.indexOf(pd);
-                while (playerDataList.contains(pd)) {
-                    playerDataList.remove(pd);
-                }
-                while (pos < playerDataList.size() && playerDataList.get(pos).isOnline()) {
-                    pos++;
-                }
-                playerDataList.add(pos, pd);
-            }
-        }
-        return pd;
-    }
-
-    public PlayerDataBukkit getPlayerDataBukkit() {
-        return playerDataBukkit;
-    }
-
-    /**
-     * This is the "initial" function that should be called directly after this
-     * PlayerHandlerImpl is created. The PlayerHandlerImpl instance variable in
-     * PlayerDataBukkit needs to be set to this PlayerHandlerImpl before this
-     * function is called. This will also create new PlayerDatas from Bukkit if
-     * file folder is empty.
-     */
-    boolean init() {
-        synchronized (LIST_LOCK) {
-            playerDataList.clear();
-            playerDataListFirstJoin.clear();
-            File[] playerFiles = dataFolder.listFiles();
-            if (playerFiles.length == 0) {
-                OfflinePlayer[] players = Bukkit.getServer().getOfflinePlayers();
-                for (OfflinePlayer p : players) {
-                    PlayerDataImpl pd = new PlayerDataImpl(p);
-                    if (!playerDataList.contains(pd)) {
-                        playerDataList.add(pd);
-                    }
-                    if (!playerDataListFirstJoin.contains(pd)) {
-                        playerDataListFirstJoin.add(pd);
-                    }
-                }
-                saveAllData();
-            } else {
-                for (File fl : playerFiles) {
-                    if (!fl.isFile()) {
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                        return false;
-                    } else if (fl.canRead()) {
-                        String[] split = fl.getName().split("\\.");
-                        String type = split[split.length - 1];
-                        if (type.equals("xml")) {
-                            PlayerDataImpl pData;
-                            try {
-                                pData = XMLParserFinder.read(fl);
-                            } catch (DXMLException dxmle) {
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                                return false;
-                            }
-                            if (!playerDataList.contains(pData)) {
-                                playerDataList.add(pData);
-                            }
-                            if (!playerDataListFirstJoin.contains(pData)) {
-                                playerDataListFirstJoin.add(pData);
-                            }
-                        } else {
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                            return false;
-                        }
-                    } else {
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                        return false;
-                    }
-                }
-                playerDataBukkit.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
-            }
-            Collections.sort(playerDataList, new PlayerDataLastSeenComparator());
-            Collections.sort(playerDataListFirstJoin, new PlayerDataFirstJoinComparator());
-        }
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            this.login(p, true);
-        }
-        return true;
     }
 }

@@ -32,7 +32,7 @@ import org.bukkit.entity.Player;
  *
  * @author daboross
  */
-public final class PlayerDataImpl implements PlayerData {
+public class PlayerDataImpl implements PlayerData {
 
     private long MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES = TimeUnit.MINUTES.toMillis(1);
     /**
