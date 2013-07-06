@@ -48,7 +48,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
                 getLogger().log(Level.INFO, "Vault found. Permission not found.");
             } else {
                 permissionLoaded = true;
-                getLogger().log(Level.INFO, "Vault found. Permission not found.");
+                getLogger().log(Level.INFO, "Vault found. Permission found.");
             }
         } else {
             getLogger().log(Level.INFO, "Vault not found.");
