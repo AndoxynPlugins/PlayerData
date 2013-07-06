@@ -247,7 +247,7 @@ public final class PlayerDataImpl implements PlayerData {
             logouts.add(System.currentTimeMillis());
             online = false;
             updateDisplayName(p);
-            saveStatus(pdh, pdh.getPlayerDataBukkit(), pluginUnloading);
+            saveStatus(pdh, pdh.getPlayerDataBukkit(), !pluginUnloading);
         }
     }
 
