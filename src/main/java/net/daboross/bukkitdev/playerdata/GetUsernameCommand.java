@@ -10,13 +10,13 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 /**
- * This is the Command Executor for the command /gu.
  *
  * @author daboross
  */
@@ -31,20 +31,20 @@ public class GetUsernameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length > 0) {
-            String givenName = ArrayHelpers.combinedWithSeperator(args, " ").toLowerCase();
+            String partialName = ArrayHelpers.combinedWithSeperator(args, " ");
             List<? extends PlayerData> playerDataList = playerHandler.getAllPlayerDatas();
-            sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + givenName + ColorList.TOP_SEPERATOR + " --");
-            for (int i = 0; i < playerDataList.size(); i++) {
-                final PlayerData pd = playerDataList.get(i);
-                final String checkUsername = pd.getUsername().toLowerCase();
-                final String checkDisplayname = ChatColor.stripColor(pd.getDisplayname()).toLowerCase();
+            sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + partialName + ColorList.TOP_SEPERATOR + " --");
+            for (int numSent = 0, i = 0; i < playerDataList.size() && numSent < 10; i++) {
+                PlayerData pd = playerDataList.get(i);
                 if (pd.getUsername().equals(pd.getDisplayname())) {
-                    if (checkUsername.contains(givenName)) {
+                    if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName)) {
                         sender.sendMessage(ColorList.NAME + pd.getUsername());
+                        numSent++;
                     }
                 } else {
-                    if (checkUsername.contains(givenName) || checkDisplayname.contains(givenName)) {
+                    if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName) || StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayname()), partialName)) {
                         sender.sendMessage(ColorList.NAME + pd.getUsername() + ColorList.DIVIDER + " | " + ColorList.NAME + pd.getDisplayname());
+                        numSent++;
                     }
                 }
             }
