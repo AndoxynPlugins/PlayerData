@@ -50,7 +50,7 @@ public class GetUsernameCommand implements CommandExecutor {
             }
         } else {
             sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <PartialUsername>");
+            sender.sendMessage(ColorList.CMD + "/" + label + ColorList.ARGS + " <Partial Name>");
         }
         return true;
     }

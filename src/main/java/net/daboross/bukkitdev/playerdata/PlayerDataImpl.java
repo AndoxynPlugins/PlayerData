@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
+import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -48,7 +50,7 @@ public class PlayerDataImpl implements PlayerData {
     private final List<Long> logouts = new ArrayList<Long>();
     private final Map<String, String[]> extraData = new HashMap<String, String[]>();
     private boolean online = false;
-    private int nickUpdateExtraThreadUpdateTimes = 0;
+    private int displayNameUpdateTimesRun = 0;
 
     /**
      * Use This to create a NEW Player who has never joined before This should
@@ -57,12 +59,12 @@ public class PlayerDataImpl implements PlayerData {
      * @param p The Player to create a PlayerDataImpl from.
      */
     PlayerDataImpl(Player p) {
-        if (p == null) {
-            throw new IllegalArgumentException("Player Can't Be Null");
-        }
+        ArgumentCheck.notNull(p);
         logins.add(new LoginDataImpl(p.getFirstPlayed(), p.getAddress().toString()));
         timePlayed = 0;
         username = p.getName();
+        displayname = p.getDisplayName();
+        checkDisplayNameNotNull();
         updateDisplayName(p);
         online = p.isOnline();
         currentSession = System.currentTimeMillis();
@@ -78,11 +80,9 @@ public class PlayerDataImpl implements PlayerData {
      * @param offlinePlayer The Offline Player to create a PlayerDataImpl from.
      */
     PlayerDataImpl(OfflinePlayer offlinePlayer) {
-        if (offlinePlayer == null) {
-            throw new IllegalArgumentException("Player Can't Be Null");
-        }
+        ArgumentCheck.notNull(offlinePlayer);
         if (!offlinePlayer.hasPlayedBefore()) {
-            throw new IllegalArgumentException("Player Has Never Been Online!");
+            throw new IllegalArgumentException("Player has never been online!");
         }
         logins.add(new LoginDataImpl(offlinePlayer.getFirstPlayed()));
         timePlayed = 0;
@@ -90,9 +90,10 @@ public class PlayerDataImpl implements PlayerData {
         if (offlinePlayer.isOnline()) {
             Player onlinePlayer = offlinePlayer.getPlayer();
             displayname = onlinePlayer.getDisplayName();
+            checkDisplayNameNotNull();
             online = true;
         } else {
-            displayname = offlinePlayer.getName();
+            displayname = username;
             online = false;
             logouts.add(offlinePlayer.getLastPlayed());
         }
@@ -115,11 +116,9 @@ public class PlayerDataImpl implements PlayerData {
      * @param extraData A List of custom data entries.
      */
     public PlayerDataImpl(String username, String displayname, List<LoginData> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
+        ArgumentCheck.notNull(username, displayname, logins, logouts, extraData);
         this.username = username;
         this.displayname = displayname;
-        if (this.displayname == null) {
-            this.displayname = this.username;
-        }
         this.logins.addAll(logins);
         this.logouts.addAll(logouts);
         this.timePlayed = timePlayed;
@@ -129,15 +128,26 @@ public class PlayerDataImpl implements PlayerData {
     }
 
     private void updateDisplayName(Player p) {
-        if (!p.getName().equals(p.getDisplayName())) {
-            this.displayname = p.getDisplayName();
+        ArgumentCheck.notNull(p);
+        String display = p.getDisplayName();
+        if (display != null && !username.equals(display)) {
+            this.displayname = display;
         }
     }
 
     private void updateDisplayName() {
         if (online) {
-            updateDisplayName(Bukkit.getPlayer(this.username));
+            Player p = Bukkit.getPlayerExact(this.username);
+            if (p != null) {
+                updateDisplayName(p);
+            } else {
+                PlayerDataStatic.getLogger().log(Level.WARNING, "PlayerData {0} is online, but Bukkit.getPlayerExact({0}) returned null!", this.username);
+            }
         }
+    }
+
+    private void checkDisplayNameNotNull() {
+        displayname = displayname == null ? username : displayname;
     }
 
     private void saveStatus(final PlayerHandlerImpl playerHandlerImpl, final PlayerDataBukkit plugin, boolean async) {
@@ -161,14 +171,12 @@ public class PlayerDataImpl implements PlayerData {
      * then it will run this function again.
      */
     private void makeExtraThread(final Player p) {
-        if (p == null) {
-            throw new IllegalArgumentException("Null Paramaters");
-        }
+        ArgumentCheck.notNull(p);
         updateDisplayName(p);
         if (p.isOnline()) {
-            if (displayname.equalsIgnoreCase(username)) {
-                if (nickUpdateExtraThreadUpdateTimes < 5) {
-                    nickUpdateExtraThreadUpdateTimes++;
+            if (displayname.equals(username)) {
+                if (displayNameUpdateTimesRun < 5) {
+                    displayNameUpdateTimesRun++;
                     PlayerDataBukkit pdb = PlayerDataStatic.getPlayerDataBukkit();
                     if (pdb != null) {
                         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pdb, new Runnable() {
@@ -223,7 +231,11 @@ public class PlayerDataImpl implements PlayerData {
     void updateStatus() {
         if (online) {
             Player p = Bukkit.getPlayerExact(this.username);
-            updateDisplayName(p);
+            if (p != null) {
+                updateDisplayName(p);
+            } else {
+                PlayerDataStatic.getLogger().log(Level.WARNING, "PlayerData {0} is online, but Bukkit.getPlayerExact({0}) returned null!", this.username);
+            }
             timePlayed += (System.currentTimeMillis() - currentSession);
             currentSession = System.currentTimeMillis();
         }
@@ -238,9 +250,7 @@ public class PlayerDataImpl implements PlayerData {
      * unloaded when there are players online.
      */
     void loggedOut(Player p, PlayerHandlerImpl pdh, boolean pluginUnloading) {
-        if (p == null || pdh == null) {
-            throw new IllegalArgumentException("Null Paramaters");
-        }
+        ArgumentCheck.notNull(p, pdh);
         if (online) {
             timePlayed += (System.currentTimeMillis() - currentSession);
             currentSession = System.currentTimeMillis();
@@ -260,14 +270,12 @@ public class PlayerDataImpl implements PlayerData {
      * when there are players online.
      */
     void loggedIn(Player p, PlayerHandlerImpl pdh, boolean pluginLoading) {
-        if (p == null || pdh == null) {
-            throw new IllegalArgumentException("Null Paramaters");
-        }
+        ArgumentCheck.notNull(p, pdh);
         if (!online) {
             logins.add(new LoginDataImpl(System.currentTimeMillis(), p.getAddress().toString()));
             currentSession = System.currentTimeMillis();
             online = true;
-            nickUpdateExtraThreadUpdateTimes = 0;
+            displayNameUpdateTimesRun = 0;
             makeExtraThread(p);
         }
     }
@@ -308,33 +316,25 @@ public class PlayerDataImpl implements PlayerData {
 
     @Override
     public boolean hasExtraData(String dataName) {
-        if (dataName == null) {
-            throw new IllegalArgumentException("Null Paramater");
-        }
+        ArgumentCheck.notNull(dataName);
         return extraData.containsKey(dataName.toLowerCase());
     }
 
     @Override
     public String[] addExtraData(String dataName, String[] data) {
-        if (dataName == null || data == null) {
-            throw new IllegalArgumentException("Null Paramater");
-        }
+        ArgumentCheck.notNull(dataName, data);
         return extraData.put(dataName.toLowerCase(), ArrayHelpers.copyArray(data));
     }
 
     @Override
     public String[] removeExtraData(String dataName) {
-        if (dataName == null) {
-            throw new IllegalArgumentException("Null Paramater");
-        }
+        ArgumentCheck.notNull(dataName);
         return extraData.remove(dataName.toLowerCase());
     }
 
     @Override
     public String[] getExtraData(String dataName) {
-        if (dataName == null) {
-            throw new IllegalArgumentException("Null Paramater");
-        }
+        ArgumentCheck.notNull(dataName);
         String[] orig = extraData.get(dataName.toLowerCase());
         return orig == null ? null : ArrayHelpers.copyArray(orig);
     }
@@ -348,8 +348,7 @@ public class PlayerDataImpl implements PlayerData {
     public long getLastSeen() {
         if (online) {
             return System.currentTimeMillis();
-        }
-        if (logouts.size() > 0) {
+        } else if (logouts.size() > 0) {
             return logouts.get(logouts.size() - 1);
         } else {
             return 0;
