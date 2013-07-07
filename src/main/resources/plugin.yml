@@ -1,11 +1,10 @@
 name: PlayerData
 main: net.daboross.bukkitdev.playerdata.PlayerDataBukkit
-version: 3.2.6
+version: 3.2.7
 author: Dabo Ross
 prefix: PD
 description: |
-  PlayerData Keeps Track Of Various Data on all Players who have ever joined this server.
-  PlayerData also offers an API that allows any other plugin to store data in PlayerData's back-end, and also view the data that PlayerData has stored.
+  PlayerData keeps track of various data on all players who have ever joined this server.
 softdepend: [Vault]
 dev-url: http://dev.bukkit.org/server-mods/playerdata/
 commands:
@@ -19,7 +18,7 @@ commands:
     description: This command gets possible full usernames for a partial username or nickname
     usage: |
       /<command> [Partial Name]
-      Example: /<command> bob
+      Example: /<command> zen
     aliases: [getusername, gusername, getu]
 permissions:
   playerdata.*:
