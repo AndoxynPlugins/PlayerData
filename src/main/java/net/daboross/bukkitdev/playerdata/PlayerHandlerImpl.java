@@ -15,9 +15,10 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataFirstJoinComparator;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataLastSeenComparator;
+import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import net.daboross.bukkitdev.playerdata.parsers.xml.XMLParserFinder;
-import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -216,37 +217,9 @@ public class PlayerHandlerImpl implements PlayerHandler {
 
     @Override
     public String getFullUsername(String partialName) {
-        if (partialName == null) {
-            throw new NullArgumentException("partialName can't be null");
-        }
-        String[] possibleMatches = new String[2];
-        String partialNameLowerCase = partialName.toLowerCase();
-        synchronized (LIST_LOCK) {
-            for (int i = 0; i < playerDataList.size(); i++) {
-                PlayerData pd = playerDataList.get(i);
-                String checkUserName = pd.getUsername().toLowerCase();
-                String checkNickName = ChatColor.stripColor(pd.getDisplayname()).toLowerCase();
-                if (checkUserName.equals(partialNameLowerCase)) {
-                    return pd.getUsername();
-                }
-                if (checkUserName.contains(partialNameLowerCase)) {
-                    if (possibleMatches[0] == null) {
-                        possibleMatches[0] = pd.getUsername();
-                    }
-                }
-                if (checkNickName.contains(partialNameLowerCase)) {
-                    if (possibleMatches[1] == null) {
-                        possibleMatches[1] = pd.getUsername();
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < possibleMatches.length; i++) {
-            if (possibleMatches[i] != null) {
-                return possibleMatches[i];
-            }
-        }
-        return null;
+        ArgumentCheck.notNull(partialName);
+        PlayerData playerData = getPlayerDataPartial(partialName);
+        return playerData == null ? null : playerData.getUsername();
     }
 
     @Override
@@ -265,11 +238,33 @@ public class PlayerHandlerImpl implements PlayerHandler {
     }
 
     @Override
-    public PlayerDataImpl getPlayerDataPartial(String partialName) {
-        if (partialName == null) {
-            return null;
+    public PlayerData getPlayerDataPartial(String partialName) {
+        ArgumentCheck.notNull(partialName);
+        PlayerData[] possibleMatches = new PlayerData[2];
+        synchronized (LIST_LOCK) {
+            for (int i = 0; i < playerDataList.size(); i++) {
+                PlayerData pd = playerDataList.get(i);
+                if (pd.getUsername().equalsIgnoreCase(partialName)) {
+                    return pd;
+                }
+                if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName)) {
+                    if (possibleMatches[0] == null) {
+                        possibleMatches[0] = pd;
+                    }
+                }
+                if (StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayname()), partialName)) {
+                    if (possibleMatches[1] == null) {
+                        possibleMatches[1] = pd;
+                    }
+                }
+            }
         }
-        return getPlayerData(getFullUsername(partialName));
+        for (int i = 0; i < possibleMatches.length; i++) {
+            if (possibleMatches[i] != null) {
+                return possibleMatches[i];
+            }
+        }
+        return null;
     }
 
     @Override
