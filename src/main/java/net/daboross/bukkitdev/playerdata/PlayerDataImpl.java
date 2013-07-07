@@ -116,7 +116,9 @@ public class PlayerDataImpl implements PlayerData {
      * @param extraData A List of custom data entries.
      */
     public PlayerDataImpl(String username, String displayname, List<LoginData> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
-        ArgumentCheck.notNull(username, displayname, logins, logouts, extraData);
+        ArgumentCheck.notNull(username, displayname, extraData);
+        ArgumentCheck.notNull(logins);
+        ArgumentCheck.notNull(logouts);
         this.username = username;
         this.displayname = displayname;
         this.logins.addAll(logins);

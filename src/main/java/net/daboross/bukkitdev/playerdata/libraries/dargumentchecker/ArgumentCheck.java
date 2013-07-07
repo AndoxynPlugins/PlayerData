@@ -20,10 +20,6 @@ public class ArgumentCheck {
         for (Object o : objects) {
             if (o == null) {
                 throw new IllegalArgumentException("Null arguments not permitted");
-            } else if (o instanceof Object[]) {
-                notNull(o);
-            } else if (o instanceof Collection) {
-                notNull((Collection) o);
             }
         }
     }
@@ -35,10 +31,6 @@ public class ArgumentCheck {
         for (Object o : objects) {
             if (o == null) {
                 throw new IllegalArgumentException("Null arguments not permitted");
-            } else if (o instanceof Object[]) {
-                notNull(o);
-            } else if (o instanceof Collection) {
-                notNull((Collection) o);
             }
         }
     }
