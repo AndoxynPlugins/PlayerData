@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.libraries.metrics.MetricsLite;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -42,7 +41,7 @@ public final class PlayerDataBukkit extends JavaPlugin {
         }
         PluginManager pm = this.getServer().getPluginManager();
         if (pm.isPluginEnabled("Vault")) {
-            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
+            RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
             permissionHandler = rsp.getProvider();
             if (permissionHandler == null) {
                 getLogger().log(Level.INFO, "Vault found. Permission not found.");
@@ -72,7 +71,6 @@ public final class PlayerDataBukkit extends JavaPlugin {
             getusername.setExecutor(new GetUsernameCommand(playerHandler));
         }
         pm.registerEvents(new PlayerDataEventListener(playerHandler), this);
-        playerHandler.init();
         getLogger().info("PlayerData Load Sucessful");
     }
 
