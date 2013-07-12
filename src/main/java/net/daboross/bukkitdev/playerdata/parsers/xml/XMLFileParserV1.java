@@ -36,7 +36,7 @@ import org.w3c.dom.NodeList;
  * @author daboross
  */
 public class XMLFileParserV1 {
-    
+
     public static void save(PlayerData pd, File fileResult) throws DXMLException {
         Document document = newDocument();
         Element root = document.createElement("playerdata");
@@ -74,7 +74,7 @@ public class XMLFileParserV1 {
         }
         writeXML(document, fileResult);
     }
-    
+
     public static PlayerDataImpl read(Document document) throws DXMLException {
         Node root = null;
         Node rootTest = document.getFirstChild();
