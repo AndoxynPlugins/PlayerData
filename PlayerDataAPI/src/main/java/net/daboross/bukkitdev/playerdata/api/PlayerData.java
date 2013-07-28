@@ -36,7 +36,7 @@ public interface PlayerData {
      *
      * @return The displayname of the player.
      */
-    public String getDisplayname();
+    public String getDisplayName();
 
     /**
      * This function gets whether or not this player is online.
@@ -58,7 +58,7 @@ public interface PlayerData {
      * @return An unmodifiable list of LoginDatas which contains all times that
      * this player has logged in.
      */
-    public List<? extends LoginData> getAllLogins();
+    public List<LoginData> getAllLogins();
 
     /**
      * Gets an unmodifiable list of times that this player has logged out.
