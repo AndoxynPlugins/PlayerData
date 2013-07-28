@@ -36,7 +36,7 @@ public class DateHelper {
      * @param millis the millisecond value to turn into a date string
      * @return A visually nice relative date.
      */
-    public static String getFormattedRelativeDate(long millis) {
+    public static String relativeFormat(long millis) {
         if (millis == 0) {
             return "Not That Long";
         }

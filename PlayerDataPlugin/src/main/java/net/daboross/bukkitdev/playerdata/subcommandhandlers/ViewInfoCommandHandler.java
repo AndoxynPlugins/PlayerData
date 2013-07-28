@@ -29,6 +29,7 @@ import net.daboross.bukkitdev.playerdata.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
+import net.daboross.bukkitdev.playerdata.api.events.PlayerDataInfoEvent;
 import net.daboross.bukkitdev.playerdata.helpers.DateHelper;
 import org.bukkit.Bukkit;
 
@@ -38,47 +39,48 @@ import org.bukkit.Bukkit;
  */
 public class ViewInfoCommandHandler implements SubCommandHandler {
 
-    private final PlayerHandler playerHandler;
+	private final PlayerHandler playerHandler;
 
-    public ViewInfoCommandHandler(PlayerHandler playerHandler) {
-        this.playerHandler = playerHandler;
-    }
+	public ViewInfoCommandHandler(PlayerHandler playerHandler) {
+		this.playerHandler = playerHandler;
+	}
 
-    @Override
-    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
-            return;
-        }
-        String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
-        PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
-        if (pd == null) {
-            sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
-            return;
-        }
-        sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "Info for " + ColorList.NAME + pd.getUsername() + ColorList.TOP_SEPERATOR + " --");
-        ArrayList<String> linesToSend = new ArrayList<String>();
-        linesToSend.add(ColorList.REG + "DisplayName: " + ColorList.NAME + pd.getDisplayname());
-        if (pd.isOnline()) {
-            linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is online");
-            List<? extends LoginData> logIns = pd.getAllLogins();
-            linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " has been online " + ColorList.DATA + DateHelper.getFormattedRelativeDate(System.currentTimeMillis() - logIns.get(logIns.size() - 1).getDate()));
-        } else {
-            linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is not online");
-            linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + DateHelper.getFormattedRelativeDate(System.currentTimeMillis() - pd.getLastSeen()) + ColorList.REG + " ago");
-        }
-        linesToSend.add(ColorList.REG + "Times logged into " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pd.getAllLogins().size());
-        linesToSend.add(ColorList.REG + "Times logged out of " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + pd.getAllLogouts().size());
-        linesToSend.add(ColorList.REG + "Time played on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + ": " + ColorList.DATA + DateHelper.getFormattedRelativeDate(pd.getTimePlayed()));
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + DateHelper.getFormattedRelativeDate(System.currentTimeMillis() - pd.getAllLogins().get(0).getDate()) + ColorList.REG + " ago");
-        linesToSend.add(ColorList.REG + "First time on " + ColorList.SERVER + Bukkit.getServerName() + ColorList.REG + " was  " + ColorList.DATA + new Date(pd.getAllLogins().get(0).getDate()));
-        if (PlayerDataStatic.isPermissionLoaded()) {
-            String[] groups = PlayerDataStatic.getPermissionHandler().getPlayerGroups((String) null, pd.getUsername());
-            if (groups != null) {
-                linesToSend.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is currently " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
-            }
-        }
-        sender.sendMessage(linesToSend.toArray(new String[0]));
-    }
+	@Override
+	public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+		if (subCommandArgs.length < 1) {
+			sender.sendMessage(ColorList.ERR + "Please specify a player");
+			sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
+			return;
+		}
+		String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
+		PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
+		if (pd == null) {
+			sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
+			return;
+		}
+		sender.sendMessage(String.format(ColorList.TOP, "Info on" + ColorList.NAME + pd.getUsername()));
+		ArrayList<String> info = new ArrayList<String>();
+		info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is called " + ColorList.NAME + pd.getDisplayname());
+		if (pd.isOnline()) {
+			List<? extends LoginData> logins = pd.getAllLogins();
+			info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " has been online for " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - logins.get(logins.size() - 1).getDate()));
+		} else {
+			info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getLastSeen()) + ColorList.REG + " ago");
+		}
+		info.add(ColorList.REG + "Times logged in: " + ColorList.DATA + pd.getAllLogins().size());
+		info.add(ColorList.REG + "Times logged out: " + ColorList.DATA + pd.getAllLogouts().size());
+		info.add(ColorList.REG + "Time played: " + ColorList.DATA + DateHelper.relativeFormat(pd.getTimePlayed()));
+		info.add(ColorList.REG + "First time online was " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getAllLogins().get(0).getDate())
+				+ ColorList.REG + " ago, or " + ColorList.DATA + new Date(pd.getAllLogins().get(0).getDate()));
+		if (PlayerDataStatic.isPermissionLoaded()) {
+			String[] groups = PlayerDataStatic.getPermissionHandler().getPlayerGroups((String) null, pd.getUsername());
+			if (groups != null) {
+				info.add(ColorList.REG + "Permission Groups: " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
+			}
+		}
+		PlayerDataInfoEvent event = new PlayerDataInfoEvent(sender, pd, playerHandler);
+		Bukkit.getPluginManager().callEvent(event);
+		sender.sendMessage(info.toArray(new String[info.size()]));
+		sender.sendMessage(event.getExtraInfoArray());
+	}
 }

@@ -16,6 +16,12 @@
  */
 package net.daboross.bukkitdev.playerdata.api.events;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -25,18 +31,50 @@ import org.bukkit.event.HandlerList;
  */
 public class PlayerDataInfoEvent extends Event {
 
-    private static final HandlerList handlers = new HandlerList();
+	private static final HandlerList handlers = new HandlerList();
+	private final CommandSender infoRequester;
+	private final PlayerData playerDataRequested;
+	private final PlayerHandler handler;
+	private final List<String> extraInfo;
 
-    public PlayerDataInfoEvent() {
-        super(false);
-    }
+	public PlayerDataInfoEvent(CommandSender infoRequester, PlayerData playerDataRequested, PlayerHandler handler) {
+		super(false);
+		this.infoRequester = infoRequester;
+		this.playerDataRequested = playerDataRequested;
+		this.handler = handler;
+		this.extraInfo = new ArrayList<String>();
+	}
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
+	public CommandSender getInfoRequester() {
+		return infoRequester;
+	}
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+	public PlayerData getPlayerDataRequested() {
+		return playerDataRequested;
+	}
+
+	public PlayerHandler getHandler() {
+		return handler;
+	}
+
+	public void addExtraInfo(String info) {
+		extraInfo.add(info);
+	}
+
+	public List<String> getExtraInfo() {
+		return Collections.unmodifiableList(extraInfo);
+	}
+
+	public String[] getExtraInfoArray() {
+		return extraInfo.toArray(new String[extraInfo.size()]);
+	}
+
+	@Override
+	public HandlerList getHandlers() {
+		return handlers;
+	}
+
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 }
