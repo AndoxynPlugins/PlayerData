@@ -47,14 +47,14 @@ public class GetUsernameCommand implements CommandExecutor {
             sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + partialName + ColorList.TOP_SEPERATOR + " --");
             for (int numSent = 0, i = 0; i < playerDataList.size() && numSent < 10; i++) {
                 PlayerData pd = playerDataList.get(i);
-                if (pd.getUsername().equals(pd.getDisplayname())) {
+                if (pd.getUsername().equals(pd.getDisplayName())) {
                     if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName)) {
                         sender.sendMessage(ColorList.NAME + pd.getUsername());
                         numSent++;
                     }
                 } else {
-                    if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName) || StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayname()), partialName)) {
-                        sender.sendMessage(ColorList.NAME + pd.getUsername() + ColorList.DIVIDER + " | " + ColorList.NAME + pd.getDisplayname());
+                    if (StringUtils.containsIgnoreCase(pd.getUsername(), partialName) || StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayName()), partialName)) {
+                        sender.sendMessage(ColorList.NAME + pd.getUsername() + ColorList.DIVIDER + " | " + ColorList.NAME + pd.getDisplayName());
                         numSent++;
                     }
                 }
