@@ -17,7 +17,6 @@
 package net.daboross.bukkitdev.playerdata.api;
 
 import java.util.List;
-import net.daboross.bukkitdev.playerdata.PlayerDataBukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -106,5 +105,5 @@ public interface PlayerHandler {
      *
      * @return PlayerData Bukkit plugin.
      */
-    public PlayerDataBukkit getPlayerDataBukkit();
+    public PlayerDataPlugin getPlayerDataPlugin();
 }

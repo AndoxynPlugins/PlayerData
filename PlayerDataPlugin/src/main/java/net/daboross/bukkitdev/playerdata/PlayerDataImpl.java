@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
@@ -163,7 +164,7 @@ public class PlayerDataImpl implements PlayerData {
         displayname = displayname == null ? username : displayname;
     }
 
-    private void saveStatus(final PlayerHandlerImpl playerHandlerImpl, final PlayerDataBukkit plugin, boolean async) {
+    private void saveStatus(final PlayerHandlerImpl playerHandlerImpl, final PlayerDataPlugin plugin, boolean async) {
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
                 @Override
@@ -270,7 +271,7 @@ public class PlayerDataImpl implements PlayerData {
             logouts.add(System.currentTimeMillis());
             online = false;
             updateDisplayName(p);
-            saveStatus(pdh, pdh.getPlayerDataBukkit(), !pluginUnloading);
+            saveStatus(pdh, pdh.getPlayerDataPlugin(), !pluginUnloading);
         }
     }
 

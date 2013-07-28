@@ -41,7 +41,7 @@ public class PlayerDataStatic {
     }
 
     public static Permission getPermissionHandler() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getPermissionHandler();
+        return playerDataBukkit == null ? null : playerDataBukkit.getPermission();
     }
 
     public static Logger getLogger() {

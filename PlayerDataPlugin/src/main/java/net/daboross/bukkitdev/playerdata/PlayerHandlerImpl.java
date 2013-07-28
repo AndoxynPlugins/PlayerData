@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataFirstJoinComparator;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.PlayerDataLastSeenComparator;
@@ -50,16 +51,16 @@ public class PlayerHandlerImpl implements PlayerHandler {
     private final Object LIST_LOCK = new Object();
     private final List<PlayerDataImpl> playerDataList = new ArrayList<PlayerDataImpl>();
     private final List<PlayerDataImpl> playerDataListFirstJoin = new ArrayList<PlayerDataImpl>();
-    private final PlayerDataBukkit playerDataBukkit;
+    private final PlayerDataPlugin playerDataPlugin;
     private final File dataFolder;
 
     /**
      * Use this to create a new PlayerHandlerImpl when PlayerDataBukkit is
      * loaded. There should only be one PlayerHandlerImpl instance.
      */
-    PlayerHandlerImpl(PlayerDataBukkit playerDataMain) {
-        this.playerDataBukkit = playerDataMain;
-        File pluginFolder = playerDataMain.getDataFolder();
+    PlayerHandlerImpl(PlayerDataPlugin playerDataPlugin) {
+        this.playerDataPlugin = playerDataPlugin;
+        File pluginFolder = playerDataPlugin.getDataFolder();
         dataFolder = new File(pluginFolder, "xml");
         if (!dataFolder.isDirectory()) {
             dataFolder.mkdirs();
@@ -120,7 +121,7 @@ public class PlayerHandlerImpl implements PlayerHandler {
             try {
                 file.createNewFile();
             } catch (IOException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
+                playerDataPlugin.getLogger().log(Level.SEVERE, "Exception creating new file " + file.getAbsolutePath(), ex);
                 return;
             }
         }
@@ -128,10 +129,10 @@ public class PlayerHandlerImpl implements PlayerHandler {
             try {
                 XMLParserFinder.save(pd, file);
             } catch (DXMLException ex) {
-                playerDataBukkit.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
+                playerDataPlugin.getLogger().log(Level.SEVERE, "Exception saving data to file " + file.getAbsolutePath(), ex);
             }
         } else {
-            playerDataBukkit.getLogger().log(Level.SEVERE, "Can\'t write to file {0}", file.getAbsolutePath());
+            playerDataPlugin.getLogger().log(Level.SEVERE, "Can\'t write to file {0}", file.getAbsolutePath());
         }
     }
 
@@ -178,8 +179,8 @@ public class PlayerHandlerImpl implements PlayerHandler {
             } else {
                 for (File fl : playerFiles) {
                     if (!fl.isFile()) {
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                        playerDataPlugin.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
+                        playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                         return false;
                     } else if (fl.canRead()) {
                         String[] split = fl.getName().split("\\.");
@@ -189,8 +190,8 @@ public class PlayerHandlerImpl implements PlayerHandler {
                             try {
                                 pData = XMLParserFinder.read(fl);
                             } catch (DXMLException dxmle) {
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
-                                playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                                playerDataPlugin.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
+                                playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                                 return false;
                             }
                             if (!playerDataList.contains(pData)) {
@@ -200,17 +201,17 @@ public class PlayerHandlerImpl implements PlayerHandler {
                                 playerDataListFirstJoin.add(pData);
                             }
                         } else {
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
-                            playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                            playerDataPlugin.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
+                            playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                             return false;
                         }
                     } else {
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
-                        playerDataBukkit.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
+                        playerDataPlugin.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
+                        playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
                         return false;
                     }
                 }
-                playerDataBukkit.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
+                playerDataPlugin.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
             }
             Collections.sort(playerDataList, new PlayerDataLastSeenComparator());
             Collections.sort(playerDataListFirstJoin, new PlayerDataFirstJoinComparator());
@@ -222,8 +223,8 @@ public class PlayerHandlerImpl implements PlayerHandler {
     }
 
     @Override
-    public PlayerDataBukkit getPlayerDataBukkit() {
-        return playerDataBukkit;
+    public PlayerDataPlugin getPlayerDataPlugin() {
+        return playerDataPlugin;
     }
 
     @Override
