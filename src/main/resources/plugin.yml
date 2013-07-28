@@ -1,6 +1,6 @@
 name: PlayerData
 main: net.daboross.bukkitdev.playerdata.PlayerDataBukkit
-version: 4.0.0
+version: ${project.version}
 author: Dabo Ross
 prefix: PD
 description: |

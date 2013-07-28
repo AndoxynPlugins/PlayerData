@@ -19,12 +19,12 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.IOException;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.libraries.metrics.MetricsLite;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcstats.MetricsLite;
 
 /**
  * PlayerData Plugin Made By DaboRoss
