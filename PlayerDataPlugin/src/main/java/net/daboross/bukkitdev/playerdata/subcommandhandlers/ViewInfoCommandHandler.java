@@ -60,7 +60,7 @@ public class ViewInfoCommandHandler implements SubCommandHandler {
 		}
 		sender.sendMessage(String.format(ColorList.TOP, "Info on" + ColorList.NAME + pd.getUsername()));
 		ArrayList<String> info = new ArrayList<String>();
-		info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " is called " + ColorList.NAME + pd.getDisplayname());
+		info.add(ColorList.REG + "Display name: " + ColorList.NAME + pd.getDisplayName());
 		if (pd.isOnline()) {
 			List<? extends LoginData> logins = pd.getAllLogins();
 			info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " has been online for " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - logins.get(logins.size() - 1).getDate()));
