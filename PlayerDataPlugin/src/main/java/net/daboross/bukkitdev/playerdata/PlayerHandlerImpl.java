@@ -264,7 +264,7 @@ public class PlayerHandlerImpl implements PlayerHandler {
                         possibleMatches[0] = pd;
                     }
                 }
-                if (StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayname()), partialName)) {
+                if (StringUtils.containsIgnoreCase(ChatColor.stripColor(pd.getDisplayName()), partialName)) {
                     if (possibleMatches[1] == null) {
                         possibleMatches[1] = pd;
                     }
