@@ -25,13 +25,13 @@ import org.bukkit.plugin.Plugin;
  */
 public interface PlayerDataPlugin extends Plugin {
 
-	public PlayerHandler getHandler();
+    public PlayerHandler getHandler();
 
-	public boolean isPermissionLoaded();
+    public boolean isPermissionLoaded();
 
-	public Permission getPermission();
+    public Permission getPermission();
 
-	public int getAPIVersion();
+    public int getAPIVersion();
 
-	public boolean isEnabledSuccessfully();
+    public boolean isEnabledSuccessfully();
 }

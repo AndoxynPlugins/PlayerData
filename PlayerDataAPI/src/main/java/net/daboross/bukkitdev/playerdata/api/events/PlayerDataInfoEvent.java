@@ -31,50 +31,50 @@ import org.bukkit.event.HandlerList;
  */
 public class PlayerDataInfoEvent extends Event {
 
-	private static final HandlerList handlers = new HandlerList();
-	private final CommandSender infoRequester;
-	private final PlayerData playerDataRequested;
-	private final PlayerHandler handler;
-	private final List<String> extraInfo;
+    private static final HandlerList handlers = new HandlerList();
+    private final CommandSender infoRequester;
+    private final PlayerData playerDataRequested;
+    private final PlayerHandler handler;
+    private final List<String> extraInfo;
 
-	public PlayerDataInfoEvent(CommandSender infoRequester, PlayerData playerDataRequested, PlayerHandler handler) {
-		super(false);
-		this.infoRequester = infoRequester;
-		this.playerDataRequested = playerDataRequested;
-		this.handler = handler;
-		this.extraInfo = new ArrayList<String>();
-	}
+    public PlayerDataInfoEvent(CommandSender infoRequester, PlayerData playerDataRequested, PlayerHandler handler) {
+        super(false);
+        this.infoRequester = infoRequester;
+        this.playerDataRequested = playerDataRequested;
+        this.handler = handler;
+        this.extraInfo = new ArrayList<String>();
+    }
 
-	public CommandSender getInfoRequester() {
-		return infoRequester;
-	}
+    public CommandSender getInfoRequester() {
+        return infoRequester;
+    }
 
-	public PlayerData getPlayerDataRequested() {
-		return playerDataRequested;
-	}
+    public PlayerData getPlayerDataRequested() {
+        return playerDataRequested;
+    }
 
-	public PlayerHandler getHandler() {
-		return handler;
-	}
+    public PlayerHandler getHandler() {
+        return handler;
+    }
 
-	public void addExtraInfo(String info) {
-		extraInfo.add(info);
-	}
+    public void addExtraInfo(String info) {
+        extraInfo.add(info);
+    }
 
-	public List<String> getExtraInfo() {
-		return Collections.unmodifiableList(extraInfo);
-	}
+    public List<String> getExtraInfo() {
+        return Collections.unmodifiableList(extraInfo);
+    }
 
-	public String[] getExtraInfoArray() {
-		return extraInfo.toArray(new String[extraInfo.size()]);
-	}
+    public String[] getExtraInfoArray() {
+        return extraInfo.toArray(new String[extraInfo.size()]);
+    }
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 }

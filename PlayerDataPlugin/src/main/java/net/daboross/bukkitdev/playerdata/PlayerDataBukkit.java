@@ -35,92 +35,92 @@ import org.mcstats.MetricsLite;
  */
 public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlugin {
 
-	private PlayerHandlerImpl playerHandler;
-	private boolean permissionLoaded = false;
-	private Permission permissionHandler;
-	private boolean enabledSuccessfully = true;
+    private PlayerHandlerImpl playerHandler;
+    private boolean permissionLoaded = false;
+    private Permission permissionHandler;
+    private boolean enabledSuccessfully = true;
 
-	@Override
-	public void onEnable() {
-		PlayerDataStatic.setPlayerDataPlugin(this);
-		MetricsLite metrics = null;
-		try {
-			metrics = new MetricsLite(this);
-		} catch (IOException ioe) {
-			getLogger().warning("Unable to create Metrics");
-		}
-		if (metrics != null) {
-			metrics.start();
-		}
-		PluginManager pm = this.getServer().getPluginManager();
-		if (pm.isPluginEnabled("Vault")) {
-			RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-			permissionHandler = rsp.getProvider();
-			if (permissionHandler == null) {
-				getLogger().log(Level.INFO, "Vault found. Permission not found.");
-			} else {
-				permissionLoaded = true;
-				getLogger().log(Level.INFO, "Vault found. Permission found.");
-			}
-		} else {
-			getLogger().log(Level.INFO, "Vault not found.");
-		}
-		playerHandler = new PlayerHandlerImpl(this);
-		enabledSuccessfully = playerHandler.init();
-		if (!enabledSuccessfully) {
-			pm.disablePlugin(this);
-			PlayerDataStatic.setPlayerDataPlugin(null);
-			permissionHandler = null;
-			playerHandler = null;
-			permissionLoaded = false;
-			return;
-		}
-		PluginCommand playerdata = getCommand("pd");
-		if (playerdata != null) {
-			new PlayerDataCommandExecutor(this, playerHandler).registerCommand(playerdata);
-		}
-		PluginCommand getusername = getCommand("gu");
-		if (getusername != null) {
-			getusername.setExecutor(new GetUsernameCommand(playerHandler));
-		}
-		pm.registerEvents(new PlayerDataEventListener(playerHandler), this);
-		getLogger().info("PlayerData Load Sucessful");
-	}
+    @Override
+    public void onEnable() {
+        PlayerDataStatic.setPlayerDataPlugin(this);
+        MetricsLite metrics = null;
+        try {
+            metrics = new MetricsLite(this);
+        } catch (IOException ioe) {
+            getLogger().warning("Unable to create Metrics");
+        }
+        if (metrics != null) {
+            metrics.start();
+        }
+        PluginManager pm = this.getServer().getPluginManager();
+        if (pm.isPluginEnabled("Vault")) {
+            RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+            permissionHandler = rsp.getProvider();
+            if (permissionHandler == null) {
+                getLogger().log(Level.INFO, "Vault found. Permission not found.");
+            } else {
+                permissionLoaded = true;
+                getLogger().log(Level.INFO, "Vault found. Permission found.");
+            }
+        } else {
+            getLogger().log(Level.INFO, "Vault not found.");
+        }
+        playerHandler = new PlayerHandlerImpl(this);
+        enabledSuccessfully = playerHandler.init();
+        if (!enabledSuccessfully) {
+            pm.disablePlugin(this);
+            PlayerDataStatic.setPlayerDataPlugin(null);
+            permissionHandler = null;
+            playerHandler = null;
+            permissionLoaded = false;
+            return;
+        }
+        PluginCommand playerdata = getCommand("pd");
+        if (playerdata != null) {
+            new PlayerDataCommandExecutor(this, playerHandler).registerCommand(playerdata);
+        }
+        PluginCommand getusername = getCommand("gu");
+        if (getusername != null) {
+            getusername.setExecutor(new GetUsernameCommand(playerHandler));
+        }
+        pm.registerEvents(new PlayerDataEventListener(playerHandler), this);
+        getLogger().info("PlayerData Load Sucessful");
+    }
 
-	@Override
-	public void onDisable() {
-		if (enabledSuccessfully) {
-			playerHandler.endServer();
-			playerHandler.saveAllData();
-		}
-		PlayerDataStatic.setPlayerDataPlugin(null);
-		permissionHandler = null;
-		playerHandler = null;
-		permissionLoaded = false;
-	}
+    @Override
+    public void onDisable() {
+        if (enabledSuccessfully) {
+            playerHandler.endServer();
+            playerHandler.saveAllData();
+        }
+        PlayerDataStatic.setPlayerDataPlugin(null);
+        permissionHandler = null;
+        playerHandler = null;
+        permissionLoaded = false;
+    }
 
-	@Override
-	public PlayerHandler getHandler() {
-		return playerHandler;
-	}
+    @Override
+    public PlayerHandler getHandler() {
+        return playerHandler;
+    }
 
-	@Override
-	public boolean isPermissionLoaded() {
-		return permissionLoaded;
-	}
+    @Override
+    public boolean isPermissionLoaded() {
+        return permissionLoaded;
+    }
 
-	@Override
-	public Permission getPermission() {
-		return permissionHandler;
-	}
+    @Override
+    public Permission getPermission() {
+        return permissionHandler;
+    }
 
-	@Override
-	public int getAPIVersion() {
-		return PlayerDataStatic.getAPIVersion();
-	}
+    @Override
+    public int getAPIVersion() {
+        return PlayerDataStatic.getAPIVersion();
+    }
 
-	@Override
-	public boolean isEnabledSuccessfully() {
-		return enabledSuccessfully;
-	}
+    @Override
+    public boolean isEnabledSuccessfully() {
+        return enabledSuccessfully;
+    }
 }
