@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.daboross.bukkitdev.playerdata;
+package net.daboross.bukkitdev.playerdata.api;
 
 import java.util.logging.Logger;
-import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.milkbowl.vault.permission.Permission;
 
 /**
@@ -26,33 +25,33 @@ import net.milkbowl.vault.permission.Permission;
  */
 public class PlayerDataStatic {
 
-    private static PlayerDataBukkit playerDataBukkit;
+    private static PlayerDataPlugin playerDataPlugin;
 
-    public static PlayerDataBukkit getPlayerDataBukkit() {
-        return playerDataBukkit;
+    public static PlayerDataPlugin getPlayerDataPlugin() {
+        return playerDataPlugin;
     }
 
     public static PlayerHandler getPlayerHandler() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getHandler();
+        return playerDataPlugin == null ? null : playerDataPlugin.getHandler();
     }
 
     public static boolean isPermissionLoaded() {
-        return playerDataBukkit == null ? null : playerDataBukkit.isPermissionLoaded();
+        return playerDataPlugin == null ? null : playerDataPlugin.isPermissionLoaded();
     }
 
     public static Permission getPermissionHandler() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getPermission();
+        return playerDataPlugin == null ? null : playerDataPlugin.getPermission();
     }
 
     public static Logger getLogger() {
-        return playerDataBukkit == null ? null : playerDataBukkit.getLogger();
+        return playerDataPlugin == null ? null : playerDataPlugin.getLogger();
     }
 
     public static int getAPIVersion() {
-        return playerDataBukkit == null ? -1 : playerDataBukkit.getAPIVersion();
+        return 2;
     }
 
-    static void setPlayerDataBukkit(PlayerDataBukkit playerDataBukkit) {
-        PlayerDataStatic.playerDataBukkit = playerDataBukkit;
+    public static void setPlayerDataPlugin(PlayerDataPlugin playerDataPlugin) {
+        PlayerDataStatic.playerDataPlugin = playerDataPlugin;
     }
 }

@@ -19,6 +19,7 @@ package net.daboross.bukkitdev.playerdata;
 import java.io.IOException;
 import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
+import net.daboross.bukkitdev.playerdata.api.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.command.PluginCommand;
@@ -41,7 +42,7 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
 
 	@Override
 	public void onEnable() {
-		PlayerDataStatic.setPlayerDataBukkit(this);
+		PlayerDataStatic.setPlayerDataPlugin(this);
 		MetricsLite metrics = null;
 		try {
 			metrics = new MetricsLite(this);
@@ -68,7 +69,7 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
 		enabledSuccessfully = playerHandler.init();
 		if (!enabledSuccessfully) {
 			pm.disablePlugin(this);
-			PlayerDataStatic.setPlayerDataBukkit(null);
+			PlayerDataStatic.setPlayerDataPlugin(null);
 			permissionHandler = null;
 			playerHandler = null;
 			permissionLoaded = false;
@@ -92,7 +93,7 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
 			playerHandler.endServer();
 			playerHandler.saveAllData();
 		}
-		PlayerDataStatic.setPlayerDataBukkit(null);
+		PlayerDataStatic.setPlayerDataPlugin(null);
 		permissionHandler = null;
 		playerHandler = null;
 		permissionLoaded = false;
@@ -115,7 +116,7 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
 
 	@Override
 	public int getAPIVersion() {
-		return enabledSuccessfully == true ? 1 : -1;
+		return PlayerDataStatic.getAPIVersion();
 	}
 
 	@Override

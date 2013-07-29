@@ -25,12 +25,11 @@ import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubComman
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import net.daboross.bukkitdev.playerdata.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.api.events.PlayerDataInfoEvent;
-import net.daboross.bukkitdev.playerdata.helpers.DateHelper;
+import net.daboross.bukkitdev.playerdata.api.DateHelper;
 import org.bukkit.Bukkit;
 
 /**
@@ -39,48 +38,48 @@ import org.bukkit.Bukkit;
  */
 public class ViewInfoCommandHandler implements SubCommandHandler {
 
-	private final PlayerHandler playerHandler;
+    private final PlayerHandler playerHandler;
 
-	public ViewInfoCommandHandler(PlayerHandler playerHandler) {
-		this.playerHandler = playerHandler;
-	}
+    public ViewInfoCommandHandler(PlayerHandler playerHandler) {
+        this.playerHandler = playerHandler;
+    }
 
-	@Override
-	public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
-		if (subCommandArgs.length < 1) {
-			sender.sendMessage(ColorList.ERR + "Please specify a player");
-			sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
-			return;
-		}
-		String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
-		PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
-		if (pd == null) {
-			sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
-			return;
-		}
-		sender.sendMessage(String.format(ColorList.TOP, "Info on" + ColorList.NAME + pd.getUsername()));
-		ArrayList<String> info = new ArrayList<String>();
-		info.add(ColorList.REG + "Display name: " + ColorList.NAME + pd.getDisplayName());
-		if (pd.isOnline()) {
-			List<? extends LoginData> logins = pd.getAllLogins();
-			info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " has been online for " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - logins.get(logins.size() - 1).getDate()));
-		} else {
-			info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getLastSeen()) + ColorList.REG + " ago");
-		}
-		info.add(ColorList.REG + "Times logged in: " + ColorList.DATA + pd.getAllLogins().size());
-		info.add(ColorList.REG + "Times logged out: " + ColorList.DATA + pd.getAllLogouts().size());
-		info.add(ColorList.REG + "Time played: " + ColorList.DATA + DateHelper.relativeFormat(pd.getTimePlayed()));
-		info.add(ColorList.REG + "First time online was " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getAllLogins().get(0).getDate())
-				+ ColorList.REG + " ago, or " + ColorList.DATA + new Date(pd.getAllLogins().get(0).getDate()));
-		if (PlayerDataStatic.isPermissionLoaded()) {
-			String[] groups = PlayerDataStatic.getPermissionHandler().getPlayerGroups((String) null, pd.getUsername());
-			if (groups != null) {
-				info.add(ColorList.REG + "Permission Groups: " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
-			}
-		}
-		PlayerDataInfoEvent event = new PlayerDataInfoEvent(sender, pd, playerHandler);
-		Bukkit.getPluginManager().callEvent(event);
-		sender.sendMessage(info.toArray(new String[info.size()]));
-		sender.sendMessage(event.getExtraInfoArray());
-	}
+    @Override
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+        if (subCommandArgs.length < 1) {
+            sender.sendMessage(ColorList.ERR + "Please specify a player");
+            sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
+            return;
+        }
+        String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
+        PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
+        if (pd == null) {
+            sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
+            return;
+        }
+        sender.sendMessage(String.format(ColorList.TOP, "Info on" + ColorList.NAME + pd.getUsername()));
+        ArrayList<String> info = new ArrayList<String>();
+        info.add(ColorList.REG + "Display name: " + ColorList.NAME + pd.getDisplayName());
+        if (pd.isOnline()) {
+            List<? extends LoginData> logins = pd.getAllLogins();
+            info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " has been online for " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - logins.get(logins.size() - 1).getDate()));
+        } else {
+            info.add(ColorList.NAME + pd.getUsername() + ColorList.REG + " was last seen " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getLastSeen()) + ColorList.REG + " ago");
+        }
+        info.add(ColorList.REG + "Times logged in: " + ColorList.DATA + pd.getAllLogins().size());
+        info.add(ColorList.REG + "Times logged out: " + ColorList.DATA + pd.getAllLogouts().size());
+        info.add(ColorList.REG + "Time played: " + ColorList.DATA + DateHelper.relativeFormat(pd.getTimePlayed()));
+        info.add(ColorList.REG + "First time online was " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - pd.getAllLogins().get(0).getDate())
+                + ColorList.REG + " ago, or " + ColorList.DATA + new Date(pd.getAllLogins().get(0).getDate()));
+        if (playerHandler.getPlayerDataPlugin().isPermissionLoaded()) {
+            String[] groups = playerHandler.getPlayerDataPlugin().getPermission().getPlayerGroups((String) null, pd.getUsername());
+            if (groups != null) {
+                info.add(ColorList.REG + "Permission Groups: " + ColorList.DATA + ArrayHelpers.combinedWithSeperator(groups, ", "));
+            }
+        }
+        PlayerDataInfoEvent event = new PlayerDataInfoEvent(sender, pd, playerHandler);
+        Bukkit.getPluginManager().callEvent(event);
+        sender.sendMessage(info.toArray(new String[info.size()]));
+        sender.sendMessage(event.getExtraInfoArray());
+    }
 }

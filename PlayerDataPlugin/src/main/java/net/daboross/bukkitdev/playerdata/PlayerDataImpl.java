@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
+import net.daboross.bukkitdev.playerdata.api.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
 import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
@@ -191,9 +192,9 @@ public class PlayerDataImpl implements PlayerData {
             if (displayname.equals(username)) {
                 if (displayNameUpdateTimesRun < 5) {
                     displayNameUpdateTimesRun++;
-                    PlayerDataBukkit pdb = PlayerDataStatic.getPlayerDataBukkit();
-                    if (pdb != null) {
-                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pdb, new Runnable() {
+                    PlayerDataPlugin plugin = PlayerDataStatic.getPlayerDataPlugin();
+                    if (plugin != null) {
+                        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                             @Override
                             public void run() {
                                 makeExtraThread(p);
