@@ -19,13 +19,13 @@ package net.daboross.bukkitdev.playerdata.subcommandhandlers;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ColorList;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.SubCommandHandler;
+import net.daboross.bukkitdev.commandexecutorbase.ColorList;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
+import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
