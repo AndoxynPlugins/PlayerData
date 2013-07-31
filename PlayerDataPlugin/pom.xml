@@ -13,7 +13,7 @@
     <name>PlayerDataPlugin</name>
     <repositories>
         <repository>
-            <id>Plugin Metrics</id>
+            <id>mcstats-repo</id>
             <url>http://repo.mcstats.org/content/repositories/public</url>
         </repository>
     </repositories>
