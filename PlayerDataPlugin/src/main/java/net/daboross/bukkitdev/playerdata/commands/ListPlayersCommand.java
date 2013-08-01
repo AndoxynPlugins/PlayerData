@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.api.DateHelper;
@@ -39,14 +40,12 @@ public class ListPlayersCommand extends SubCommand {
         super("list", true, "playerdata.list", "Lists all players who have ever joined this server in order of last seen");
         addAliases("lp", "pl", "l");
         addArgumentNames("PageNumber");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.LESS_THAN, 2, ColorList.ERR + "Too many arguments"));
         this.playerHandler = playerHandler;
     }
 
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.ERR + "Please use only one number after " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
-        }
         int pageNumber;
         if (subCommandArgs.length == 0) {
             pageNumber = 1;
@@ -69,7 +68,7 @@ public class ListPlayersCommand extends SubCommand {
         int pageNumberReal = pageNumber - 1;
         List<? extends PlayerData> pDataList = playerHandler.getAllPlayerDatas();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add(ColorList.TOP_SEPERATOR + " --" + ColorList.TOP + " Player List " + ColorList.TOP_SEPERATOR + "--" + ColorList.TOP + " Page " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_SEPERATOR + " --");
+        messagesToSend.add(String.format(ColorList.TOP_FORMAT, " Player List " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1))));
 
         for (int i = pageNumberReal * 6; i < (pageNumberReal + 1) * 6 && i < pDataList.size(); i++) {
             PlayerData current = pDataList.get(i);

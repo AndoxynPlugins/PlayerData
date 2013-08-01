@@ -24,6 +24,7 @@ import net.daboross.bukkitdev.playerdata.commands.IPLookupCommand;
 import net.daboross.bukkitdev.playerdata.commands.IPReverseLookupCommand;
 import net.daboross.bukkitdev.playerdata.commands.ListPlayersFirstJoinCommand;
 import net.daboross.bukkitdev.playerdata.commands.ListPlayersCommand;
+import net.daboross.bukkitdev.playerdata.commands.SaveAllCommand;
 import net.daboross.bukkitdev.playerdata.commands.ViewInfoCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -49,12 +50,7 @@ public final class PlayerDataCommandHandler {
         commandExecutorBase.addSubCommand(new ListPlayersFirstJoinCommand(playerHandler));
         commandExecutorBase.addSubCommand(new IPLookupCommand(playerHandler));
         commandExecutorBase.addSubCommand(new IPReverseLookupCommand(playerHandler));
-        commandExecutorBase.addSubCommand(new SubCommand("save-all", true, "playerdata.admin", "Save All PlayerDatas") {
-            @Override
-            public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-                runSaveAllCommand(sender);
-            }
-        });
+        commandExecutorBase.addSubCommand(new SaveAllCommand(playerDataPlugin));
     }
 
     void registerCommand(PluginCommand command) {

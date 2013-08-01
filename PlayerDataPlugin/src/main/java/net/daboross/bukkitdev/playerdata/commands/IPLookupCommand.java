@@ -25,6 +25,7 @@ import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -40,16 +41,12 @@ public class IPLookupCommand extends SubCommand {
         super("iplookup", true, "playerdata.iplookup", "Gets all different IPs used by a Player");
         addAliases("ipl", "ip");
         addArgumentNames("Player");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.GREATER_THAN, 0, ColorList.ERR + "Please specify a player"));
         this.playerHandler = playerHandler;
     }
 
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
-            return;
-        }
         String playerNameGiven = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
         PlayerData pd = playerHandler.getPlayerDataPartial(playerNameGiven);
         if (pd == null) {

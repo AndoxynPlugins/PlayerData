@@ -6,6 +6,7 @@ package net.daboross.bukkitdev.playerdata.commands;
 import java.util.concurrent.Callable;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -21,6 +22,7 @@ public class SaveAllCommand extends SubCommand {
 
     public SaveAllCommand(PlayerDataPlugin playerDataPlugin) {
         super("save-all", true, "playerdata.admin", "Save All PlayerDatas");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.EQUALS, 0, ColorList.ERR + "Too many arguments"));
         this.playerDataPlugin = playerDataPlugin;
     }
 

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
@@ -38,20 +39,13 @@ public class IPReverseLookupCommand extends SubCommand {
         super("ipreverselookup", true, "playerdata.ipreverselookup", "Gets all different Players using an IP");
         addAliases("ipr", "iprl");
         addArgumentNames("IP");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.GREATER_THAN, 0, ColorList.ERR + "Please specify an IP"));
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.LESS_THAN, 2, ColorList.ERR + "Too many arguments"));
         this.playerHandler = playerHandler;
     }
 
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR + "Please specify an IP");
-            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
-            return;
-        }
-        if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.ERR + "To many arguments");
-            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
-        }
         List<String> usersList = new ArrayList<String>();
         for (PlayerData player : playerHandler.getAllPlayerDatas()) {
             for (LoginData login : player.getAllLogins()) {

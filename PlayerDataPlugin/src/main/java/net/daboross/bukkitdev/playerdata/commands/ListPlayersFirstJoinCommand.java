@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.api.DateHelper;
@@ -38,14 +39,12 @@ public class ListPlayersFirstJoinCommand extends SubCommand {
         super("listfirst", true, "playerdata.firstjoinlist", "List allplayers who have have ever joined this server in order of first join");
         addAliases("lf", "fl");
         addArgumentNames("Page number");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.LESS_THAN, 2, ColorList.ERR + "Too many arguments"));
         this.playerHandler = playerHandler;
     }
 
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length > 1) {
-            sender.sendMessage(ColorList.ERR + "Please use only one number after " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
-        }
         int pageNumber;
         if (subCommandArgs.length == 0) {
             pageNumber = 1;
@@ -68,7 +67,7 @@ public class ListPlayersFirstJoinCommand extends SubCommand {
         int pageNumberReal = pageNumber - 1;
         List<? extends PlayerData> pDataList = playerHandler.getAllPlayerDatasFirstJoin();
         ArrayList<String> messagesToSend = new ArrayList<String>();
-        messagesToSend.add(ColorList.TOP_SEPERATOR + " --" + ColorList.TOP + " Player List " + ColorList.TOP_SEPERATOR + "--" + ColorList.TOP + " Page " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1)) + ColorList.TOP_SEPERATOR + " --");
+        messagesToSend.add(String.format(ColorList.TOP_FORMAT, " Player List " + ColorList.DATA + pageNumber + ColorList.TOP + "/" + ColorList.DATA + ((pDataList.size() / 6) + (pDataList.size() % 6 == 0 ? 0 : 1))));
         for (int i = (pageNumberReal * 6); i < ((pageNumberReal + 1) * 6) && i < pDataList.size(); i++) {
             PlayerData current = pDataList.get(i);
             messagesToSend.add(ColorList.NAME + current.getUsername() + ColorList.REG + " was first seen " + ColorList.DATA + DateHelper.relativeFormat(System.currentTimeMillis() - current.getAllLogins().get(0).getDate()) + ColorList.REG + " ago.");

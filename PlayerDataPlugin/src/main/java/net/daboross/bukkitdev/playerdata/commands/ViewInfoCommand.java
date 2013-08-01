@@ -22,6 +22,7 @@ import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
+import net.daboross.bukkitdev.commandexecutorbase.filters.ArgumentFilter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
@@ -43,16 +44,12 @@ public class ViewInfoCommand extends SubCommand {
         super("viewinfo", true, "playerdata.viewinfo", "Get info on a player");
         addAliases("getinfo", "i");
         addArgumentNames("Player");
+        addCommandFilter(new ArgumentFilter(ArgumentFilter.ArgumentCondition.GREATER_THAN, 0, ColorList.ERR + "Please specify a player"));
         this.playerHandler = playerHandler;
     }
 
     @Override
     public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
-        if (subCommandArgs.length < 1) {
-            sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
-            return;
-        }
         String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
         PlayerData pd = playerHandler.getPlayerDataPartial(givenPlayerName);
         if (pd == null) {
