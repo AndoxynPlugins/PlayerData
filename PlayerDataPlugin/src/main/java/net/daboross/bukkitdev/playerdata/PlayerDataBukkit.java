@@ -46,8 +46,8 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
         MetricsLite metrics = null;
         try {
             metrics = new MetricsLite(this);
-        } catch (IOException ioe) {
-            getLogger().warning("Unable to create Metrics");
+        } catch (IOException ex) {
+            getLogger().log(Level.WARNING, "Unable to create Metrics", ex);
         }
         if (metrics != null) {
             metrics.start();
