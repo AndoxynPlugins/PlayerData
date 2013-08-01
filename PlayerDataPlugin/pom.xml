@@ -6,11 +6,11 @@
         <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>net.daboross.bukkitdev.playerdata</groupId>
+    <groupId>net.daboross.bukkitdev</groupId>
     <artifactId>PlayerDataPlugin</artifactId>
     <packaging>jar</packaging>
-    <version>4.0.1-SNAPSHOT</version>
-    <name>PlayerDataPlugin</name>
+    <version>4.0.2-SNAPSHOT</version>
+    <name>PlayerData</name>
     <repositories>
         <repository>
             <id>mcstats-repo</id>
@@ -18,7 +18,7 @@
         </repository>
     </repositories>
     <build>
-        <finalName>PlayerData</finalName>
+        <finalName>${project.name}</finalName>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>net.daboross.bukkitdev</groupId>
             <artifactId>PlayerDataAPI</artifactId>
-            <version>${project.version}</version>
+            <version>4.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

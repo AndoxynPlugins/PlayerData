@@ -1,4 +1,4 @@
-name: PlayerData
+name: ${project.name}
 main: net.daboross.bukkitdev.playerdata.PlayerDataBukkit
 version: ${project.version}
 author: Dabo Ross
