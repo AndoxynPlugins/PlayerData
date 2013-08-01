@@ -16,6 +16,10 @@
             <id>mcstats-repo</id>
             <url>http://repo.mcstats.org/content/repositories/public</url>
         </repository>
+        <repository>
+            <id>temp-daboross-repo</id>
+            <url>https://repository-daboross.forge.cloudbees.com/snapshot/</url>
+        </repository>
     </repositories>
     <build>
         <finalName>${project.name}</finalName>
