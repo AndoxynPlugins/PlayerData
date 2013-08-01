@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.daboross.bukkitdev.playerdata.subcommandhandlers;
+package net.daboross.bukkitdev.playerdata.commands;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +22,6 @@ import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
@@ -36,19 +35,22 @@ import org.bukkit.Bukkit;
  *
  * @author daboross
  */
-public class ViewInfoCommandHandler implements SubCommandHandler {
+public class ViewInfoCommand extends SubCommand {
 
     private final PlayerHandler playerHandler;
 
-    public ViewInfoCommandHandler(PlayerHandler playerHandler) {
+    public ViewInfoCommand(PlayerHandler playerHandler) {
+        super("viewinfo", true, "playerdata.viewinfo", "Get info on a player");
+        addAliases("getinfo", "i");
+        addArgumentNames("Player");
         this.playerHandler = playerHandler;
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
             sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
+            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
         String givenPlayerName = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");

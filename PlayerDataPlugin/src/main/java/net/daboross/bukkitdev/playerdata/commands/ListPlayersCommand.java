@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.daboross.bukkitdev.playerdata.subcommandhandlers;
+package net.daboross.bukkitdev.playerdata.commands;
 
 import java.util.ArrayList;
 import java.util.List;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.playerdata.api.DateHelper;
@@ -32,16 +31,19 @@ import org.bukkit.command.CommandSender;
  *
  * @author daboross
  */
-public class ListPlayersCommandReactor implements SubCommandHandler {
+public class ListPlayersCommand extends SubCommand {
 
     private final PlayerHandler playerHandler;
 
-    public ListPlayersCommandReactor(PlayerHandler playerHandler) {
+    public ListPlayersCommand(PlayerHandler playerHandler) {
+        super("list", true, "playerdata.list", "Lists all players who have ever joined this server in order of last seen");
+        addAliases("lp", "pl", "l");
+        addArgumentNames("PageNumber");
         this.playerHandler = playerHandler;
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length > 1) {
             sender.sendMessage(ColorList.ERR + "Please use only one number after " + ColorList.CMD + "/" + baseCommandLabel + ColorList.SUBCMD + " " + subCommandLabel);
         }
@@ -53,7 +55,7 @@ public class ListPlayersCommandReactor implements SubCommandHandler {
                 pageNumber = Integer.valueOf(subCommandArgs[0]);
             } catch (NumberFormatException nfe) {
                 sender.sendMessage(ColorList.ERR_ARGS + subCommandArgs[0] + ColorList.ERR + " is not an integer.");
-                sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
+                sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
                 return;
             }
             if (pageNumber == 0) {

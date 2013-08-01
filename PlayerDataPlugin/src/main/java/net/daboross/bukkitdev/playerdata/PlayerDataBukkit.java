@@ -77,7 +77,7 @@ public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlug
         }
         PluginCommand playerdata = getCommand("pd");
         if (playerdata != null) {
-            new PlayerDataCommandExecutor(this, playerHandler).registerCommand(playerdata);
+            new PlayerDataCommandHandler(this, playerHandler).registerCommand(playerdata);
         }
         PluginCommand getusername = getCommand("gu");
         if (getusername != null) {

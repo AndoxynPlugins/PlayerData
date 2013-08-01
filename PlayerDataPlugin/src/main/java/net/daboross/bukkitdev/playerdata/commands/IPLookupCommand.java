@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.daboross.bukkitdev.playerdata.subcommandhandlers;
+package net.daboross.bukkitdev.playerdata.commands;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
 import net.daboross.bukkitdev.commandexecutorbase.SubCommand;
-import net.daboross.bukkitdev.commandexecutorbase.SubCommandHandler;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
@@ -33,19 +32,22 @@ import org.bukkit.command.CommandSender;
  *
  * @author daboross
  */
-public class IPLookupCommandHandler implements SubCommandHandler {
+public class IPLookupCommand extends SubCommand {
 
     private final PlayerHandler playerHandler;
 
-    public IPLookupCommandHandler(PlayerHandler playerHandler) {
+    public IPLookupCommand(PlayerHandler playerHandler) {
+        super("iplookup", true, "playerdata.iplookup", "Gets all different IPs used by a Player");
+        addAliases("ipl", "ip");
+        addArgumentNames("Player");
         this.playerHandler = playerHandler;
     }
 
     @Override
-    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, SubCommand subCommand, String subCommandLabel, String[] subCommandArgs) {
+    public void runCommand(CommandSender sender, Command baseCommand, String baseCommandLabel, String subCommandLabel, String[] subCommandArgs) {
         if (subCommandArgs.length < 1) {
             sender.sendMessage(ColorList.ERR + "Please specify a player");
-            sender.sendMessage(subCommand.getHelpMessage(baseCommandLabel, subCommandLabel));
+            sender.sendMessage(this.getHelpMessage(baseCommandLabel, subCommandLabel));
             return;
         }
         String playerNameGiven = ArrayHelpers.combinedWithSeperator(subCommandArgs, " ");
