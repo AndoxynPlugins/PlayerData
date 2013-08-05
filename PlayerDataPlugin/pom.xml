@@ -3,13 +3,13 @@
     <parent>
         <groupId>net.daboross.bukkitdev</groupId>
         <artifactId>PlayerData</artifactId>
-        <version>4.0.1-SNAPSHOT</version>
+        <version>4.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>net.daboross.bukkitdev</groupId>
     <artifactId>PlayerDataPlugin</artifactId>
     <packaging>jar</packaging>
-    <version>4.0.2-SNAPSHOT</version>
+    <version>4.0.3-SNAPSHOT</version>
     <name>PlayerData</name>
     <repositories>
         <repository>
