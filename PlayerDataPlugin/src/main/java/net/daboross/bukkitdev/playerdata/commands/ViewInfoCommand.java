@@ -56,7 +56,7 @@ public class ViewInfoCommand extends SubCommand {
             sender.sendMessage(ColorList.ERR + "Player " + ColorList.ERR_ARGS + givenPlayerName + ColorList.ERR + " not found");
             return;
         }
-        sender.sendMessage(String.format(ColorList.TOP, "Info on" + ColorList.NAME + pd.getUsername()));
+        sender.sendMessage(String.format(ColorList.TOP_FORMAT, "Info on " + ColorList.NAME + pd.getUsername()));
         ArrayList<String> info = new ArrayList<String>();
         info.add(ColorList.REG + "Display name: " + ColorList.NAME + pd.getDisplayName());
         if (pd.isOnline()) {
