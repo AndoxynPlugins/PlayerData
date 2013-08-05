@@ -44,7 +44,7 @@ public class GetUsernameCommand implements CommandExecutor {
         if (args.length > 0) {
             String partialName = ArrayHelpers.combinedWithSeperator(args, " ");
             List<? extends PlayerData> playerDataList = playerHandler.getAllPlayerDatas();
-            sender.sendMessage(ColorList.TOP_SEPERATOR + " -- " + ColorList.TOP + "AutoCompletes for " + ColorList.NAME + partialName + ColorList.TOP_SEPERATOR + " --");
+            sender.sendMessage(String.format(ColorList.TOP_FORMAT, "AutoCompletes for " + ColorList.NAME + partialName));
             for (int numSent = 0, i = 0; i < playerDataList.size() && numSent < 10; i++) {
                 PlayerData pd = playerDataList.get(i);
                 if (pd.getUsername().equals(pd.getDisplayName())) {
