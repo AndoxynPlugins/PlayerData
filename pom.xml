@@ -1,27 +1,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.daboross.bukkitdev</groupId>
-    <artifactId>PlayerData</artifactId>
-    <packaging>pom</packaging>
-    <version>4.0.1-SNAPSHOT</version>
+    <artifactId>playerdata-plugin</artifactId>
+    <packaging>jar</packaging>
+    <version>4.0.3-SNAPSHOT</version>
     <name>PlayerData</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/daboross/PlayerData/issues</url>
-    </issueManagement>
-    <modules>
-        <module>PlayerDataAPI</module>
-        <module>PlayerDataPlugin</module>
-    </modules>
     <scm>
         <connection>scm:git:git://github.com/daboross/PlayerData.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/daboross/PlayerData.git</developerConnection>
         <url>https://github.com/daboross/PlayerData.git</url>
     </scm>
     <repositories>
+        <repository>
+            <id>mcstats-repo</id>
+            <url>http://repo.mcstats.org/content/repositories/public</url>
+        </repository>
         <repository>
             <id>vault-repo</id>
             <url>http://ci.herocraftonline.com/plugin/repository/everything</url>
@@ -32,6 +28,16 @@
         </repository>
     </repositories>
     <build>
+        <finalName>${project.name}</finalName>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -42,6 +48,38 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.mcstats.bukkit:metrics-lite</include>
+                                    <include>net.daboross.bukkitdev:PlayerDataAPI</include>
+                                    <include>net.daboross.bukkitdev:CommandExecutorBase</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.mcstats</pattern>
+                                    <shadedPattern>net.daboross.bukkitdev.playerdata.libraries.mcstats</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.daboross.bukkitdev.commandexecutorbase</pattern>
+                                    <shadedPattern>net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -49,6 +87,24 @@
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>Vault</artifactId>
             <version>1.2.26-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mcstats.bukkit</groupId>
+            <artifactId>metrics-lite</artifactId>
+            <version>R7</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.daboross.bukkitdev</groupId>
+            <artifactId>playerdata-api</artifactId>
+            <version>2.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.daboross.bukkitdev</groupId>
+            <artifactId>CommandExecutorBase</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
