@@ -301,7 +301,7 @@ public class PlayerDataImpl implements PlayerData {
     }
 
     @Override
-    public String getDisplayName() {
+    public String getDisplayname() {
         if (System.currentTimeMillis() > minNextDisplaynameUpdate) {
             updateDisplayName();
             minNextDisplaynameUpdate = System.currentTimeMillis() + MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES;
