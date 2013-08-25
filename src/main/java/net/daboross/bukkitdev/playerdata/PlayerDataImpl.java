@@ -30,7 +30,7 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
-import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
+import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
