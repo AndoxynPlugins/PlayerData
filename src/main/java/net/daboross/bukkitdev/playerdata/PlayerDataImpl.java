@@ -30,7 +30,7 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
-import net.daboross.bukkitdev.playerdata.libraries.commandexecutorbase.ArrayHelpers;
+import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -301,7 +301,7 @@ public class PlayerDataImpl implements PlayerData {
     }
 
     @Override
-    public String getDisplayname() {
+    public String getDisplayName() {
         if (System.currentTimeMillis() > minNextDisplaynameUpdate) {
             updateDisplayName();
             minNextDisplaynameUpdate = System.currentTimeMillis() + MIN_TIME_BETWEEN_DISPLAYNAME_UPDATES;

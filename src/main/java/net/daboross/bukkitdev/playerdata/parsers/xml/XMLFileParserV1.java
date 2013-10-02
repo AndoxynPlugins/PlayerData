@@ -43,7 +43,7 @@ public class XMLFileParserV1 {
         root.appendChild(createElement(document, "version", "1"));
         document.appendChild(root);
         root.appendChild(createElement(document, "username", pd.getUsername()));
-        root.appendChild(createElement(document, "displayname", pd.getDisplayname()));
+        root.appendChild(createElement(document, "displayname", pd.getDisplayName()));
         root.appendChild(createElement(document, "timeplayed", String.valueOf(pd.getTimePlayed())));
         {
             List<? extends LoginData> logins = pd.getAllLogins();
