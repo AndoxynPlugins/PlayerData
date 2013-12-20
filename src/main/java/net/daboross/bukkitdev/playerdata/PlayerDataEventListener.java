@@ -27,7 +27,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 /**
- *
  * @author daboross
  */
 public class PlayerDataEventListener implements Listener {

@@ -19,7 +19,6 @@ package net.daboross.bukkitdev.playerdata.libraries.dargumentchecker;
 import java.util.Collection;
 
 /**
- *
  * @author daboross
  */
 public class ArgumentCheck {

@@ -17,10 +17,10 @@
 package net.daboross.bukkitdev.playerdata;
 
 import java.util.List;
-import net.daboross.bukkitdev.playerdata.api.PlayerData;
-import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.commandexecutorbase.ColorList;
+import net.daboross.bukkitdev.playerdata.api.PlayerData;
+import net.daboross.bukkitdev.playerdata.api.PlayerHandler;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -28,7 +28,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 /**
- *
  * @author daboross
  */
 public class GetUsernameCommand implements CommandExecutor {

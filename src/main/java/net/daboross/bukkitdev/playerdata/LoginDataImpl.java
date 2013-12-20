@@ -19,7 +19,6 @@ package net.daboross.bukkitdev.playerdata;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 
 /**
- *
  * @author daboross
  */
 public class LoginDataImpl implements LoginData {

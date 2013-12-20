@@ -20,7 +20,6 @@ import java.util.Comparator;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 
 /**
- *
  * @author daboross
  */
 public class LoginDataNewestComparator implements Comparator<LoginData> {

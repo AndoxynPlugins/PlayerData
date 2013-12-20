@@ -28,7 +28,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 /**
- *
  * @author daboross
  */
 public class IPReverseLookupCommand extends SubCommand {

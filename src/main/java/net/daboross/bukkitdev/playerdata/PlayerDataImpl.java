@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.api.LoginData;
 import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataPlugin;
 import net.daboross.bukkitdev.playerdata.api.PlayerDataStatic;
 import net.daboross.bukkitdev.playerdata.helpers.comparators.LoginDataNewestComparator;
-import net.daboross.bukkitdev.commandexecutorbase.ArrayHelpers;
 import net.daboross.bukkitdev.playerdata.libraries.dargumentchecker.ArgumentCheck;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -119,14 +119,14 @@ public class PlayerDataImpl implements PlayerData {
      * This creates a PlayerDataImpl from data loaded from a file. This should
      * never be called except from within a FileParser!
      *
-     * @param username The Full UserName of this player
+     * @param username    The Full UserName of this player
      * @param displayname The Last DisplayName this player had that was not the
-     * same as this player's username. Or the player's username if the player's
-     * display name has never been recorded.
-     * @param logins A list of times this player has logged in.
-     * @param logouts A list of times this player has logged out.
-     * @param timePlayed The getDate this player has played on this server.
-     * @param extraData A List of custom data entries.
+     *                    same as this player's username. Or the player's username if the player's
+     *                    display name has never been recorded.
+     * @param logins      A list of times this player has logged in.
+     * @param logouts     A list of times this player has logged out.
+     * @param timePlayed  The getDate this player has played on this server.
+     * @param extraData   A List of custom data entries.
      */
     public PlayerDataImpl(String username, String displayname, List<LoginData> logins, List<Long> logouts, long timePlayed, Map<String, String[]> extraData) {
         ArgumentCheck.notNull(username, displayname, extraData);
@@ -259,10 +259,10 @@ public class PlayerDataImpl implements PlayerData {
     /**
      * Tells this PlayerData that the Player has logged out.
      *
-     * @param p The player logged out
-     * @param pdh The PlayerHandler
+     * @param p               The player logged out
+     * @param pdh             The PlayerHandler
      * @param pluginUnloading If this logout is because PlayerData is being
-     * unloaded when there are players online.
+     *                        unloaded when there are players online.
      */
     void loggedOut(Player p, PlayerHandlerImpl pdh, boolean pluginUnloading) {
         ArgumentCheck.notNull(p, pdh);
@@ -279,10 +279,10 @@ public class PlayerDataImpl implements PlayerData {
     /**
      * Tells this PlayerData that the Player has logged in.
      *
-     * @param p The player logged in.
-     * @param pdh The PlayerHandler
+     * @param p             The player logged in.
+     * @param pdh           The PlayerHandler
      * @param pluginLoading If this login is because PlayerData is being loaded
-     * when there are players online.
+     *                      when there are players online.
      */
     void loggedIn(Player p, PlayerHandlerImpl pdh, boolean pluginLoading) {
         ArgumentCheck.notNull(p, pdh);

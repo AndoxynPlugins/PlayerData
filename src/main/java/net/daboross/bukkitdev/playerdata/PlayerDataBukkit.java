@@ -28,11 +28,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mcstats.MetricsLite;
 
-/**
- * PlayerData Plugin Made By DaboRoss
- *
- * @author daboross
- */
 public final class PlayerDataBukkit extends JavaPlugin implements PlayerDataPlugin {
 
     private PlayerHandlerImpl playerHandler;

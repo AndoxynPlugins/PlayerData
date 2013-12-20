@@ -24,10 +24,6 @@ import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-/**
- *
- * @author daboross
- */
 public class XMLParserFinder {
 
     public static void save(PlayerData playerData, File file) throws DXMLException {

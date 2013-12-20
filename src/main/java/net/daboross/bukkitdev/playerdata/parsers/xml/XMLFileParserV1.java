@@ -27,14 +27,12 @@ import net.daboross.bukkitdev.playerdata.api.PlayerData;
 import net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import static net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import static net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper.createElement;
+import static net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper.newDocument;
+import static net.daboross.bukkitdev.playerdata.libraries.dxml.DXMLHelper.writeXML;
 
-/**
- *
- * @author daboross
- */
 public class XMLFileParserV1 {
 
     public static void save(PlayerData pd, File fileResult) throws DXMLException {

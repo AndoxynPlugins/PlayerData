@@ -17,7 +17,6 @@
 package net.daboross.bukkitdev.playerdata.libraries.dxml;
 
 /**
- *
  * @author daboross
  */
 public class DXMLException extends Exception {

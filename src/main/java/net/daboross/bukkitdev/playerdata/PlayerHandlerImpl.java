@@ -36,10 +36,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-/**
- *
- * @author daboross
- */
 public class PlayerHandlerImpl implements PlayerHandler {
 
     /**
@@ -179,9 +175,8 @@ public class PlayerHandlerImpl implements PlayerHandler {
             } else {
                 for (File fl : playerFiles) {
                     if (!fl.isFile()) {
-                        playerDataPlugin.getLogger().log(Level.SEVERE, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
-                        playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                        return false;
+                        playerDataPlugin.getLogger().log(Level.WARNING, "There is a non-file in xml directory: {0}", fl.getAbsolutePath());
+                        continue;
                     } else if (fl.canRead()) {
                         String[] split = fl.getName().split("\\.");
                         String type = split[split.length - 1];
@@ -190,9 +185,9 @@ public class PlayerHandlerImpl implements PlayerHandler {
                             try {
                                 pData = XMLParserFinder.read(fl);
                             } catch (DXMLException dxmle) {
-                                playerDataPlugin.getLogger().log(Level.SEVERE, "Error Parsing File: {0}", dxmle.getMessage());
-                                playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                                return false;
+                                playerDataPlugin.getLogger().log(Level.WARNING, "Error Parsing File: {0}", dxmle.getMessage());
+                                fl.renameTo(new File(fl.getParentFile(), fl.getName() + "-errored-" + System.currentTimeMillis()));
+                                continue;
                             }
                             if (!playerDataList.contains(pData)) {
                                 playerDataList.add(pData);
@@ -201,14 +196,11 @@ public class PlayerHandlerImpl implements PlayerHandler {
                                 playerDataListFirstJoin.add(pData);
                             }
                         } else {
-                            playerDataPlugin.getLogger().log(Level.SEVERE, "There is a file with an unknown type '" + type + "' in the xml directory! File: {0}", fl.getAbsolutePath());
-                            playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                            return false;
+                            continue;
                         }
                     } else {
-                        playerDataPlugin.getLogger().log(Level.SEVERE, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
-                        playerDataPlugin.getLogger().log(Level.SEVERE, "PlayerData won\'t load until you fix this!");
-                        return false;
+                        playerDataPlugin.getLogger().log(Level.WARNING, "Can't read file in xml directory! File: {0}", fl.getAbsolutePath());
+                        continue;
                     }
                 }
                 playerDataPlugin.getLogger().log(Level.INFO, "Loaded {0} data files", playerDataList.size());
